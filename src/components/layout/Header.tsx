@@ -170,7 +170,7 @@ export const Header = () => {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenu({ open: false, path: pathname })}
-                className="text-4xl font-serif font-bold text-white tracking-tight hover:text-primary-400 transition-colors"
+                className="text-2xl sm:text-3xl font-sans font-semibold text-white/85 tracking-[0.14em] uppercase hover:text-primary-400 transition-colors"
               >
                 {item.name}
               </Link>
