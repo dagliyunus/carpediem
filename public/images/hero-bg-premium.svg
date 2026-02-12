@@ -39,9 +39,13 @@
       <stop offset="0%" stop-color="white" stop-opacity="0.12" />
       <stop offset="100%" stop-color="white" stop-opacity="0.04" />
     </linearGradient>
+    <style>
+      #cd-monogram { font-size: 800px; }
+      @media (max-width: 640px) { #cd-monogram { font-size: 520px; } }
+    </style>
   </defs>
   <g fill="url(#text_grad)">
-    <text x="50%" y="58%" font-family="serif" font-size="800" text-anchor="middle" font-weight="300" letter-spacing="-0.02em" style="font-family: var(--font-cormorant), serif;">CD</text>
+    <text id="cd-monogram" x="50%" y="58%" font-family="serif" font-size="800" text-anchor="middle" font-weight="300" letter-spacing="-0.02em" style="font-family: var(--font-cormorant), serif;">CD</text>
   </g>
 
   <!-- Abstract Mediterranean Motifs -->
