@@ -67,14 +67,24 @@ export function HeroParallax() {
           }}
         >
           {bgReady ? (
-            <Image
-              src="/images/hero-bg-premium.svg"
-              alt="Carpe Diem Premium Background"
-              fill
-              sizes="100vw"
-              fetchPriority="low"
-              className="object-cover opacity-90"
-            />
+            <>
+              <Image
+                src="/images/hero-bg-premium-mobile.svg"
+                alt="Carpe Diem Premium Background"
+                fill
+                sizes="100vw"
+                fetchPriority="low"
+                className="object-cover opacity-90 md:hidden"
+              />
+              <Image
+                src="/images/hero-bg-premium.svg"
+                alt="Carpe Diem Premium Background"
+                fill
+                sizes="100vw"
+                fetchPriority="low"
+                className="object-cover opacity-90 hidden md:block"
+              />
+            </>
           ) : null}
         </div>
 
