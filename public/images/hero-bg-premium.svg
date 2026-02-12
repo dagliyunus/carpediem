@@ -41,7 +41,7 @@
     </linearGradient>
     <style>
       #cd-monogram { font-size: 800px; }
-      @media (max-width: 640px) { #cd-monogram { font-size: 520px; } }
+      @media (max-width: 640px) { #cd-monogram { font-size: 420px; } }
     </style>
   </defs>
   <g fill="url(#text_grad)">
