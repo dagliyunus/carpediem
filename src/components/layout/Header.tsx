@@ -150,7 +150,7 @@ export const Header = () => {
         {/* Menu Content */}
         <div className="relative z-10 h-full flex flex-col">
           {/* Close Button Header Area */}
-          <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-[#050505] border-b border-white/10">
+          <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-transparent backdrop-blur-xl border-b border-white/10">
             <Logo />
             <button
               className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 text-white shadow-lg active:scale-95 transition-all"
