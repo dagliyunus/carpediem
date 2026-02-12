@@ -135,18 +135,6 @@ export const Header = () => {
         {/* Background Layer (Color + Blur) */}
         <div className="absolute inset-0 bg-[#050505]" />
 
-        {/* Background Monogram */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
-          <div className="relative w-full h-full max-w-[92vw] max-h-[80vh] opacity-100 -translate-y-[18%]">
-            <Image
-              src="/images/hero-bg-premium-mobile.svg"
-              alt="Background Monogram"
-              fill
-              className="object-contain filter brightness-[300%] contrast-[200%]"
-            />
-          </div>
-        </div>
-
         {/* Menu Content */}
         <div className="relative z-10 h-full flex flex-col">
           {/* Close Button Header Area */}
@@ -164,24 +152,37 @@ export const Header = () => {
             </button>
           </div>
 
-          <div className="flex-grow flex flex-col items-center justify-center space-y-10 p-6 text-center">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileMenu({ open: false, path: pathname })}
-                className="text-2xl sm:text-3xl font-sans font-semibold text-white/85 tracking-[0.14em] uppercase hover:text-primary-400 transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
-            <Link
-              href="/reservieren"
-              onClick={() => setMobileMenu({ open: false, path: pathname })}
-              className="inline-flex h-16 items-center justify-center rounded-full bg-primary-600 px-12 text-lg font-bold text-white shadow-2xl ring-1 ring-white/10"
-            >
-              Tisch reservieren
-            </Link>
+          <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
+            <div className="relative w-full max-w-[520px]">
+              <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] w-[92vw] max-w-[520px] h-[28vh] max-h-[260px] overflow-hidden pointer-events-none">
+                <Image
+                  src="/images/hero-bg-premium-mobile.svg"
+                  alt="Background Monogram"
+                  fill
+                  className="object-contain filter brightness-[300%] contrast-[200%]"
+                />
+              </div>
+
+              <div className="flex flex-col items-center space-y-10">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenu({ open: false, path: pathname })}
+                    className="text-2xl sm:text-3xl font-sans font-semibold text-white/85 tracking-[0.14em] uppercase hover:text-primary-400 transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <Link
+                  href="/reservieren"
+                  onClick={() => setMobileMenu({ open: false, path: pathname })}
+                  className="inline-flex h-16 items-center justify-center rounded-full bg-primary-600 px-12 text-lg font-bold text-white shadow-2xl ring-1 ring-white/10"
+                >
+                  Tisch reservieren
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
