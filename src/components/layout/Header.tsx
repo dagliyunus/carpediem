@@ -137,7 +137,7 @@ export const Header = () => {
 
         {/* Background Monogram */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
-          <div className="relative w-full h-full max-w-[92vw] max-h-[92vh] opacity-100">
+          <div className="relative w-full h-full max-w-[92vw] max-h-[80vh] opacity-100 -translate-y-[18%]">
             <Image
               src="/images/hero-bg-premium-mobile.svg"
               alt="Background Monogram"
