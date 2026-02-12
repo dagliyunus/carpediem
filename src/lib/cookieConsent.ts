@@ -9,6 +9,9 @@ export type CookieConsent = {
 const STORAGE_KEY = 'cookie-consent';
 const EVENT_NAME = 'carpediem:cookie-consent';
 
+let lastRawConsent: string | null = null;
+let lastParsedConsent: CookieConsent | null = null;
+
 function safeParseConsent(raw: string | null): CookieConsent | null {
   if (!raw) return null;
   try {
@@ -24,18 +27,27 @@ function safeParseConsent(raw: string | null): CookieConsent | null {
 
 export function getCookieConsent(): CookieConsent | null {
   if (typeof window === 'undefined') return null;
-  return safeParseConsent(window.localStorage.getItem(STORAGE_KEY));
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+  if (raw === lastRawConsent) return lastParsedConsent;
+  lastRawConsent = raw;
+  lastParsedConsent = safeParseConsent(raw);
+  return lastParsedConsent;
 }
 
 export function setCookieConsent(consent: CookieConsent) {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(consent));
+  const raw = JSON.stringify(consent);
+  lastRawConsent = raw;
+  lastParsedConsent = consent;
+  window.localStorage.setItem(STORAGE_KEY, raw);
   window.dispatchEvent(new Event(EVENT_NAME));
 }
 
 export function clearCookieConsent() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(STORAGE_KEY);
+  lastRawConsent = null;
+  lastParsedConsent = null;
   window.dispatchEvent(new Event(EVENT_NAME));
 }
 
