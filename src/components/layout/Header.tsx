@@ -31,7 +31,35 @@ export const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    if (typeof window === 'undefined') return;
+
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyWidth = document.body.style.width;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.width = prevBodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isMobileMenuOpen]);
+
   const headerClassName = (() => {
+    if (isMobileMenuOpen) return 'bg-black/80 py-3 backdrop-blur-lg shadow-2xl';
     if (isScrolled) return 'bg-black/80 py-3 backdrop-blur-lg shadow-2xl';
     return 'bg-gradient-to-b from-black/60 to-transparent py-6';
   })();
@@ -100,7 +128,7 @@ export const Header = () => {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-[60] transition-all duration-500 lg:hidden ${
+        className={`fixed inset-0 z-[60] overscroll-contain transition-all duration-500 lg:hidden ${
           isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
         }`}
       >
