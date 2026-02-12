@@ -16,9 +16,7 @@ export default function Home() {
       <Reveal delayMs={100}>
         <SocialMedia />
       </Reveal>
-      <Reveal delayMs={150}>
-        <MusicSection />
-      </Reveal>
+      <MusicSection />
       <Reveal delayMs={200}>
         <LocalRelevance />
       </Reveal>
