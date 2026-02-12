@@ -59,7 +59,7 @@ export const Header = () => {
   }, [isMobileMenuOpen]);
 
   const headerClassName = (() => {
-    if (isMobileMenuOpen) return 'bg-black py-3 backdrop-blur-lg shadow-2xl';
+    if (isMobileMenuOpen) return 'bg-[#050505] py-3 shadow-2xl';
     if (isScrolled) return 'bg-black/80 py-3 backdrop-blur-lg shadow-2xl';
     return 'bg-gradient-to-b from-black/60 to-transparent py-6';
   })();
@@ -128,12 +128,12 @@ export const Header = () => {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-[60] overscroll-contain bg-black transition-all duration-500 lg:hidden ${
+        className={`fixed inset-0 z-[60] overscroll-contain bg-[#050505] transition-all duration-500 lg:hidden ${
           isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
         }`}
       >
         {/* Background Layer (Color + Blur) */}
-        <div className="absolute inset-0 bg-black/95 backdrop-blur-3xl" />
+        <div className="absolute inset-0 bg-[#050505]" />
 
         {/* Background Monogram */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
@@ -150,7 +150,7 @@ export const Header = () => {
         {/* Menu Content */}
         <div className="relative z-10 h-full flex flex-col">
           {/* Close Button Header Area */}
-          <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-black/70 backdrop-blur-xl border-b border-white/10">
+          <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-[#050505] border-b border-white/10">
             <Logo />
             <button
               className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 text-white shadow-lg active:scale-95 transition-all"
