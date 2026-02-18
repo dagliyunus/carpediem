@@ -1,5 +1,6 @@
 import { Hero } from "@/components/sections/Hero";
 import { SignatureDishes } from "@/components/sections/SignatureDishes";
+import { FishShowcase } from "@/components/sections/FishShowcase";
 import { SocialMedia } from "@/components/sections/SocialMedia";
 import { MusicSection } from "@/components/sections/MusicSection";
 import { LocalRelevance } from "@/components/sections/LocalRelevance";
@@ -12,6 +13,9 @@ export default function Home() {
       <Hero />
       <Reveal>
         <SignatureDishes />
+      </Reveal>
+      <Reveal delayMs={80}>
+        <FishShowcase />
       </Reveal>
       <Reveal delayMs={100}>
         <SocialMedia />
