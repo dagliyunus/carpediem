@@ -71,7 +71,7 @@ const showcaseItems = [
 
 export function FishShowcase() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = typeof window !== 'undefined';
 
   const openLightbox = (index: number) => setSelectedImage(index);
   const closeLightbox = () => setSelectedImage(null);
@@ -87,10 +87,6 @@ export function FishShowcase() {
     if (selectedImage === null) return;
     setSelectedImage((selectedImage - 1 + showcaseItems.length) % showcaseItems.length);
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (selectedImage === null) return;
@@ -126,7 +122,7 @@ export function FishShowcase() {
         {/* Header - Minimal & Centered */}
         <div className="relative text-center mb-12 sm:mb-16 md:mb-24 space-y-4 sm:space-y-5 md:space-y-6">
           {/* Decorative Swordfish - Positioned above the title */}
-          <div className="relative w-full max-w-3xl mx-auto h-[96px] sm:h-[112px] md:h-[128px] lg:h-[144px] pointer-events-none select-none opacity-100 mix-blend-normal -mt-6 -mb-2 sm:-mt-8 sm:-mb-3 md:-mt-12 md:-mb-4 lg:-mt-14 lg:-mb-5">
+          <div className="relative w-full max-w-3xl mx-auto h-[96px] sm:h-[112px] md:h-[128px] lg:h-[144px] pointer-events-none select-none opacity-100 mix-blend-normal -mt-3 -mb-1 sm:-mt-8 sm:-mb-3 md:-mt-12 md:-mb-4 lg:-mt-14 lg:-mb-5">
             <Image
               src="/images/fish/swordfish.png"
               alt=""
@@ -144,12 +140,12 @@ export function FishShowcase() {
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
           </div>
           
-          <h2 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
-            <span className="bg-gradient-to-b from-white via-white/90 to-white/40 bg-clip-text text-transparent">
+          <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
+            <span className="text-white md:bg-gradient-to-b md:from-white md:via-white/90 md:to-white/40 md:bg-clip-text md:text-transparent">
               Fish Showcase
             </span>
           </h2>
-          <p className="text-white/80 max-w-2xl mx-auto font-light text-lg drop-shadow-md">
+          <p className="text-white/80 max-w-2xl mx-auto font-light text-base sm:text-lg drop-shadow-md">
             Entdecken Sie unsere exklusive Auswahl an frischem Fisch und Meeresfrüchten.
             Täglich frisch, meisterhaft präsentiert.
           </p>
@@ -161,7 +157,7 @@ export function FishShowcase() {
             <div 
               key={item.id} 
               onClick={() => openLightbox(index)}
-              className={`group relative flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer aspect-[3/5] md:aspect-auto ${item.className}`}
+              className={`group relative flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer aspect-[3/5] min-h-[260px] md:min-h-0 md:aspect-auto ${item.className}`}
             >
               <Image
                 src={item.src}

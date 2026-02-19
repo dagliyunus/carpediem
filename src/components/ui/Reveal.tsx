@@ -10,11 +10,15 @@ type RevealProps = {
 
 export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return typeof IntersectionObserver === 'undefined';
+  });
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || isVisible) return;
+    if (typeof IntersectionObserver === 'undefined') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -25,12 +29,22 @@ export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
           observer.disconnect();
         }
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.15 }
+      { rootMargin: '0px 0px -5% 0px', threshold: 0.05 }
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+
+    // Fallback: if the observer never fires on some mobile browsers,
+    // keep content accessible instead of leaving it invisible.
+    const failSafeTimer = window.setTimeout(() => {
+      setIsVisible((current) => (current ? current : true));
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(failSafeTimer);
+      observer.disconnect();
+    };
+  }, [isVisible]);
 
   return (
     <div
@@ -47,4 +61,3 @@ export function Reveal({ children, className, delayMs = 0 }: RevealProps) {
     </div>
   );
 }
-
