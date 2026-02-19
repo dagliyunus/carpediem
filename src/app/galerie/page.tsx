@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 };
 
 const images = [
-  { url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=85&w=1600', alt: 'Restaurant-Interieur mit gedeckten Tischen' },
-  { url: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=85&w=1600', alt: 'Koch in der Küche bei der Zubereitung' },
-  { url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=85&w=1600', alt: 'Mediterranes Gericht auf dem Teller' },
-  { url: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&q=85&w=1600', alt: 'Weingläser auf einem Tisch' },
-  { url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=85&w=1600', alt: 'Cocktailglas in stimmungsvoller Beleuchtung' },
-  { url: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=85&w=1600', alt: 'Gedeckter Tisch in stilvollem Ambiente' },
+  { url: '/images/Galerie_page/inside1.webp', alt: 'Innenbereich des Restaurants' },
+  { url: '/images/Galerie_page/outside1.webp', alt: 'Außenansicht des Restaurants' },
+  { url: '/images/Galerie_page/outside2.webp', alt: 'Außenbereich bei Abendstimmung' },
+  { url: '/images/Galerie_page/DJ.webp', alt: 'DJ bei einem Event im Carpe Diem' },
+  { url: '/images/Galerie_page/OutsideProsecco.webp', alt: 'Prosecco im Außenbereich serviert' },
+  { url: '/images/Galerie_page/BlacckChampagne.webp', alt: 'Champagner-Moment im Ambiente' },
 ];
 
 export default function GalleryPage() {
