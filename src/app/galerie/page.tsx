@@ -14,6 +14,11 @@ const images = [
   { url: '/images/Galerie_page/DJ.webp', alt: 'DJ bei einem Event im Carpe Diem' },
   { url: '/images/Galerie_page/OutsideProsecco.webp', alt: 'Prosecco im Außenbereich serviert' },
   { url: '/images/Galerie_page/BlacckChampagne.webp', alt: 'Champagner-Moment im Ambiente' },
+  { url: '/images/Galerie_page/fish2.webp', alt: 'Fischgericht als Spezialitaet des Hauses' },
+  { url: '/images/Galerie_page/meal1.webp', alt: 'Kreativ angerichtetes Hauptgericht' },
+  { url: '/images/Galerie_page/meal2.webp', alt: 'Kulinarische Kreation aus der Kueche' },
+  { url: '/images/Galerie_page/table_meal.webp', alt: 'Serviertes Gericht auf dem Tisch' },
+  { url: '/images/Galerie_page/veggie.webp', alt: 'Frisches vegetarisches Gericht' },
 ];
 
 export default function GalleryPage() {
