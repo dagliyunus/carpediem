@@ -4,6 +4,7 @@ import { FishShowcase } from "@/components/sections/FishShowcase";
 import { SocialMedia } from "@/components/sections/SocialMedia";
 import { MusicSection } from "@/components/sections/MusicSection";
 import { LocalRelevance } from "@/components/sections/LocalRelevance";
+import { ContactFormSection } from "@/components/sections/ContactFormSection";
 import { Reveal } from "@/components/ui/Reveal";
 import Image from "next/image";
 
@@ -74,6 +75,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Reveal delayMs={260}>
+        <ContactFormSection />
+      </Reveal>
     </div>
   );
 }

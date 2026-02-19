@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Phone, Mail, MapPin, Train, Car, Info } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { GoogleMapEmbed } from '@/components/maps/GoogleMapEmbed';
+import { ContactForm } from '@/components/forms/ContactForm';
 
 export const metadata: Metadata = {
   title: 'Kontakt & Anfahrt',
@@ -127,6 +128,21 @@ export default function ContactPage() {
                   Route öffnen
                 </a>
               </div>
+            </div>
+          </div>
+
+          <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 md:p-12 backdrop-blur-xl shadow-2xl">
+            <div className="max-w-3xl mx-auto space-y-8">
+              <div className="text-center space-y-4">
+                <h2 className="font-serif text-4xl md:text-5xl font-bold text-white">Kontaktformular</h2>
+                <p className="text-accent-200 text-lg font-light">
+                  Senden Sie uns eine Nachricht – wir melden uns so schnell wie möglich.
+                </p>
+              </div>
+              <ContactForm />
+              <p className="text-xs text-white/40 leading-relaxed text-center">
+                Bitte keine sensiblen Daten senden. Die Übermittlung erfolgt über eine gesicherte Verbindung.
+              </p>
             </div>
           </div>
         </div>

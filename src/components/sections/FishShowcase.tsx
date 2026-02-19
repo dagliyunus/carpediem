@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
@@ -70,6 +71,7 @@ const showcaseItems = [
 
 export function FishShowcase() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const openLightbox = (index: number) => setSelectedImage(index);
   const closeLightbox = () => setSelectedImage(null);
@@ -85,6 +87,32 @@ export function FishShowcase() {
     if (selectedImage === null) return;
     setSelectedImage((selectedImage - 1 + showcaseItems.length) % showcaseItems.length);
   };
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (selectedImage === null) return;
+    if (typeof window === 'undefined') return;
+
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [selectedImage]);
 
   return (
     <section className="relative z-10 py-16 sm:py-20 md:py-32 overflow-hidden border-y border-white/5 bg-black">
@@ -178,60 +206,66 @@ export function FishShowcase() {
 
       {/* Lightbox Modal */}
       {selectedImage !== null && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300"
-          onClick={closeLightbox}
-        >
-          {/* Close Button */}
-          <button 
-            onClick={closeLightbox}
-            className="absolute top-6 right-6 z-[110] p-4 text-white/50 hover:text-white transition-colors"
-          >
-            <X size={32} />
-          </button>
+        isMounted
+          ? createPortal(
+              <div
+                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 overflow-hidden"
+                onClick={closeLightbox}
+                role="dialog"
+                aria-modal="true"
+              >
+                <button
+                  onClick={closeLightbox}
+                  aria-label="Close"
+                  className="fixed top-4 right-4 md:top-6 md:right-6 z-[10000] h-12 w-12 md:h-14 md:w-14 flex items-center justify-center rounded-full bg-white/90 text-black hover:bg-white transition-colors shadow-2xl"
+                >
+                  <X className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
 
-          {/* Navigation */}
-          <button 
-            onClick={prevImage}
-            className="absolute left-4 md:left-8 z-[110] p-4 text-white/50 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
-          >
-            <ChevronLeft size={48} />
-          </button>
-          
-          <button 
-            onClick={nextImage}
-            className="absolute right-4 md:right-8 z-[110] p-4 text-white/50 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
-          >
-            <ChevronRight size={48} />
-          </button>
+                <button
+                  onClick={prevImage}
+                  aria-label="Previous image"
+                  className="absolute left-4 md:left-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+                >
+                  <ChevronLeft size={48} />
+                </button>
 
-          {/* Image Container */}
-          <div 
-            className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 md:p-12 flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative w-full h-full">
-              <Image
-                src={showcaseItems[selectedImage].src}
-                alt={showcaseItems[selectedImage].alt}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                priority
-              />
-            </div>
-            
-            {/* Caption */}
-            <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none">
-              <h3 className="text-2xl font-serif text-white mb-2 drop-shadow-xl">
-                {showcaseItems[selectedImage].title}
-              </h3>
-              <p className="text-white/70 font-light tracking-wide drop-shadow-lg">
-                {showcaseItems[selectedImage].description}
-              </p>
-            </div>
-          </div>
-        </div>
+                <button
+                  onClick={nextImage}
+                  aria-label="Next image"
+                  className="absolute right-4 md:right-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+                >
+                  <ChevronRight size={48} />
+                </button>
+
+                <div
+                  className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 md:p-12 flex items-center justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={showcaseItems[selectedImage].src}
+                      alt={showcaseItems[selectedImage].alt}
+                      fill
+                      className="object-contain"
+                      sizes="100vw"
+                      priority
+                    />
+                  </div>
+
+                  <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none">
+                    <h3 className="text-2xl font-serif text-white mb-2 drop-shadow-xl">
+                      {showcaseItems[selectedImage].title}
+                    </h3>
+                    <p className="text-white/70 font-light tracking-wide drop-shadow-lg">
+                      {showcaseItems[selectedImage].description}
+                    </p>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )
+          : null
       )}
     </section>
   );
