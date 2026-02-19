@@ -10,7 +10,7 @@ const showcaseItems = [
   // Pair 1
   {
     id: 6,
-    src: '/images/fish/Fish9.png',
+    src: '/images/fish/Fish9.webp',
     alt: 'Gourmet Präsentation',
     title: 'Genussmomente',
     description: 'Ein Fest für die Sinne',
@@ -18,7 +18,7 @@ const showcaseItems = [
   },
   {
     id: 2,
-    src: '/images/fish/Fish4.png',
+    src: '/images/fish/Fish4.webp',
     alt: 'Frische Zubereitung',
     title: 'Handwerk & Präzision',
     description: 'Meisterhafte Verarbeitung',
@@ -27,7 +27,7 @@ const showcaseItems = [
   // Pair 2
   {
     id: 3,
-    src: '/images/fish/Fish5.png',
+    src: '/images/fish/Fish5.webp',
     alt: 'Meeresfrüchte Vielfalt',
     title: 'Vielfalt des Meeres',
     description: 'Für jeden Geschmack das Richtige',
@@ -35,7 +35,7 @@ const showcaseItems = [
   },
   {
     id: 5,
-    src: '/images/fish/fish7.png',
+    src: '/images/fish/fish7.webp',
     alt: 'Perfekte Lagerung',
     title: 'Frische-Garantie',
     description: 'Optimale Temperaturen',
@@ -44,7 +44,7 @@ const showcaseItems = [
   // Pair 3
   {
     id: 4,
-    src: '/images/fish/Fish6.png',
+    src: '/images/fish/Fish6.webp',
     alt: 'Saisonale Spezialitäten',
     title: 'Saisonale Highlights',
     description: 'Das Beste der Jahreszeit',
@@ -52,7 +52,7 @@ const showcaseItems = [
   },
   {
     id: 7,
-    src: '/images/fish/Fish8.png',
+    src: '/images/fish/Fish8.webp',
     alt: 'Kulinarische Kunst',
     title: 'Haute Cuisine',
     description: 'Leidenschaft auf dem Teller',
@@ -61,7 +61,7 @@ const showcaseItems = [
   // Final Feature
   {
     id: 1,
-    src: '/images/fish/Fish3.png',
+    src: '/images/fish/Fish3.webp',
     alt: 'Premium Fisch Auswahl',
     title: 'Exzellente Qualität',
     description: 'Frisch gefangen und perfekt gekühlt',
@@ -124,7 +124,7 @@ export function FishShowcase() {
           {/* Decorative Swordfish - Positioned above the title */}
           <div className="relative w-full max-w-3xl mx-auto h-[96px] sm:h-[112px] md:h-[128px] lg:h-[144px] pointer-events-none select-none opacity-100 mix-blend-normal -mt-3 -mb-1 sm:-mt-8 sm:-mb-3 md:-mt-12 md:-mb-4 lg:-mt-14 lg:-mb-5">
             <Image
-              src="/images/fish/swordfish.png"
+              src="/images/fish/swordfish.webp"
               alt=""
               fill
               sizes="(min-width: 1024px) 768px, 100vw"
