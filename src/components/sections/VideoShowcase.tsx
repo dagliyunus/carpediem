@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+type VideoOrientation = 'portrait' | 'landscape';
 
 type VideoItem = {
   id: number;
@@ -10,7 +13,8 @@ type VideoItem = {
   poster: string;
   title: string;
   description: string;
-  className: string;
+  orientation: VideoOrientation;
+  gridClassName: string;
 };
 
 const videoItems: VideoItem[] = [
@@ -20,7 +24,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/1-poster.webp',
     title: 'Live Atmosphaere',
     description: 'Echte Stimmung aus unseren Abenden',
-    className: 'md:col-span-8 md:row-span-2',
+    orientation: 'portrait',
+    gridClassName: 'md:col-span-4',
   },
   {
     id: 2,
@@ -28,7 +33,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/2-poster.webp',
     title: 'Buehnenmomente',
     description: 'Musik, die den Raum fuellt',
-    className: 'md:col-span-4 md:row-span-2',
+    orientation: 'portrait',
+    gridClassName: 'md:col-span-4',
   },
   {
     id: 3,
@@ -36,7 +42,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/3-poster.webp',
     title: 'Premium Nights',
     description: 'Highlights im Carpe Diem',
-    className: 'md:col-span-8 md:row-span-2',
+    orientation: 'portrait',
+    gridClassName: 'md:col-span-4',
   },
   {
     id: 4,
@@ -44,7 +51,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/4-poster.webp',
     title: 'Crowd Energy',
     description: 'Publikum und Performance in Sync',
-    className: 'md:col-span-4 md:row-span-2',
+    orientation: 'portrait',
+    gridClassName: 'md:col-span-4',
   },
   {
     id: 5,
@@ -52,7 +60,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/5-poster.webp',
     title: 'After Dark',
     description: 'Unvergessliche Momente bei Nacht',
-    className: 'md:col-span-8 md:row-span-2',
+    orientation: 'landscape',
+    gridClassName: 'md:col-span-8',
   },
   {
     id: 6,
@@ -60,7 +69,8 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/6-poster.webp',
     title: 'Vibe Sessions',
     description: 'Rhythmus, Genuss und Emotion',
-    className: 'md:col-span-4 md:row-span-2',
+    orientation: 'landscape',
+    gridClassName: 'md:col-span-6',
   },
   {
     id: 7,
@@ -68,14 +78,25 @@ const videoItems: VideoItem[] = [
     poster: '/images/videos/7-poster.webp',
     title: 'Finale Impression',
     description: 'Der perfekte Abschluss des Abends',
-    className: 'md:col-span-8 md:col-start-3 md:row-span-2',
+    orientation: 'landscape',
+    gridClassName: 'md:col-span-6',
   },
 ];
 
+function getCardAspectClass(orientation: VideoOrientation) {
+  return orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video';
+}
+
+function getModalFrameClass(orientation: VideoOrientation) {
+  if (orientation === 'portrait') {
+    return 'w-[min(92vw,440px)] aspect-[9/16] max-h-[86vh]';
+  }
+  return 'w-[min(95vw,1240px)] aspect-video max-h-[86vh]';
+}
+
 export function VideoShowcase() {
   const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
-
-  const hasActiveVideo = activeVideoIndex !== null;
+  const isMounted = typeof window !== 'undefined';
 
   const activeVideo = useMemo(() => {
     if (activeVideoIndex === null) return null;
@@ -101,7 +122,7 @@ export function VideoShowcase() {
   };
 
   useEffect(() => {
-    if (!hasActiveVideo) return;
+    if (activeVideoIndex === null) return;
     if (typeof window === 'undefined') return;
 
     const prevBodyOverflow = document.body.style.overflow;
@@ -138,7 +159,7 @@ export function VideoShowcase() {
       document.documentElement.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevBodyOverflow;
     };
-  }, [hasActiveVideo]);
+  }, [activeVideoIndex]);
 
   return (
     <section className="relative z-10 py-16 sm:py-20 md:py-32 overflow-hidden border-y border-white/5 bg-black">
@@ -167,22 +188,22 @@ export function VideoShowcase() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 lg:gap-8 auto-rows-[auto] md:auto-rows-[200px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 lg:gap-8">
           {videoItems.map((item, index) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setActiveVideoIndex(index)}
-              className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer aspect-[3/5] min-h-[260px] md:min-h-0 md:aspect-auto text-left ${item.className}`}
+              className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)} ${item.gridClassName}`}
             >
               <Image
                 src={item.poster}
                 alt={item.title}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                className="object-contain transition-transform duration-1000 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-55" />
 
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-black/45 backdrop-blur-xl border border-white/25 text-white flex items-center justify-center shadow-2xl transition-transform duration-300 group-hover:scale-105">
@@ -190,14 +211,14 @@ export function VideoShowcase() {
                 </div>
               </div>
 
-              <div className="absolute top-6 right-6">
+              <div className="absolute top-4 right-4 md:top-6 md:right-6">
                 <span className="rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
                   0:01 Preview
                 </span>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
-                <h3 className="font-serif text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
+              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">
+                <h3 className="font-serif text-xl md:text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
                   {item.title}
                 </h3>
                 <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
@@ -209,58 +230,61 @@ export function VideoShowcase() {
         </div>
       </div>
 
-      {activeVideo ? (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 overflow-hidden"
-          onClick={closeLightbox}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${activeVideo.title} Video`}
-        >
-          <button
-            onClick={closeLightbox}
-            aria-label="Close"
-            className="fixed top-4 right-4 md:top-6 md:right-6 z-[10000] h-12 w-12 md:h-14 md:w-14 flex items-center justify-center rounded-full bg-white/90 text-black hover:bg-white transition-colors shadow-2xl"
-          >
-            <X className="h-6 w-6 md:h-7 md:w-7" />
-          </button>
-
-          <button
-            onClick={prevVideo}
-            aria-label="Previous video"
-            className="absolute left-4 md:left-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
-          >
-            <ChevronLeft size={48} />
-          </button>
-
-          <button
-            onClick={nextVideo}
-            aria-label="Next video"
-            className="absolute right-4 md:right-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
-          >
-            <ChevronRight size={48} />
-          </button>
-
-          <div
-            className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 md:p-12 flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative w-full h-full rounded-2xl overflow-hidden">
-              <video
-                key={activeVideo.src}
-                controls
-                autoPlay
-                playsInline
-                preload="metadata"
-                className="h-full w-full object-contain bg-black"
-                poster={activeVideo.poster}
+      {activeVideo && isMounted
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl animate-in fade-in duration-300"
+              onClick={closeLightbox}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${activeVideo.title} Video`}
+            >
+              <button
+                onClick={closeLightbox}
+                aria-label="Close"
+                className="fixed right-3 top-3 md:right-6 md:top-6 z-[10020] h-12 w-12 md:h-14 md:w-14 flex items-center justify-center rounded-full bg-white/90 text-black hover:bg-white transition-colors shadow-2xl ring-1 ring-black/20"
               >
-                <source src={activeVideo.src} type="video/mp4" />
-              </video>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <X className="h-6 w-6 md:h-7 md:w-7" />
+              </button>
+
+              <button
+                onClick={prevVideo}
+                aria-label="Previous video"
+                className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-[10010] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+              >
+                <ChevronLeft size={48} />
+              </button>
+
+              <button
+                onClick={nextVideo}
+                aria-label="Next video"
+                className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-[10010] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+              >
+                <ChevronRight size={48} />
+              </button>
+
+              <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-10">
+                <div
+                  className={`relative rounded-2xl overflow-hidden bg-black shadow-[0_30px_120px_rgba(0,0,0,0.75)] border border-white/10 ${getModalFrameClass(activeVideo.orientation)}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <video
+                    key={activeVideo.src}
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-contain bg-black"
+                    poster={activeVideo.poster}
+                  >
+                    <source src={activeVideo.src} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </section>
   );
 }
