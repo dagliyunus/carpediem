@@ -18,7 +18,9 @@ const images = [
   { url: '/images/Galerie_page/meal1.webp', alt: 'Kreativ angerichtetes Hauptgericht' },
   { url: '/images/Galerie_page/meal2.webp', alt: 'Kulinarische Kreation aus der Kueche' },
   { url: '/images/Galerie_page/table_meal.webp', alt: 'Serviertes Gericht auf dem Tisch' },
+  { url: '/images/Galerie_page/table_meal1.webp', alt: 'Gedeckter Tisch mit Spezialitaeten' },
   { url: '/images/Galerie_page/veggie.webp', alt: 'Frisches vegetarisches Gericht' },
+  { url: '/images/Galerie_page/Visitors1.webp', alt: 'Gaeste geniessen die Atmosphaere im Carpe Diem' },
 ];
 
 export default function GalleryPage() {
@@ -36,7 +38,7 @@ export default function GalleryPage() {
           {images.map((img, index) => (
             <div 
               key={index} 
-              className="group relative aspect-square overflow-hidden rounded-[2rem] shadow-2xl ring-1 ring-white/10"
+              className="group relative aspect-square overflow-hidden rounded-[2rem]"
             >
               <Image
                 src={img.url}
@@ -45,9 +47,6 @@ export default function GalleryPage() {
                 sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[2px]">
-                <span className="text-white font-bold tracking-[0.2em] uppercase text-xs border border-white/20 px-6 py-2 rounded-full bg-white/5">Ansehen</span>
-              </div>
             </div>
           ))}
         </div>

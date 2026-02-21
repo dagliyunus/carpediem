@@ -14,7 +14,6 @@ type VideoItem = {
   title: string;
   description: string;
   orientation: VideoOrientation;
-  gridClassName: string;
 };
 
 const videoItems: VideoItem[] = [
@@ -25,7 +24,6 @@ const videoItems: VideoItem[] = [
     title: 'Live Atmosphaere',
     description: 'Echte Stimmung aus unseren Abenden',
     orientation: 'portrait',
-    gridClassName: 'md:col-span-4',
   },
   {
     id: 2,
@@ -34,7 +32,6 @@ const videoItems: VideoItem[] = [
     title: 'Buehnenmomente',
     description: 'Musik, die den Raum fuellt',
     orientation: 'portrait',
-    gridClassName: 'md:col-span-4',
   },
   {
     id: 3,
@@ -43,7 +40,6 @@ const videoItems: VideoItem[] = [
     title: 'Premium Nights',
     description: 'Highlights im Carpe Diem',
     orientation: 'portrait',
-    gridClassName: 'md:col-span-4',
   },
   {
     id: 4,
@@ -52,7 +48,6 @@ const videoItems: VideoItem[] = [
     title: 'Crowd Energy',
     description: 'Publikum und Performance in Sync',
     orientation: 'portrait',
-    gridClassName: 'md:col-span-4',
   },
   {
     id: 5,
@@ -61,7 +56,6 @@ const videoItems: VideoItem[] = [
     title: 'After Dark',
     description: 'Unvergessliche Momente bei Nacht',
     orientation: 'landscape',
-    gridClassName: 'md:col-span-8',
   },
   {
     id: 6,
@@ -70,7 +64,6 @@ const videoItems: VideoItem[] = [
     title: 'Vibe Sessions',
     description: 'Rhythmus, Genuss und Emotion',
     orientation: 'landscape',
-    gridClassName: 'md:col-span-6',
   },
   {
     id: 7,
@@ -79,7 +72,6 @@ const videoItems: VideoItem[] = [
     title: 'Finale Impression',
     description: 'Der perfekte Abschluss des Abends',
     orientation: 'landscape',
-    gridClassName: 'md:col-span-6',
   },
 ];
 
@@ -97,6 +89,14 @@ function getModalFrameClass(orientation: VideoOrientation) {
 export function VideoShowcase() {
   const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
   const isMounted = typeof window !== 'undefined';
+  const portraitVideos = useMemo(
+    () => videoItems.filter((video) => video.orientation === 'portrait'),
+    []
+  );
+  const landscapeVideos = useMemo(
+    () => videoItems.filter((video) => video.orientation === 'landscape'),
+    []
+  );
 
   const activeVideo = useMemo(() => {
     if (activeVideoIndex === null) return null;
@@ -188,20 +188,22 @@ export function VideoShowcase() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 lg:gap-8">
-          {videoItems.map((item, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          {portraitVideos.map((item) => {
+            const index = videoItems.findIndex((video) => video.id === item.id);
+            return (
             <button
               key={item.id}
               type="button"
               onClick={() => setActiveVideoIndex(index)}
-              className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)} ${item.gridClassName}`}
+              className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)}`}
             >
               <Image
                 src={item.poster}
                 alt={item.title}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-contain transition-transform duration-1000 group-hover:scale-105"
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-55" />
 
@@ -226,7 +228,52 @@ export function VideoShowcase() {
                 </p>
               </div>
             </button>
-          ))}
+            );
+          })}
+        </div>
+
+        <div className="mt-4 md:mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          {landscapeVideos.map((item) => {
+            const index = videoItems.findIndex((video) => video.id === item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveVideoIndex(index)}
+                className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)}`}
+              >
+                <Image
+                  src={item.poster}
+                  alt={item.title}
+                  fill
+                  sizes="(min-width: 1536px) 33vw, (min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-55" />
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-black/45 backdrop-blur-xl border border-white/25 text-white flex items-center justify-center shadow-2xl transition-transform duration-300 group-hover:scale-105">
+                    <Play className="h-7 w-7 md:h-9 md:w-9 fill-current ml-1" />
+                  </div>
+                </div>
+
+                <div className="absolute top-4 right-4 md:top-6 md:right-6">
+                  <span className="rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
+                    0:01 Preview
+                  </span>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">
+                  <h3 className="font-serif text-xl md:text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
+                    {item.description}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
