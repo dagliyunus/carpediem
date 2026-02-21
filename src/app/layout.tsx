@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    other: {
+      "p:domain_verify": "b059be9c5bf8f0f2aa35ecd9c4e6144e",
+    },
+  },
 };
 
 export default function RootLayout({
