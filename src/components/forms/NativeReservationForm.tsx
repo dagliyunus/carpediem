@@ -5,9 +5,12 @@ import { Check, Calendar, Users, Clock, Info } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 
 type Step = 1 | 2 | 3;
+type ReservationStatus = 'idle' | 'sending' | 'error';
 
 export const NativeReservationForm = () => {
   const [step, setStep] = useState<Step>(1);
+  const [status, setStatus] = useState<ReservationStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -17,18 +20,54 @@ export const NativeReservationForm = () => {
     phone: '',
     note: '',
     consent: false,
+    company: '',
   });
 
   const timeSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'];
 
-  const handleNext = () => setStep((s) => (s + 1) as Step);
+  const handleNext = () => {
+    setErrorMessage('');
+    setStatus('idle');
+    setStep((s) => (s + 1) as Step);
+  };
   const handleBack = () => setStep((s) => (s - 1) as Step);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const canSubmitStepTwo =
+    formData.name.trim().length >= 2 &&
+    formData.email.trim().length > 3 &&
+    formData.phone.trim().length >= 6 &&
+    formData.consent;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate server action
-    console.log('Submitting reservation:', formData);
-    setStep(3);
+    if (status === 'sending') return;
+
+    setStatus('sending');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        setStatus('error');
+        setErrorMessage(
+          payload?.error || 'Reservierung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.'
+        );
+        return;
+      }
+
+      setStatus('idle');
+      setStep(3);
+    } catch {
+      setStatus('error');
+      setErrorMessage('Reservierung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
+    }
   };
 
   if (step === 3) {
@@ -40,7 +79,7 @@ export const NativeReservationForm = () => {
         <div className="space-y-4">
           <h2 className="font-serif text-4xl font-bold text-white tracking-tight">Vielen Dank für Ihre Reservierung!</h2>
           <p className="text-accent-200 text-lg font-light leading-relaxed max-w-md mx-auto">
-            Wir haben Ihre Anfrage erhalten und senden Ihnen in Kürze eine Bestätigung per E-Mail.
+            Wir haben Ihre Anfrage erhalten und melden uns schnellstmöglich per E-Mail oder Telefon bei Ihnen.
           </p>
         </div>
         <div className="pt-8">
@@ -67,6 +106,15 @@ export const NativeReservationForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="p-8 md:p-16 space-y-12">
+        <input
+          value={formData.company}
+          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+          name="company"
+          autoComplete="off"
+          tabIndex={-1}
+          className="hidden"
+        />
+
         {step === 1 && (
           <div className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-700">
             <div className="space-y-4">
@@ -238,12 +286,21 @@ export const NativeReservationForm = () => {
               </button>
               <button
                 type="submit"
+                disabled={!canSubmitStepTwo || status === 'sending'}
                 className="group relative flex-[2] h-16 bg-primary-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-primary-900/20 hover:bg-primary-500 transition-all duration-500 overflow-hidden"
               >
-                <span className="relative z-10">Reservierung absenden</span>
+                <span className="relative z-10">
+                  {status === 'sending' ? 'Senden…' : 'Reservierung absenden'}
+                </span>
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
               </button>
             </div>
+
+            {status === 'error' ? (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-100">
+                {errorMessage}
+              </div>
+            ) : null}
           </div>
         )}
       </form>

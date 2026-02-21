@@ -34,3 +34,22 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Reservation Email Setup (Production)
+
+The page `/reservieren` sends reservation requests through `/api/reservations`.
+Set these environment variables in Vercel Project Settings:
+
+```bash
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+RESERVATION_FROM_EMAIL=
+RESERVATION_TO_EMAIL=viktoriia@carpediem-badsaarow.de
+```
+
+Notes:
+- `RESERVATION_TO_EMAIL` defaults to `viktoriia@carpediem-badsaarow.de` if omitted.
+- `RESERVATION_FROM_EMAIL` should be a mailbox allowed by your SMTP provider.
