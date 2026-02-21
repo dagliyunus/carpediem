@@ -1,0 +1,266 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+type VideoItem = {
+  id: number;
+  src: string;
+  poster: string;
+  title: string;
+  description: string;
+  className: string;
+};
+
+const videoItems: VideoItem[] = [
+  {
+    id: 1,
+    src: '/images/videos/1.mp4',
+    poster: '/images/videos/1-poster.webp',
+    title: 'Live Atmosphaere',
+    description: 'Echte Stimmung aus unseren Abenden',
+    className: 'md:col-span-8 md:row-span-2',
+  },
+  {
+    id: 2,
+    src: '/images/videos/2.mp4',
+    poster: '/images/videos/2-poster.webp',
+    title: 'Buehnenmomente',
+    description: 'Musik, die den Raum fuellt',
+    className: 'md:col-span-4 md:row-span-2',
+  },
+  {
+    id: 3,
+    src: '/images/videos/3.mp4',
+    poster: '/images/videos/3-poster.webp',
+    title: 'Premium Nights',
+    description: 'Highlights im Carpe Diem',
+    className: 'md:col-span-8 md:row-span-2',
+  },
+  {
+    id: 4,
+    src: '/images/videos/4.mp4',
+    poster: '/images/videos/4-poster.webp',
+    title: 'Crowd Energy',
+    description: 'Publikum und Performance in Sync',
+    className: 'md:col-span-4 md:row-span-2',
+  },
+  {
+    id: 5,
+    src: '/images/videos/5.mp4',
+    poster: '/images/videos/5-poster.webp',
+    title: 'After Dark',
+    description: 'Unvergessliche Momente bei Nacht',
+    className: 'md:col-span-8 md:row-span-2',
+  },
+  {
+    id: 6,
+    src: '/images/videos/6.mp4',
+    poster: '/images/videos/6-poster.webp',
+    title: 'Vibe Sessions',
+    description: 'Rhythmus, Genuss und Emotion',
+    className: 'md:col-span-4 md:row-span-2',
+  },
+  {
+    id: 7,
+    src: '/images/videos/7.mp4',
+    poster: '/images/videos/7-poster.webp',
+    title: 'Finale Impression',
+    description: 'Der perfekte Abschluss des Abends',
+    className: 'md:col-span-8 md:col-start-3 md:row-span-2',
+  },
+];
+
+export function VideoShowcase() {
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
+
+  const hasActiveVideo = activeVideoIndex !== null;
+
+  const activeVideo = useMemo(() => {
+    if (activeVideoIndex === null) return null;
+    return videoItems[activeVideoIndex] ?? null;
+  }, [activeVideoIndex]);
+
+  const closeLightbox = () => setActiveVideoIndex(null);
+
+  const nextVideo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveVideoIndex((prev) => {
+      if (prev === null) return prev;
+      return (prev + 1) % videoItems.length;
+    });
+  };
+
+  const prevVideo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveVideoIndex((prev) => {
+      if (prev === null) return prev;
+      return (prev - 1 + videoItems.length) % videoItems.length;
+    });
+  };
+
+  useEffect(() => {
+    if (!hasActiveVideo) return;
+    if (typeof window === 'undefined') return;
+
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeLightbox();
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        setActiveVideoIndex((prev) => {
+          if (prev === null) return prev;
+          return (prev + 1) % videoItems.length;
+        });
+      }
+
+      if (e.key === 'ArrowLeft') {
+        setActiveVideoIndex((prev) => {
+          if (prev === null) return prev;
+          return (prev - 1 + videoItems.length) % videoItems.length;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [hasActiveVideo]);
+
+  return (
+    <section className="relative z-10 py-16 sm:py-20 md:py-32 overflow-hidden border-y border-white/5 bg-black">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(219,165,93,0.05),transparent_70%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black" />
+      </div>
+
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <div className="relative text-center mb-12 sm:mb-16 md:mb-24 space-y-4 sm:space-y-5 md:space-y-6">
+          <div className="inline-flex items-center gap-4 justify-center opacity-80 relative z-10">
+            <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary-400">
+              Live Videos
+            </span>
+            <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+          </div>
+
+          <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white drop-shadow-lg">
+            <span className="text-white md:bg-gradient-to-b md:from-white md:via-white/90 md:to-white/40 md:bg-clip-text md:text-transparent">
+              Video Showcase
+            </span>
+          </h2>
+          <p className="text-white/80 max-w-2xl mx-auto font-light text-base sm:text-lg drop-shadow-md">
+            Vorschau aus der ersten Sekunde. Das eigentliche Video wird nur beim Klick geladen.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 lg:gap-8 auto-rows-[auto] md:auto-rows-[200px]">
+          {videoItems.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveVideoIndex(index)}
+              className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer aspect-[3/5] min-h-[260px] md:min-h-0 md:aspect-auto text-left ${item.className}`}
+            >
+              <Image
+                src={item.poster}
+                alt={item.title}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-50" />
+
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-black/45 backdrop-blur-xl border border-white/25 text-white flex items-center justify-center shadow-2xl transition-transform duration-300 group-hover:scale-105">
+                  <Play className="h-7 w-7 md:h-9 md:w-9 fill-current ml-1" />
+                </div>
+              </div>
+
+              <div className="absolute top-6 right-6">
+                <span className="rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
+                  0:01 Preview
+                </span>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
+                <h3 className="font-serif text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
+                  {item.description}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeVideo ? (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 overflow-hidden"
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${activeVideo.title} Video`}
+        >
+          <button
+            onClick={closeLightbox}
+            aria-label="Close"
+            className="fixed top-4 right-4 md:top-6 md:right-6 z-[10000] h-12 w-12 md:h-14 md:w-14 flex items-center justify-center rounded-full bg-white/90 text-black hover:bg-white transition-colors shadow-2xl"
+          >
+            <X className="h-6 w-6 md:h-7 md:w-7" />
+          </button>
+
+          <button
+            onClick={prevVideo}
+            aria-label="Previous video"
+            className="absolute left-4 md:left-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+          >
+            <ChevronLeft size={48} />
+          </button>
+
+          <button
+            onClick={nextVideo}
+            aria-label="Next video"
+            className="absolute right-4 md:right-8 z-[10000] p-4 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all hidden md:block"
+          >
+            <ChevronRight size={48} />
+          </button>
+
+          <div
+            className="relative w-full h-full max-w-7xl max-h-[90vh] p-4 md:p-12 flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full h-full rounded-2xl overflow-hidden">
+              <video
+                key={activeVideo.src}
+                controls
+                autoPlay
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-contain bg-black"
+                poster={activeVideo.poster}
+              >
+                <source src={activeVideo.src} type="video/mp4" />
+              </video>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}

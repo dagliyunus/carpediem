@@ -3,6 +3,7 @@ import { SignatureDishes } from "@/components/sections/SignatureDishes";
 import { FishShowcase } from "@/components/sections/FishShowcase";
 import { SocialMedia } from "@/components/sections/SocialMedia";
 import { MusicSection } from "@/components/sections/MusicSection";
+import { VideoShowcase } from "@/components/sections/VideoShowcase";
 import { LocalRelevance } from "@/components/sections/LocalRelevance";
 import { ContactFormSection } from "@/components/sections/ContactFormSection";
 import { Reveal } from "@/components/ui/Reveal";
@@ -22,6 +23,9 @@ export default function Home() {
         <SocialMedia />
       </Reveal>
       <MusicSection />
+      <Reveal delayMs={140}>
+        <VideoShowcase />
+      </Reveal>
       <Reveal delayMs={200}>
         <LocalRelevance />
       </Reveal>
