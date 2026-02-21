@@ -46,6 +46,7 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=
 SMTP_PASS=
+RESERVATION_FROM_NAME=Neu Tischreservierung
 RESERVATION_FROM_EMAIL=
 RESERVATION_TO_EMAIL=viktoriia@carpediem-badsaarow.de
 ```

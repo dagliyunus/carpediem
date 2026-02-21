@@ -127,6 +127,7 @@ export async function POST(req: Request) {
   const reservationTo =
     normalize(process.env.RESERVATION_TO_EMAIL) || 'viktoriia@carpediem-badsaarow.de';
   const reservationFrom = normalize(process.env.RESERVATION_FROM_EMAIL) || smtpUser;
+  const reservationFromName = normalize(process.env.RESERVATION_FROM_NAME) || 'Neu Tischreservierung';
 
   try {
     const transporter = nodemailer.createTransport({
@@ -148,7 +149,7 @@ export async function POST(req: Request) {
     const safeNote = escapeHtml(note || '-');
 
     await transporter.sendMail({
-      from: reservationFrom,
+      from: `"${reservationFromName}" <${reservationFrom}>`,
       to: reservationTo,
       replyTo: email,
       subject: `Neue Tischreservierung: ${date} ${time} (${guests} Pers.)`,
