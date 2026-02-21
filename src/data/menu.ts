@@ -1,61 +1,110 @@
-import { MenuItem, MenuCategory } from '@/types';
+export type MenuRowStyle = 'default' | 'addon' | 'bullet';
 
-export const menuCategories: MenuCategory[] = [
-  { id: 'starters', name: 'Vorspeisen', slug: 'vorspeisen', description: 'Leichte mediterrane Köstlichkeiten für den perfekten Start.' },
-  { id: 'main', name: 'Hauptspeisen', slug: 'hauptspeisen', description: 'Frischer Fisch, zartes Fleisch und vegetarische Kreationen.' },
-  { id: 'desserts', name: 'Desserts', slug: 'desserts', description: 'Hausgemachte Süßspeisen für den krönenden Abschluss.' },
+export type MenuRow = {
+  name: string;
+  price: string;
+  details?: string[];
+  style?: MenuRowStyle;
+};
+
+export const aegeisCuisineItems: MenuRow[] = [
+  {
+    name: 'Tagessuppe',
+    price: '7,- €',
+    details: ['(bitte bei der Bedienung erfragen...)'],
+  },
+  { name: 'Bunter Salatteller mit Baguette', price: '10,50 €' },
+  { name: '+ Halloumi', price: '13,50 €', style: 'addon' },
+  { name: '+ Ziegenkäse und Oliven', price: '13,50 €', style: 'addon' },
+  { name: '+ Garnelen', price: '18,50 €', style: 'addon' },
+  {
+    name: '+ Meeresfrüchte',
+    price: '18,50 €',
+    style: 'addon',
+    details: ['(Calamari, Oktopus, Jakobsmuscheln)', 'je nach Verfügbarkeit'],
+  },
+  { name: '+ Hähnchen', price: '16,50 €', style: 'addon' },
+  { name: 'Gemüseteller vom Grill', price: '16,50 €' },
+  {
+    name: 'Zucchini Bouletten',
+    price: '15,50 €',
+    details: ['mit Salat und Cacik'],
+  },
 ];
 
-export const menuItems: MenuItem[] = [
+export const grillItems: MenuRow[] = [
+  { name: 'Rinderbouletten, 3 Stück, ca. 290g', price: '18,50 €' },
+  { name: 'Lammfilet, ca. 250g', price: '26,00 €' },
   {
-    id: '1',
-    name: 'Griechischer Bauernsalat',
-    description: 'Mit original Feta, Oliven, Paprika, Gurken und extra nativem Olivenöl.',
-    price: 14.50,
-    allergens: ['G'],
-    isVegetarian: true,
-    category: 'starters',
+    name: 'Bifteki gefüllt mit Käse, Tomate und Metaxa-Sauce',
+    price: '26,00 €',
   },
-  {
-    id: '2',
-    name: 'Gegrillter Oktopus',
-    description: 'Auf Fava-Püree mit karamellisierten Zwiebeln und Kapernäpfeln.',
-    price: 24.50,
-    allergens: ['R', 'N'],
-    isPopular: true,
-    category: 'starters',
-  },
-  {
-    id: '3',
-    name: 'Lammkarree in Kräuterkruste',
-    description: 'Mit Ratatouille-Gemüse und Rosmarinkartoffeln.',
-    price: 32.00,
-    allergens: ['A', 'C', 'G'],
-    isPopular: true,
-    category: 'main',
-  },
-  {
-    id: '4',
-    name: 'Dorade Royal im Ganzen',
-    description: 'Vom Grill mit mediterranem Gemüse und Zitronen-Öl-Dressing.',
-    price: 28.50,
-    allergens: ['D'],
-    category: 'main',
-  },
-  {
-    id: '5',
-    name: 'Moussaka Tradizionale',
-    description: 'Auberginenauflauf mit Hackfleisch und Béchamelsauce.',
-    price: 18.50,
-    allergens: ['A', 'G'],
-    category: 'main',
-  },
-  {
-    id: '6',
-    name: 'Hausgemachtes Baklava',
-    description: 'Mit Pistazien und einer Kugel Vanilleeis.',
-    price: 9.50,
-    allergens: ['A', 'H', 'G'],
-    category: 'desserts',
-  },
+  { name: 'Hähnchenbrüste, ca. 250g', price: '22,00 €' },
+  { name: 'Fleischteller mit drei Fleischsorten', price: '26,50 €' },
+  { name: 'Zanderfilet', price: '19,50 €' },
+  { name: 'Wolfsbarschfilet', price: '19,50 €' },
+  { name: 'Lachsfilet', price: '19,50 €' },
+  { name: 'Welsfilet', price: '18,50 €' },
+  { name: 'Fischteller mit drei Fischsorten', price: '26,50 €' },
+  { name: 'Meeresfrüchteplatte mit Salat und Salicome', price: '26,50 €' },
 ];
+
+export const burgerColumns: MenuRow[][] = [
+  [
+    { name: 'Hamburger, ca. 200 g aus 100% Rind', price: '13,50 €' },
+    { name: 'Cheeseburger, ca. 200 g', price: '15,50 €' },
+    { name: 'Fischburger', price: '12,50 €' },
+  ],
+  [
+    { name: 'Crispy Chicken Burger, ca. 135 g', price: '12,- €' },
+    {
+      name: 'Wagyu-Burger, ca. 200g',
+      price: '20,- €',
+      details: ['(japanisches Rindergehacktes)', 'je nach Verfügbarkeit'],
+    },
+    { name: 'Veggie-Burger mit Halloumi', price: '12,50 €' },
+  ],
+];
+
+export const sideDishColumns: MenuRow[][] = [
+  [
+    {
+      name: 'Kartoffelecken mit Knoblauchjoghurt',
+      price: '7,- €',
+      style: 'bullet',
+    },
+    {
+      name: 'Rosmarinkartoffeln mit Knoblauchjoghurt',
+      price: '7,- €',
+      style: 'bullet',
+    },
+    {
+      name: 'Tagesbeilage',
+      price: '8,- €',
+      style: 'bullet',
+      details: ['(bitte bei der Bedienung erfragen)'],
+    },
+    {
+      name: 'Salicorne (Meerespargel) Salat,',
+      price: '9,- €',
+      style: 'bullet',
+      details: ['mit Tomaten, Zwiebeln und Brot'],
+    },
+  ],
+  [
+    { name: 'Käse und Oliven', price: '12,50 €', style: 'bullet' },
+    {
+      name: 'Cacik mit Baguette',
+      price: '7,50 €',
+      style: 'bullet',
+      details: ['(Knoblauchjoghurt mit Gurke und Olivenöl)'],
+    },
+  ],
+];
+
+export const menuServiceNote = 'Alle Gerichte werden mit Salat und Beilage serviert.';
+
+export const fishDisplayHeadline = 'Wechselnde Fischangebote aus der Vitrine';
+
+export const saladNote =
+  'Für unsere Salate verwenden wir ausschließlich Olivenöl, Zitrone und Granatapfelnektar.';
