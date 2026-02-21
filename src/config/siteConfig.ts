@@ -20,10 +20,10 @@ export const siteConfig = {
     phone: '+49 33631 123456', // Placeholder
     email: 'info@carpediem-badsaarow.de', // Placeholder
     socials: {
-      instagram: 'https://instagram.com/carpediem_badsaarow',
+      instagram: 'https://instagram.com/carpediembadsaarow',
       facebook: 'https://facebook.com/carpediem_badsaarow',
       tiktok: 'https://tiktok.com/@carpediem_badsaarow',
-      pinterest: 'https://pinterest.com/carpediem_badsaarow',
+      pinterest: 'https://pinterest.com/carpediembadsaarow',
     },
   },
   reservations: {

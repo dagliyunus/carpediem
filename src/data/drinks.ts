@@ -237,3 +237,18 @@ export const rightDrinkSections: DrinkSection[] = [
     ],
   },
 ];
+
+export const drinkAllergenInfo: string[] = [
+  'A - mit glutenhaltigem Getreide (Weizen)',
+  'D - Milch oder Milchprodukte, Laktose',
+];
+
+export const drinkAdditiveInfo: string[] = [
+  '1 - mit Farbstoff',
+  '2 - koffeinhaltig',
+  '3 - chininhaltig',
+  '4 - mit Süßungsmitteln',
+  '5 - mit Konservierungsstoff',
+  '6 - mit Antioxidationsmittel',
+  '7 - mit Geschmacksverstärker',
+];

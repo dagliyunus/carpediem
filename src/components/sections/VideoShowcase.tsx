@@ -213,12 +213,6 @@ export function VideoShowcase() {
                 </div>
               </div>
 
-              <div className="absolute top-4 right-4 md:top-6 md:right-6">
-                <span className="rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
-                  0:01 Preview
-                </span>
-              </div>
-
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">
                 <h3 className="font-serif text-xl md:text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
                   {item.title}
@@ -255,12 +249,6 @@ export function VideoShowcase() {
                   <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-black/45 backdrop-blur-xl border border-white/25 text-white flex items-center justify-center shadow-2xl transition-transform duration-300 group-hover:scale-105">
                     <Play className="h-7 w-7 md:h-9 md:w-9 fill-current ml-1" />
                   </div>
-                </div>
-
-                <div className="absolute top-4 right-4 md:top-6 md:right-6">
-                  <span className="rounded-full border border-white/30 bg-black/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
-                    0:01 Preview
-                  </span>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">

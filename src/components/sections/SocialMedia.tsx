@@ -42,10 +42,10 @@ const socialCards = [
   {
     id: 'instagram',
     name: 'Instagram',
-    handle: '@carpediem_badsaarow',
+    handle: '@carpediembadsaarow',
     icon: <Instagram className="w-6 h-6" />,
     officialLogo: OfficialLogos.instagram,
-    color: 'hover:text-[#E4405F]',
+    color: 'text-[#E4405F] md:text-white md:group-hover:text-[#E4405F]',
     bgGradient: 'from-[#833AB4] via-[#FD1D1D] to-[#FCB045]',
     description: 'Tägliche Impressionen & Stories aus unserer Küche.',
     link: siteConfig.contact.socials.instagram,
@@ -57,7 +57,7 @@ const socialCards = [
     handle: '@carpediem_bs',
     icon: <Music2 className="w-6 h-6" />,
     officialLogo: OfficialLogos.tiktok,
-    color: 'hover:text-[#00F2EA]',
+    color: 'text-[#00F2EA] md:text-white md:group-hover:text-[#00F2EA]',
     bgGradient: 'from-[#000000] via-[#EE1D52] to-[#69C9D0]',
     description: 'Behind the Scenes & kulinarische Kurzvideos.',
     link: siteConfig.contact.socials.tiktok,
@@ -66,10 +66,10 @@ const socialCards = [
   {
     id: 'pinterest',
     name: 'Pinterest',
-    handle: 'Carpe Diem Bad Saarow',
+    handle: '@carpediembadsaarow',
     icon: <Pin className="w-6 h-6" />,
     officialLogo: OfficialLogos.pinterest,
-    color: 'hover:text-[#BD081C]',
+    color: 'text-[#BD081C] md:text-white md:group-hover:text-[#BD081C]',
     bgGradient: 'from-[#BD081C] to-[#820000]',
     description: 'Inspirationen für Ihre nächste Feier & Tischdeko.',
     link: siteConfig.contact.socials.pinterest,
@@ -98,26 +98,26 @@ export const SocialMedia = () => {
               href={card.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block aspect-[4/5] overflow-hidden rounded-[3rem] bg-[#0B0F12] border border-white/5 transition-all duration-700 hover:-translate-y-2 hover:border-primary-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+              className="group relative block aspect-[4/5] overflow-hidden rounded-[3rem] bg-[#0B0F12] border border-primary-500/30 md:border-white/5 transition-all duration-700 md:hover:-translate-y-2 md:hover:border-primary-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
             >
               {/* Matte Texture Overlay */}
               <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
               
               {/* Official Branding Background */}
               <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} opacity-[0.05] group-hover:opacity-[0.12] transition-opacity duration-700`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} opacity-[0.12] md:opacity-[0.05] md:group-hover:opacity-[0.12] transition-opacity duration-700`} />
                 
                 {/* Large Official Platform Logo */}
-                <div className={`relative transform transition-all duration-1000 group-hover:scale-110 group-hover:saturate-150 opacity-40 group-hover:opacity-90 w-1/2 h-1/2 flex items-center justify-center`}>
+                <div className="relative transform transition-all duration-1000 w-1/2 h-1/2 flex items-center justify-center opacity-90 scale-110 saturate-150 md:opacity-40 md:scale-100 md:saturate-100 md:group-hover:scale-110 md:group-hover:saturate-150 md:group-hover:opacity-90">
                   {card.officialLogo}
                 </div>
 
                 {/* Subtle Radial Glow */}
-                <div className="absolute inset-0 bg-radial-gradient from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                <div className="absolute inset-0 bg-radial-gradient from-white/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-1000" />
               </div>
               
               {/* Branding Watermark - No Text */}
-              <div className="absolute top-8 right-8 opacity-30 group-hover:opacity-90 transition-opacity duration-700 scale-75 origin-top-right">
+              <div className="absolute top-8 right-8 opacity-90 md:opacity-30 md:group-hover:opacity-90 transition-opacity duration-700 scale-75 origin-top-right">
                 <Logo showText={false} />
               </div>
 
@@ -138,14 +138,14 @@ export const SocialMedia = () => {
                     <h3 className="font-serif text-3xl font-bold text-white tracking-tight">{card.name}</h3>
                     <p className="text-primary-400 text-sm font-medium tracking-wide">{card.handle}</p>
                   </div>
-                  <p className="text-accent-300 text-sm leading-relaxed font-light opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                  <p className="text-accent-300 text-sm leading-relaxed font-light opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-500">
                     {card.description}
                   </p>
                   
                   <div className="pt-4">
-                    <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white group-hover:text-primary-400 transition-colors">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-400 md:text-white md:group-hover:text-primary-400 transition-colors">
                       <span>Kanal entdecken</span>
-                      <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+                      <span className="text-lg transition-transform md:group-hover:translate-x-1">→</span>
                     </div>
                   </div>
                 </div>

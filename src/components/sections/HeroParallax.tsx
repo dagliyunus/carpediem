@@ -52,7 +52,7 @@ export function HeroParallax() {
   }, []);
 
   const bgScale = 1 + progress * 0.05;
-  const bgY = progress * 30; // Subtle parallax for the SVG itself
+  const bgY = progress * 30; // Subtle parallax for the hero background image
   const contentOpacity = 1 - progress * 1.5;
   const contentY = progress * -50;
 
@@ -67,24 +67,14 @@ export function HeroParallax() {
           }}
         >
           {bgReady ? (
-            <>
-              <Image
-                src="/images/hero-bg-premium-mobile.svg"
-                alt="Carpe Diem Premium Background"
-                fill
-                sizes="100vw"
-                fetchPriority="low"
-                className="object-cover opacity-90 md:hidden"
-              />
-              <Image
-                src="/images/hero-bg-premium.svg"
-                alt="Carpe Diem Premium Background"
-                fill
-                sizes="100vw"
-                fetchPriority="low"
-                className="object-cover opacity-90 hidden md:block"
-              />
-            </>
+            <Image
+              src="/images/outside_night.webp"
+              alt="Carpe Diem Außenansicht bei Nacht"
+              fill
+              sizes="100vw"
+              fetchPriority="low"
+              className="object-cover opacity-80"
+            />
           ) : null}
         </div>
 
@@ -93,7 +83,7 @@ export function HeroParallax() {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%), linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.8) 100%)',
+              'radial-gradient(circle at 0% 0%, rgba(0,0,0,0.62) 0%, transparent 36%), radial-gradient(circle at 100% 0%, rgba(0,0,0,0.62) 0%, transparent 36%), radial-gradient(circle at 0% 100%, rgba(0,0,0,0.72) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.72) 0%, transparent 40%), linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.24) 38%, rgba(0,0,0,0.68) 100%)',
           }}
         />
       </div>

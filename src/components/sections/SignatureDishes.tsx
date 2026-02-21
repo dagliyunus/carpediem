@@ -31,10 +31,12 @@ const weeklySpecials = [
     day: 'Jeden Donnerstag',
     title: 'Argentinischer Entrecate',
     description: 'ca. 200 gr mit Rosmarinkartoffeln und Salat',
+    price: '22,- €',
   },
   {
     day: 'Jeden Freitag',
     title: 'Sphagetti',
+    price: 'je 14,- €',
     options: [
       'mit Lachs und Parmesan',
       'mit Haehnchenbrustfilet',
@@ -44,6 +46,7 @@ const weeklySpecials = [
   {
     day: 'Jeden Sonntag',
     title: 'Manti',
+    price: '12,50 €',
     description:
       'mit Hackfleisch gefullte Teigtaschen, dazu Joghurt-Knoblauch-Sosse',
   },
@@ -107,6 +110,11 @@ export const SignatureDishes = () => {
                         ))}
                       </ul>
                     ) : null}
+                    <div className="pt-3">
+                      <p className="font-serif text-4xl md:text-5xl font-bold text-primary-300 tracking-tight">
+                        {special.price}
+                      </p>
+                    </div>
                   </div>
                 </article>
               ))}

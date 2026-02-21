@@ -1,7 +1,13 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/siteConfig';
-import { DrinkRow, leftDrinkSections, rightDrinkSections } from '@/data/drinks';
+import {
+  DrinkRow,
+  drinkAdditiveInfo,
+  drinkAllergenInfo,
+  leftDrinkSections,
+  rightDrinkSections,
+} from '@/data/drinks';
 
 export const metadata: Metadata = {
   title: 'Getränke',
@@ -111,6 +117,39 @@ export default function DrinksPage() {
               ))}
             </div>
           </div>
+
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 md:p-8 space-y-8">
+            <div className="text-center space-y-3">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-300">
+                Allergene & Zusatzstoffe
+              </h2>
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent mx-auto" />
+            </div>
+
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-white text-xl">Allergene</h3>
+                <ul className="space-y-2">
+                  {drinkAllergenInfo.map((item) => (
+                    <li key={item} className="text-accent-200 leading-relaxed">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-white text-xl">Zusatzstoffe</h3>
+                <ul className="space-y-2">
+                  {drinkAdditiveInfo.map((item) => (
+                    <li key={item} className="text-accent-200 leading-relaxed">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
