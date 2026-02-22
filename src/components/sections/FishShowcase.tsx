@@ -67,6 +67,14 @@ const showcaseItems = [
     description: 'Frisch gefangen und perfekt gekühlt',
     className: 'md:col-span-8 md:col-start-3 md:row-span-2', // Horizontal Centered
   },
+  {
+    id: 8,
+    src: '/images/fish/fish11.webp',
+    alt: 'Premium Meeresküche',
+    title: 'Signature Selection',
+    description: 'Neue Genussmomente aus unserer Fischtheke',
+    className: 'md:col-span-8 md:col-start-3 md:row-span-2', // Horizontal Centered
+  },
 ];
 
 export function FishShowcase() {
