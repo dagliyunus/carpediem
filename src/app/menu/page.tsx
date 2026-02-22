@@ -9,7 +9,6 @@ import {
   saladNote,
   sideDishColumns,
 } from '@/data/menu';
-import { siteConfig } from '@/config/siteConfig';
 
 export const metadata: Metadata = {
   title: 'Speisekarte',
@@ -58,17 +57,6 @@ export default function MenuPage() {
               Mediterrane Spezialitäten aus der Ägäis, Grillgerichte, Burger und Vorspeisen
               mit allen aktuellen Angaben aus unserer Karte.
             </p>
-            <div className="pt-8">
-              <a 
-                href={siteConfig.menu.pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 text-sm font-bold text-primary-400 hover:text-primary-300 transition-colors uppercase tracking-widest group"
-              >
-                <span>Speisekarte als PDF laden</span>
-                <span className="text-lg transition-transform group-hover:translate-y-1">↓</span>
-              </a>
-            </div>
           </div>
 
           <section className="space-y-10">

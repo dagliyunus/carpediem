@@ -73,7 +73,7 @@ export function HeroParallax() {
               fill
               sizes="100vw"
               fetchPriority="low"
-              className="object-cover opacity-80"
+              className="object-cover opacity-85"
             />
           ) : null}
         </div>
@@ -83,7 +83,7 @@ export function HeroParallax() {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 0% 0%, rgba(0,0,0,0.62) 0%, transparent 36%), radial-gradient(circle at 100% 0%, rgba(0,0,0,0.62) 0%, transparent 36%), radial-gradient(circle at 0% 100%, rgba(0,0,0,0.72) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.72) 0%, transparent 40%), linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.24) 38%, rgba(0,0,0,0.68) 100%)',
+              'radial-gradient(circle at 0% 0%, rgba(0,0,0,0.28) 0%, transparent 40%), radial-gradient(circle at 100% 0%, rgba(0,0,0,0.28) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(0,0,0,0.34) 0%, transparent 46%), radial-gradient(circle at 100% 100%, rgba(0,0,0,0.34) 0%, transparent 46%), linear-gradient(to bottom, rgba(0,0,0,0.26) 0%, rgba(0,0,0,0.10) 40%, rgba(0,0,0,0.34) 100%)',
           }}
         />
       </div>
@@ -100,7 +100,7 @@ export function HeroParallax() {
           <div className="max-w-5xl mx-auto space-y-12">
             <div className="space-y-8">
               <div className="flex flex-col items-center gap-4 animate-fade-in">
-                <span className="text-[11px] font-bold uppercase tracking-[0.6em] text-primary-400">Exzellenz & Leidenschaft</span>
+                <span className="text-sm md:text-base font-bold uppercase tracking-[0.6em] text-primary-400">Exzellenz & Leidenschaft</span>
                 <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
               </div>
               <h1 className="font-sans md:font-serif text-5xl md:text-9xl lg:text-[11rem] font-bold leading-[0.84] tracking-tighter">

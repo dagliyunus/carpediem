@@ -134,7 +134,7 @@ export function FishShowcase() {
           </div>
           <div className="inline-flex items-center gap-4 justify-center opacity-80 relative z-10">
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary-400">
+            <span className="text-sm md:text-base font-bold uppercase tracking-[0.4em] text-primary-400">
               Unsere Fischtheke
             </span>
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />

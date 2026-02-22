@@ -58,7 +58,7 @@ export const SignatureDishes = () => {
       <div className="w-full">
         <div className="container mx-auto px-4 md:px-6 mb-16">
           <div className="text-center space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-[0.5em] text-primary-400">Kulinarische Highlights</h2>
+            <h2 className="text-lg md:text-xl font-bold uppercase tracking-[0.5em] text-primary-400">Kulinarische Highlights</h2>
             <p className="font-serif text-5xl md:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-b from-white via-white/90 to-white/40 bg-clip-text text-transparent inline-block pb-2">
                 Unsere Empfehlungen
@@ -75,7 +75,7 @@ export const SignatureDishes = () => {
         <div className="container mx-auto px-4 md:px-6 mt-14 md:mt-18">
           <div className="rounded-[2.25rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 md:p-8 lg:p-10 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.65)]">
             <div className="mb-8 text-center space-y-3">
-              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.45em] text-primary-400">
+              <p className="text-sm md:text-base font-bold uppercase tracking-[0.45em] text-primary-400">
                 Wochen-Spezialitaeten
               </p>
               <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-primary-500/60 to-transparent" />

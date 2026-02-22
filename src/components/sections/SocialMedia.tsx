@@ -82,7 +82,7 @@ export const SocialMedia = () => {
     <section className="py-32 bg-transparent relative z-10">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center space-y-4 mb-20">
-          <h2 className="text-sm font-bold uppercase tracking-[0.5em] text-primary-400">Social Connect</h2>
+          <h2 className="text-lg md:text-xl font-bold uppercase tracking-[0.5em] text-primary-400">Social Connect</h2>
           <p className="font-serif text-5xl md:text-7xl font-bold tracking-tight">
             <span className="bg-gradient-to-b from-white via-white/90 to-white/40 bg-clip-text text-transparent inline-block pb-2">
               Bleiben Sie inspiriert
@@ -157,9 +157,9 @@ export const SocialMedia = () => {
 
         {/* Collaboration Note */}
         <div className="mt-20 text-center">
-          <p className="text-accent-400 text-sm font-light tracking-wide italic">
+          <p className="text-accent-300 text-base md:text-lg font-light tracking-wide italic">
             Sie sind Content Creator oder möchten mit uns kooperieren? 
-            <a href={`mailto:${siteConfig.contact.email}`} className="text-primary-400 font-bold hover:underline ml-2 not-italic">
+            <a href={`mailto:${siteConfig.contact.email}`} className="text-primary-400 font-bold hover:underline ml-2 not-italic text-base md:text-lg">
               Lassen Sie uns sprechen.
             </a>
           </p>

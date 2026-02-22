@@ -67,7 +67,7 @@ export default function ReservationPage() {
                   </p>
                 </div>
                 <a 
-                  href={`tel:${siteConfig.contact.phone}`} 
+                  href={`tel:${siteConfig.contact.phone.replace(/\s/g, '')}`} 
                   className="inline-flex h-12 items-center justify-center rounded-full bg-primary-600/10 border border-primary-500/20 px-8 text-sm font-bold text-primary-400 hover:bg-primary-600 hover:text-white transition-all shadow-lg"
                 >
                   {siteConfig.contact.phone}

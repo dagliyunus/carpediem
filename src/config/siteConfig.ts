@@ -17,8 +17,8 @@ export const siteConfig = {
     { days: 'So', open: '12:00', close: '20:00' },
   ],
   contact: {
-    phone: '+49 33631 123456', // Placeholder
-    email: 'info@carpediem-badsaarow.de', // Placeholder
+    phone: '0175 6729130',
+    email: 'viktoriia@carpediem-badsaarow.de',
     socials: {
       instagram: 'https://instagram.com/carpediembadsaarow',
       facebook: 'https://facebook.com/carpediem_badsaarow',

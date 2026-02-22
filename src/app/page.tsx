@@ -36,7 +36,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Reveal className="space-y-8">
               <div className="flex flex-col items-center gap-4">
-                <span className="text-[11px] font-bold uppercase tracking-[0.6em] text-primary-400">Unsere Philosophie</span>
+                <span className="text-sm md:text-base font-bold uppercase tracking-[0.6em] text-primary-400">Unsere Philosophie</span>
                 <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
               </div>
               <h2 className="font-serif text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter">

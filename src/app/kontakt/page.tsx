@@ -44,7 +44,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <h3 className="font-bold text-white text-lg tracking-wide">Telefon</h3>
                     <p className="text-accent-300 text-sm leading-relaxed font-light">
-                      <a href={`tel:${siteConfig.contact.phone}`} className="hover:text-primary-400 transition-colors">
+                      <a href={`tel:${siteConfig.contact.phone.replace(/\s/g, '')}`} className="hover:text-primary-400 transition-colors">
                         {siteConfig.contact.phone}
                       </a>
                     </p>

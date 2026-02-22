@@ -33,10 +33,10 @@ export const MusicSection = () => {
                     fill
                     className="object-cover transition-transform duration-[2s] group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
                   
                   {/* Floating Badge */}
-                  <div className="absolute bottom-10 left-10 right-10 p-8 rounded-3xl bg-black/40 backdrop-blur-2xl border border-white/10 space-y-2">
+                  <div className="absolute bottom-10 left-10 right-10 p-8 rounded-3xl bg-black/18 backdrop-blur-xl border border-white/10 space-y-2">
                     <p className="text-primary-400 text-xs font-bold uppercase tracking-[0.3em]">The Stage is Yours</p>
                     <h3 className="text-white font-serif text-2xl">Voll ausgestattetes Pro-Equipment vor Ort.</h3>
                   </div>
@@ -66,43 +66,43 @@ export const MusicSection = () => {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-8">
-                <div className="space-y-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors group">
+                <div className="space-y-4 p-6 rounded-3xl bg-black/10 border border-white/10 hover:bg-black/20 transition-colors group backdrop-blur-[1px]">
                   <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center ring-1 ring-primary-500/20 group-hover:scale-110 transition-transform">
                     <Crown className="w-6 h-6 text-primary-400" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-white font-bold text-lg tracking-wide">VIP Atmosphäre</h3>
-                    <p className="text-accent-400 text-sm font-light leading-relaxed">Ein exklusiver Rahmen, der Ihre Performance zum Leuchten bringt.</p>
+                    <p className="text-white/85 text-sm font-light leading-relaxed">Ein exklusiver Rahmen, der Ihre Performance zum Leuchten bringt.</p>
                   </div>
                 </div>
 
-                <div className="space-y-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors group">
+                <div className="space-y-4 p-6 rounded-3xl bg-black/10 border border-white/10 hover:bg-black/20 transition-colors group backdrop-blur-[1px]">
                   <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center ring-1 ring-primary-500/20 group-hover:scale-110 transition-transform">
                     <HandCoins className="w-6 h-6 text-primary-400" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-white font-bold text-lg tracking-wide">Faire Gagen</h3>
-                    <p className="text-accent-400 text-sm font-light leading-relaxed">Wir schätzen Ihre Arbeit und bieten attraktive Verdienstmöglichkeiten.</p>
+                    <p className="text-white/85 text-sm font-light leading-relaxed">Wir schätzen Ihre Arbeit und bieten attraktive Verdienstmöglichkeiten.</p>
                   </div>
                 </div>
 
-                <div className="space-y-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors group">
+                <div className="space-y-4 p-6 rounded-3xl bg-black/10 border border-white/10 hover:bg-black/20 transition-colors group backdrop-blur-[1px]">
                   <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center ring-1 ring-primary-500/20 group-hover:scale-110 transition-transform">
                     <AudioLines className="w-6 h-6 text-primary-400" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-white font-bold text-lg tracking-wide">Full Equipment</h3>
-                    <p className="text-accent-400 text-sm font-light leading-relaxed">Hochwertige PA, Mikrofone und Stage-Monitoring sind startbereit.</p>
+                    <p className="text-white/85 text-sm font-light leading-relaxed">Hochwertige PA, Mikrofone und Stage-Monitoring sind startbereit.</p>
                   </div>
                 </div>
 
-                <div className="space-y-4 p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors group">
+                <div className="space-y-4 p-6 rounded-3xl bg-black/10 border border-white/10 hover:bg-black/20 transition-colors group backdrop-blur-[1px]">
                   <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center ring-1 ring-primary-500/20 group-hover:scale-110 transition-transform">
                     <Handshake className="w-6 h-6 text-primary-400" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-white font-bold text-lg tracking-wide">Network & Friends</h3>
-                    <p className="text-accent-400 text-sm font-light leading-relaxed">Bringen Sie Ihre Community mit und feiern Sie gemeinsam bei uns.</p>
+                    <p className="text-white/85 text-sm font-light leading-relaxed">Bringen Sie Ihre Community mit und feiern Sie gemeinsam bei uns.</p>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { siteConfig } from '@/config/siteConfig';
 import {
   DrinkRow,
   drinkAdditiveInfo,
@@ -69,17 +68,6 @@ export default function DrinksPage() {
               Aperitivo, alkoholfreie Getränke, warme Getränke, Biere, Weine und Spirituosen
               aus unserer aktuellen Karte.
             </p>
-            <div className="pt-8">
-              <a
-                href={siteConfig.menu.drinksPdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 text-sm font-bold text-primary-400 hover:text-primary-300 transition-colors uppercase tracking-widest group"
-              >
-                <span>Getränkekarte als PDF laden</span>
-                <span className="text-lg transition-transform group-hover:translate-y-1">↓</span>
-              </a>
-            </div>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">

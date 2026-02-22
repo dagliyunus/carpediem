@@ -172,7 +172,7 @@ export function VideoShowcase() {
         <div className="relative text-center mb-12 sm:mb-16 md:mb-24 space-y-4 sm:space-y-5 md:space-y-6">
           <div className="inline-flex items-center gap-4 justify-center opacity-80 relative z-10">
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary-400">
+            <span className="text-sm md:text-base font-bold uppercase tracking-[0.4em] text-primary-400">
               Live Videos
             </span>
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />

@@ -26,22 +26,22 @@ export const LocalRelevance = () => {
             </p>
 
             <div className="grid sm:grid-cols-2 gap-8">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shadow-sm shrink-0 ring-1 ring-white/10">
+              <div className="flex gap-4 rounded-2xl bg-black/10 border border-white/10 p-4">
+                <div className="w-12 h-12 rounded-full bg-black/15 flex items-center justify-center shadow-sm shrink-0 ring-1 ring-white/10">
                   <Train className="w-6 h-6 text-primary-400" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-bold text-white">Aus Berlin</h3>
-                  <p className="text-sm text-accent-400">Direkt mit dem RE1 in nur 60 Min. vom Hbf.</p>
+                  <h3 className="font-bold text-white text-xl md:text-2xl">Aus Berlin</h3>
+                  <p className="text-sm md:text-base text-accent-200/95">Direkt mit dem RE1 in nur 60 Min. vom Hbf.</p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shadow-sm shrink-0 ring-1 ring-white/10">
+              <div className="flex gap-4 rounded-2xl bg-black/10 border border-white/10 p-4">
+                <div className="w-12 h-12 rounded-full bg-black/15 flex items-center justify-center shadow-sm shrink-0 ring-1 ring-white/10">
                   <Car className="w-6 h-6 text-primary-400" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-bold text-white">Mit dem Auto</h3>
-                  <p className="text-sm text-accent-400">Über die A12 in ca. 45 Min. aus Berlin-City.</p>
+                  <h3 className="font-bold text-white text-xl md:text-2xl">Mit dem Auto</h3>
+                  <p className="text-sm md:text-base text-accent-200/95">Über die A12 in ca. 45 Min. aus Berlin-City.</p>
                 </div>
               </div>
             </div>
