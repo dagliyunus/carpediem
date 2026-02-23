@@ -9,57 +9,86 @@ export const metadata: Metadata = {
 
 export default function ImpressumPage() {
   return (
-    <div className="pt-16 pb-24">
+    <div className="relative z-10 pt-44 md:pt-52 pb-24">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-3xl mx-auto prose prose-primary">
-          <h1 className="font-serif text-4xl font-bold text-accent-950 mb-8">Impressum</h1>
-          
-          <section className="space-y-6 text-accent-800">
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">Angaben gemäß § 5 TMG</h2>
+        <div className="max-w-4xl mx-auto rounded-[2rem] border border-white/10 bg-black/45 backdrop-blur-xl p-8 md:p-12 shadow-[0_26px_80px_rgba(0,0,0,0.45)]">
+          <div className="space-y-3 mb-10">
+            <p className="text-sm md:text-base font-bold uppercase tracking-[0.38em] text-primary-300">Rechtliche Angaben</p>
+            <h1 className="font-serif text-4xl md:text-5xl font-bold text-white">Impressum</h1>
+            <p className="text-white/75 text-sm">Stand: 23. Februar 2026</p>
+          </div>
+
+          <section className="space-y-8 text-white/85 leading-relaxed">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">1. Angaben gemaess § 5 DDG</h2>
               <p>
-                Carpe Diem bei Ben<br />
-                Am Kurpark 6<br />
-                15526 Bad Saarow
+                <strong>{siteConfig.name}</strong><br />
+                {siteConfig.location.address}
               </p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">Kontakt</h2>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">2. Kontakt</h2>
               <p>
-                Telefon: {siteConfig.contact.phone}<br />
-                E-Mail: {siteConfig.contact.email}
+                Telefon:{' '}
+                <a
+                  href={`tel:${siteConfig.contact.phone.replace(/\s/g, '')}`}
+                  className="text-primary-300 hover:text-primary-200 underline underline-offset-4"
+                >
+                  {siteConfig.contact.phone}
+                </a>
+                <br />
+                E-Mail:{' '}
+                <a
+                  href={`mailto:${siteConfig.contact.email}`}
+                  className="text-primary-300 hover:text-primary-200 underline underline-offset-4"
+                >
+                  {siteConfig.contact.email}
+                </a>
               </p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">Vertreten durch</h2>
-              <p>Ben [Nachname Placeholder]</p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">Umsatzsteuer-ID</h2>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">3. Inhaltlich verantwortlich</h2>
               <p>
-                Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />
-                DE [USt-ID Placeholder]
+                Verantwortlich fuer die Inhalte dieser Website ist {siteConfig.name}, Anschrift wie oben.
               </p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">EU-Streitschlichtung</h2>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">4. Verbraucherstreitbeilegung (VSBG)</h2>
               <p>
-                Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{' '}
-                <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">
-                  https://ec.europa.eu/consumers/odr/
-                </a>.<br />
-                Unsere E-Mail-Adresse finden Sie oben im Impressum.
+                Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer
+                Verbraucherschlichtungsstelle teilzunehmen.
               </p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-accent-950">Verbraucherstreitbeilegung/Universalschlichtungsstelle</h2>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">5. Hinweis zur EU-Online-Streitbeilegung</h2>
               <p>
-                Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+                Die fruehere EU-Online-Streitbeilegungsplattform (ODR/OS-Plattform) wurde unionsrechtlich
+                eingestellt (Aufhebung der Verordnung (EU) Nr. 524/2013 mit Wirkung zum 20. Juli 2025).
+                Eine Beschwerdeeinreichung ueber diese Plattform ist daher nicht mehr moeglich.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">6. Haftung fuer Inhalte und Links</h2>
+              <p>
+                Wir sind fuer eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
+                Fuer Inhalte externer Links uebernehmen wir keine Gewaehr; fuer diese Inhalte sind ausschliesslich
+                deren Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende
+                Inhalte oder Links unverzueglich.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">7. Urheberrecht</h2>
+              <p>
+                Die durch den Seitenbetreiber erstellten Inhalte und Werke auf dieser Website unterliegen dem
+                deutschen Urheberrecht. Vervielfaeltigung, Bearbeitung, Verbreitung und jede Art der Verwertung
+                ausserhalb der Grenzen des Urheberrechts beduerfen der vorherigen schriftlichen Zustimmung des
+                jeweiligen Rechteinhabers.
               </p>
             </div>
           </section>

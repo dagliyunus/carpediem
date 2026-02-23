@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { siteConfig } from '@/config/siteConfig';
 import { CookieSettingsButton } from '@/components/layout/CookieSettingsButton';
 
@@ -11,11 +12,22 @@ export const Footer = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid gap-16 lg:grid-cols-4">
           {/* Brand & Description */}
-          <div className="space-y-6">
+          <div className="flex h-full flex-col">
             <h2 className="font-serif text-3xl font-bold tracking-tight">{siteConfig.name}</h2>
-            <p className="text-accent-300 text-sm leading-relaxed max-w-xs font-light">
+            <p className="mt-6 text-accent-300 text-sm leading-relaxed max-w-xs font-light">
               Premium Restaurant in Bad Saarow. Mediterrane Küche in entspannter Atmosphäre direkt am Kurpark.
             </p>
+            <div className="mt-auto pt-8">
+              <span className="inline-flex items-center justify-center rounded-[1.1rem] bg-white/95 px-2.5 py-1 ring-1 ring-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.28)] backdrop-blur-md">
+                <Image
+                  src="/images/logo_carpediem.webp"
+                  alt="Carpe Diem bei Ben Logo"
+                  width={260}
+                  height={173}
+                  className="h-16 w-auto object-contain"
+                />
+              </span>
+            </div>
           </div>
 
           {/* Contact & Location */}
@@ -23,17 +35,17 @@ export const Footer = () => {
             <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400">Kontakt</h3>
             <ul className="space-y-3 text-sm text-accent-200 font-light">
               <li className="flex items-start gap-3">
-                <span className="text-accent-500 opacity-50">Addr.</span>
+                <span className="text-primary-300/95 font-medium">Addr.</span>
                 <span>{siteConfig.location.address}</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-accent-500 opacity-50">Tel.</span>
+                <span className="text-primary-300/95 font-medium">Tel.</span>
                 <a href={`tel:${siteConfig.contact.phone.replace(/\s/g, '')}`} className="hover:text-primary-400 transition-colors">
                   {siteConfig.contact.phone}
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-accent-500 opacity-50">Mail.</span>
+                <span className="text-primary-300/95 font-medium">Mail.</span>
                 <a href={`mailto:${siteConfig.contact.email}`} className="hover:text-primary-400 transition-colors">
                   {siteConfig.contact.email}
                 </a>
@@ -78,7 +90,9 @@ export const Footer = () => {
             &copy; {currentYear} {siteConfig.name} &middot; Alle Rechte vorbehalten.
           </p>
           <div className="flex space-x-10">
-            {Object.entries(siteConfig.contact.socials).map(([name, url]) => (
+            {Object.entries(siteConfig.contact.socials)
+              .filter(([name]) => name.toLowerCase() !== 'facebook')
+              .map(([name, url]) => (
               <a
                 key={name}
                 href={url}

@@ -70,14 +70,16 @@ export const Header = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="group flex items-center">
-            <Image
-              src="/images/logo_carpediem.webp"
-              alt="Carpe Diem bei Ben Logo"
-              width={420}
-              height={280}
-              priority
-              className="h-24 sm:h-28 md:h-32 w-auto object-contain drop-shadow-[0_12px_26px_rgba(0,0,0,0.28)] transition-transform duration-300 group-hover:scale-[1.02]"
-            />
+            <span className="inline-flex items-center justify-center rounded-[1.3rem] bg-white/95 px-2.5 sm:px-3 py-1 ring-1 ring-white/80 shadow-[0_14px_32px_rgba(0,0,0,0.3)] backdrop-blur-md">
+              <Image
+                src="/images/logo_carpediem.webp"
+                alt="Carpe Diem bei Ben Logo"
+                width={420}
+                height={280}
+                priority
+                className="h-16 sm:h-20 md:h-24 w-auto object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.2)] transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -146,13 +148,15 @@ export const Header = () => {
           {/* Close Button Header Area */}
           <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-transparent backdrop-blur-xl border-b border-white/10">
             <Link href="/" onClick={() => setMobileMenu({ open: false, path: pathname })}>
-              <Image
-                src="/images/logo_carpediem.webp"
-                alt="Carpe Diem bei Ben Logo"
-                width={300}
-                height={200}
-                className="h-20 w-auto object-contain"
-              />
+              <span className="inline-flex items-center justify-center rounded-[1rem] bg-white/95 px-2 py-0.5 ring-1 ring-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
+                <Image
+                  src="/images/logo_carpediem.webp"
+                  alt="Carpe Diem bei Ben Logo"
+                  width={300}
+                  height={200}
+                  className="h-14 w-auto object-contain"
+                />
+              </span>
             </Link>
             <button
               className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 text-white shadow-lg active:scale-95 transition-all"
