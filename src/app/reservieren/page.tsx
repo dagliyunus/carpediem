@@ -2,13 +2,16 @@ import React from 'react';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/siteConfig';
 import { NativeReservationForm } from '@/components/forms/NativeReservationForm';
+import { buildMetadata } from '@/lib/seo';
 
 import Image from 'next/image';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Tisch reservieren',
-  description: 'Reservieren Sie Ihren Tisch im Carpe Diem Bad Saarow online. Wählen Sie Datum, Uhrzeit und Personenanzahl für Ihren Besuch.',
-};
+  description:
+    'Tischreservierung im Carpe Diem bei Ben in Bad Saarow: Datum, Uhrzeit, Personenzahl und Kontaktdaten bequem online senden.',
+  path: '/reservieren',
+});
 
 export default function ReservationPage() {
   const isEmbed = siteConfig.reservations.mode === 'EMBED';

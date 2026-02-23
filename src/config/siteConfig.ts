@@ -35,9 +35,10 @@ export const siteConfig = {
     },
   },
   seo: {
-    domain: 'https://carpediem-badsaarow.de',
+    domain: 'https://www.carpediem-badsaarow.de',
     titleTemplate: '%s | Carpe Diem bei Ben - Restaurant Bad Saarow',
-    defaultDescription: 'Premium Restaurant in Bad Saarow am Kurpark. Genießen Sie mediterrane Küche direkt an der Therme. Jetzt Tisch reservieren!',
+    defaultDescription:
+      'Carpe Diem bei Ben ist Ihr Restaurant in Bad Saarow am Kurpark. Mediterrane Küche, frischer Fisch, Grillgerichte und Tischreservierung online.',
   },
   tracking: {
     gtmId: '', // G-XXXXXX

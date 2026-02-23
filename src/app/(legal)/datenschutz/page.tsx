@@ -1,11 +1,15 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/siteConfig';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Datenschutzerklärung',
-  robots: { index: false, follow: true },
-};
+  description: `Datenschutzhinweise von ${siteConfig.name} gemäß DSGVO.`,
+  path: '/datenschutz',
+  index: false,
+  follow: true,
+});
 
 export default function DatenschutzPage() {
   return (

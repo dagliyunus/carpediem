@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import {
   aegeisCuisineItems,
   burgerColumns,
@@ -10,10 +11,12 @@ import {
   sideDishColumns,
 } from '@/data/menu';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Speisekarte',
-  description: 'Entdecken Sie unsere mediterrane Speisekarte im Carpe Diem Bad Saarow. Von gegrilltem Oktopus bis hin zu hausgemachtem Baklava.',
-};
+  description:
+    'Speisekarte im Carpe Diem bei Ben in Bad Saarow: mediterrane Küche, Fisch und Fleisch vom Grill, Burger und Vorspeisen.',
+  path: '/menu',
+});
 
 export default function MenuPage() {
   const renderMenuRows = (

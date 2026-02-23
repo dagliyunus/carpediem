@@ -1,11 +1,15 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/siteConfig';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Impressum',
-  robots: { index: false, follow: true },
-};
+  description: `Impressum von ${siteConfig.name} in Bad Saarow.`,
+  path: '/impressum',
+  index: false,
+  follow: true,
+});
 
 export default function ImpressumPage() {
   return (

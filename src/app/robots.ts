@@ -6,8 +6,19 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/'],
+      disallow: [
+        '/api/',
+        '/wp-admin/',
+        '/wp-content/',
+        '/wp-includes/',
+        '/category/',
+        '/tag/',
+        '/author/',
+        '/blog',
+        '/hello-world',
+      ],
     },
+    host: siteConfig.seo.domain,
     sitemap: `${siteConfig.seo.domain}/sitemap.xml`,
   };
 }

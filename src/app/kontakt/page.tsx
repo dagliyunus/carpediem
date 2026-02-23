@@ -4,11 +4,14 @@ import { Phone, Mail, MapPin, Train, Car, Info } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { GoogleMapEmbed } from '@/components/maps/GoogleMapEmbed';
 import { ContactForm } from '@/components/forms/ContactForm';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Kontakt & Anfahrt',
-  description: 'Besuchen Sie uns in Bad Saarow. Hier finden Sie unsere Adresse, Kontaktdaten und eine detaillierte Anfahrtsbeschreibung aus Berlin.',
-};
+  description:
+    'Kontakt und Anfahrt zum Restaurant Carpe Diem bei Ben in Bad Saarow mit Adresse, Telefon, E-Mail und Route aus Berlin.',
+  path: '/kontakt',
+});
 
 export default function ContactPage() {
   return (

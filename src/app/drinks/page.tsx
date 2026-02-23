@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import {
   DrinkRow,
   drinkAdditiveInfo,
@@ -8,11 +9,12 @@ import {
   rightDrinkSections,
 } from '@/data/drinks';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Getränke',
   description:
-    'Unsere Getränkekarte im Carpe Diem Bad Saarow mit Aperitivo, alkoholfreien Getränken, Weinen, Bieren und Spirituosen.',
-};
+    'Getränkekarte im Carpe Diem bei Ben in Bad Saarow mit Aperitivo, alkoholfreien Getränken, Bieren, Weinen und Spirituosen.',
+  path: '/drinks',
+});
 
 function renderDrinkRow(row: DrinkRow) {
   if (row.type === 'subheading') {

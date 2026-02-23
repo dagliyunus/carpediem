@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   },
   description: siteConfig.seo.defaultDescription,
   metadataBase: new URL(siteConfig.seo.domain),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.seo.defaultDescription,
@@ -37,12 +40,40 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     locale: "de_DE",
     type: "website",
+    images: [
+      {
+        url: `${siteConfig.seo.domain}/images/outside_night.webp`,
+        width: 1536,
+        height: 1024,
+        alt: `${siteConfig.name} in Bad Saarow`,
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.seo.defaultDescription,
+    images: [`${siteConfig.seo.domain}/images/outside_night.webp`],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+  manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
   verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
     other: {
       "p:domain_verify": "b059be9c5bf8f0f2aa35ecd9c4e6144e",
     },

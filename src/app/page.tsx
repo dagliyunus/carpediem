@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { Hero } from "@/components/sections/Hero";
 import { SignatureDishes } from "@/components/sections/SignatureDishes";
 import { FishShowcase } from "@/components/sections/FishShowcase";
@@ -7,7 +8,15 @@ import { VideoShowcase } from "@/components/sections/VideoShowcase";
 import { LocalRelevance } from "@/components/sections/LocalRelevance";
 import { ContactFormSection } from "@/components/sections/ContactFormSection";
 import { Reveal } from "@/components/ui/Reveal";
+import { buildMetadata } from "@/lib/seo";
 import Image from "next/image";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Restaurant in Bad Saarow am Kurpark",
+  description:
+    "Carpe Diem bei Ben in Bad Saarow: mediterrane Küche, Fisch- und Grillgerichte, Live-Musik und Tischreservierung online.",
+  path: "/",
+});
 
 export default function Home() {
   return (

@@ -1,11 +1,14 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Galerie',
-  description: 'Impressionen aus unserem Restaurant Carpe Diem in Bad Saarow. Einblicke in unsere Küche und das Ambiente.',
-};
+  description:
+    'Galerie vom Carpe Diem bei Ben in Bad Saarow mit Einblicken in mediterrane Gerichte, Ambiente und Live-Events.',
+  path: '/galerie',
+});
 
 const images = [
   { url: '/images/Galerie_page/inside1.webp', alt: 'Innenbereich des Restaurants' },
