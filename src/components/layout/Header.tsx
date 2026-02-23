@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Logo } from '@/components/brand/Logo';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -70,8 +69,15 @@ export const Header = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="group flex items-center space-x-2">
-            <Logo />
+          <Link href="/" className="group flex items-center">
+            <Image
+              src="/images/logo_carpediem.webp"
+              alt="Carpe Diem bei Ben Logo"
+              width={132}
+              height={88}
+              priority
+              className="h-12 md:h-14 w-auto object-contain drop-shadow-[0_12px_26px_rgba(0,0,0,0.28)] transition-transform duration-300 group-hover:scale-[1.02]"
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -139,7 +145,15 @@ export const Header = () => {
         <div className="relative z-10 h-full flex flex-col">
           {/* Close Button Header Area */}
           <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-transparent backdrop-blur-xl border-b border-white/10">
-            <Logo />
+            <Link href="/" onClick={() => setMobileMenu({ open: false, path: pathname })}>
+              <Image
+                src="/images/logo_carpediem.webp"
+                alt="Carpe Diem bei Ben Logo"
+                width={116}
+                height={77}
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
             <button
               className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 text-white shadow-lg active:scale-95 transition-all"
               onClick={() => setMobileMenu({ open: false, path: pathname })}

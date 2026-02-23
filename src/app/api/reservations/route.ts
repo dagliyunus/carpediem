@@ -21,6 +21,26 @@ const isValidTime = (value: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(value)
 
 const isValidGuests = (value: string) => /^([1-8]|9\+)$/.test(value);
 
+const getWeekdayFromIsoDate = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    utcDate.getUTCFullYear() !== year ||
+    utcDate.getUTCMonth() !== month - 1 ||
+    utcDate.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return utcDate.getUTCDay();
+};
+
 const getClientIp = (req: Request) => {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) return forwardedFor.split(',')[0]?.trim() || 'unknown';
@@ -91,6 +111,16 @@ export async function POST(req: Request) {
   const today = new Date().toISOString().split('T')[0];
   if (date < today) {
     return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
+  }
+  const weekday = getWeekdayFromIsoDate(date);
+  if (weekday === null) {
+    return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
+  }
+  if (weekday === 2 || weekday === 3) {
+    return NextResponse.json(
+      { error: 'Reservierungen sind am Dienstag und Mittwoch nicht möglich.' },
+      { status: 400 }
+    );
   }
   if (!isValidTime(time)) {
     return NextResponse.json({ error: 'Invalid time' }, { status: 400 });

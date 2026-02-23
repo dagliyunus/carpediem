@@ -7,6 +7,34 @@ import { siteConfig } from '@/config/siteConfig';
 type Step = 1 | 2 | 3;
 type ReservationStatus = 'idle' | 'sending' | 'error';
 
+const CLOSED_WEEKDAY_INDEXES = new Set([2, 3]); // Tuesday, Wednesday
+
+const getWeekdayFromIsoDate = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    utcDate.getUTCFullYear() !== year ||
+    utcDate.getUTCMonth() !== month - 1 ||
+    utcDate.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return utcDate.getUTCDay();
+};
+
+const isClosedDate = (value: string) => {
+  const weekday = getWeekdayFromIsoDate(value);
+  if (weekday === null) return false;
+  return CLOSED_WEEKDAY_INDEXES.has(weekday);
+};
+
 export const NativeReservationForm = () => {
   const [step, setStep] = useState<Step>(1);
   const [status, setStatus] = useState<ReservationStatus>('idle');
@@ -24,8 +52,15 @@ export const NativeReservationForm = () => {
   });
 
   const timeSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'];
+  const selectedDateIsClosed = isClosedDate(formData.date);
+  const canContinueStepOne = Boolean(formData.date) && Boolean(formData.time) && !selectedDateIsClosed;
 
   const handleNext = () => {
+    if (selectedDateIsClosed) {
+      setStatus('error');
+      setErrorMessage('Reservierungen sind am Dienstag und Mittwoch nicht möglich.');
+      return;
+    }
     setErrorMessage('');
     setStatus('idle');
     setStep((s) => (s + 1) as Step);
@@ -134,9 +169,22 @@ export const NativeReservationForm = () => {
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full px-6 py-4 rounded-2xl border border-white/5 bg-white/[0.02] text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all outline-none group-hover:bg-white/[0.04] [color-scheme:dark]"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value && isClosedDate(value)) {
+                        setFormData({ ...formData, date: '', time: '' });
+                        setStatus('error');
+                        setErrorMessage('Reservierungen sind am Dienstag und Mittwoch nicht möglich.');
+                        return;
+                      }
+
+                      setErrorMessage('');
+                      setStatus('idle');
+                      setFormData({ ...formData, date: value });
+                    }}
                   />
                 </div>
+                <p className="text-[11px] text-accent-300/85 ml-1">Ruhetage: Dienstag und Mittwoch</p>
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400 flex items-center gap-2 ml-1">
@@ -183,9 +231,14 @@ export const NativeReservationForm = () => {
             </div>
 
             <div className="pt-4">
+              {status === 'error' ? (
+                <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-100">
+                  {errorMessage}
+                </div>
+              ) : null}
               <button
                 type="button"
-                disabled={!formData.date || !formData.time}
+                disabled={!canContinueStepOne}
                 onClick={handleNext}
                 className="group relative w-full h-18 bg-primary-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-primary-900/20 hover:bg-primary-500 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed transition-all duration-500 overflow-hidden"
               >
