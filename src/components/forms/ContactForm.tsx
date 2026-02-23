@@ -20,6 +20,12 @@ export const ContactForm = ({ className }: ContactFormProps) => {
     company: '',
   });
 
+  const updateField = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (status !== 'idle') setStatus('idle');
+    if (errorMessage) setErrorMessage('');
+  };
+
   const isSending = status === 'sending';
 
   const canSubmit = useMemo(() => {
@@ -78,7 +84,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
       <div className="grid gap-5">
         <input
           value={form.company}
-          onChange={(e) => setForm((p) => ({ ...p, company: e.target.value }))}
+          onChange={(e) => updateField('company', e.target.value)}
           name="company"
           autoComplete="off"
           tabIndex={-1}
@@ -93,7 +99,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
             <input
               id="contact-name"
               value={form.name}
-              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              onChange={(e) => updateField('name', e.target.value)}
               required
               maxLength={80}
               className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-white placeholder:text-white/30 outline-none ring-0 focus:border-white/20 focus:bg-white/[0.05] transition-colors"
@@ -108,7 +114,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
             <input
               id="contact-email"
               value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              onChange={(e) => updateField('email', e.target.value)}
               required
               type="email"
               maxLength={254}
@@ -125,7 +131,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
           <input
             id="contact-subject"
             value={form.subject}
-            onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
+            onChange={(e) => updateField('subject', e.target.value)}
             required
             maxLength={120}
             className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-white placeholder:text-white/30 outline-none ring-0 focus:border-white/20 focus:bg-white/[0.05] transition-colors"
@@ -140,7 +146,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
           <textarea
             id="contact-message"
             value={form.message}
-            onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
+            onChange={(e) => updateField('message', e.target.value)}
             required
             minLength={10}
             maxLength={2000}
@@ -149,13 +155,27 @@ export const ContactForm = ({ className }: ContactFormProps) => {
             placeholder="Ihre Nachricht…"
           />
           <div className="flex justify-between text-[11px] text-white/40">
-            <span>{status === 'success' ? 'Danke! Wir melden uns zeitnah.' : ''}</span>
+            <span />
             <span>{form.message.length}/2000</span>
           </div>
         </div>
 
+        {status === 'success' && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-2xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100"
+          >
+            Danke! Ihre Nachricht wurde erfolgreich gesendet. Wir melden uns zeitnah.
+          </div>
+        )}
+
         {status === 'error' && (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+          >
             {errorMessage}
           </div>
         )}
