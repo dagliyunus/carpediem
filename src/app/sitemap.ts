@@ -12,8 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/reservieren',
     '/galerie',
     '/kontakt',
-    '/impressum',
-    '/datenschutz',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified,
