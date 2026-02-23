@@ -21,6 +21,8 @@ const images = [
   { url: '/images/Galerie_page/fish10.webp', alt: 'Frisch zubereitetes Fischgericht' },
   { url: '/images/Galerie_page/meal1.webp', alt: 'Kreativ angerichtetes Hauptgericht' },
   { url: '/images/Galerie_page/meal2.webp', alt: 'Kulinarische Kreation aus der Kueche' },
+  { url: '/images/Galerie_page/meatball.webp', alt: 'Hausgemachte Fleischspezialitaet aus der Kueche' },
+  { url: '/images/Galerie_page/suppe.webp', alt: 'Frisch servierte Suppe als Vorspeise' },
   { url: '/images/Galerie_page/table_meal.webp', alt: 'Serviertes Gericht auf dem Tisch' },
   { url: '/images/Galerie_page/veggie.webp', alt: 'Frisches vegetarisches Gericht' },
   { url: '/images/Galerie_page/Visitors1.webp', alt: 'Gaeste geniessen die Atmosphaere im Carpe Diem' },

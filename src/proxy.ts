@@ -26,6 +26,7 @@ const LEGACY_PREFIXES = [
 const LEGACY_QUERY_KEYS = ['p', 'page_id', 'm', 'cat', 'tag', 'author'];
 
 const BOT_NOINDEX_HEADER = 'noindex, nofollow, noarchive';
+const INDEX_ALIAS_PATHS = new Set(['/index.html', '/index.php', '/index.htm']);
 
 function isLegacyPath(pathname: string) {
   const path = pathname.toLowerCase();
@@ -43,6 +44,13 @@ function isLegacyQuery(searchParams: URLSearchParams) {
 
 export function proxy(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
+  const normalizedPath = pathname.toLowerCase();
+
+  if (INDEX_ALIAS_PATHS.has(normalizedPath)) {
+    const destination = req.nextUrl.clone();
+    destination.pathname = '/';
+    return NextResponse.redirect(destination, 308);
+  }
 
   if (isLegacyPath(pathname) || isLegacyQuery(searchParams)) {
     return new NextResponse('Gone', {
@@ -60,4 +68,3 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: ['/((?!_next|favicon.ico|robots.txt|sitemap.xml).*)'],
 };
-

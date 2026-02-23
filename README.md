@@ -54,3 +54,22 @@ RESERVATION_TO_EMAIL=viktoriia@carpediem-badsaarow.de
 Notes:
 - `RESERVATION_TO_EMAIL` defaults to `viktoriia@carpediem-badsaarow.de` if omitted.
 - `RESERVATION_FROM_EMAIL` should be a mailbox allowed by your SMTP provider.
+
+## Contact Form Email Setup (Production)
+
+The page `/kontakt` sends contact requests through `/api/contact`.
+It uses the same SMTP connection as reservations and sends to Viktoriia by default.
+
+Optional environment variables:
+
+```bash
+CONTACT_TO_EMAIL=viktoriia@carpediem-badsaarow.de
+CONTACT_FROM_NAME=Kontaktformular Carpe Diem
+CONTACT_FROM_EMAIL=
+CONTACT_WEBHOOK_URL=
+```
+
+Notes:
+- If `CONTACT_TO_EMAIL` is omitted, it defaults to `viktoriia@carpediem-badsaarow.de`.
+- If `CONTACT_FROM_EMAIL` is omitted, `SMTP_USER` is used.
+- `CONTACT_WEBHOOK_URL` is optional and is called only after email delivery succeeds.

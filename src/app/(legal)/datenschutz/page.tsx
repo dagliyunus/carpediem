@@ -76,6 +76,10 @@ export default function DatenschutzPage() {
                 f DSGVO (Missbrauchs- und Sicherheitsabwehr). Wenn ein CONTACT_WEBHOOK_URL konfiguriert ist, wird die
                 Anfrage an den dort hinterlegten Empfaenger weitergeleitet.
               </p>
+              <p>
+                Die Kontaktanfrage wird zusaetzlich per E-Mail ueber unseren konfigurierten SMTP-Dienst an das
+                Restaurant uebermittelt.
+              </p>
             </section>
 
             <section className="space-y-3">

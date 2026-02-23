@@ -9,6 +9,7 @@ type ContactFormProps = {
 };
 
 export const ContactForm = ({ className }: ContactFormProps) => {
+  const [formStartedAt] = useState<number>(() => Date.now());
   const [status, setStatus] = useState<ContactFormStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [form, setForm] = useState({
@@ -52,6 +53,7 @@ export const ContactForm = ({ className }: ContactFormProps) => {
           subject: form.subject,
           message: form.message,
           company: form.company,
+          formStartedAt,
         }),
       });
 
@@ -169,4 +171,3 @@ export const ContactForm = ({ className }: ContactFormProps) => {
     </form>
   );
 };
-

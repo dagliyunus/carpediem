@@ -56,9 +56,12 @@ export const metadata: Metadata = {
     images: [`${siteConfig.seo.domain}/images/outside_night.webp`],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/images/icons/favicon-logo.png", type: "image/png", sizes: "1024x1024" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    apple: "/images/icons/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
   robots: {
