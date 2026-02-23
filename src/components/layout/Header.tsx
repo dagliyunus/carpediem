@@ -73,10 +73,10 @@ export const Header = () => {
             <Image
               src="/images/logo_carpediem.webp"
               alt="Carpe Diem bei Ben Logo"
-              width={260}
-              height={173}
+              width={420}
+              height={280}
               priority
-              className="h-20 md:h-24 w-auto object-contain drop-shadow-[0_12px_26px_rgba(0,0,0,0.28)] transition-transform duration-300 group-hover:scale-[1.02]"
+              className="h-24 sm:h-28 md:h-32 w-auto object-contain drop-shadow-[0_12px_26px_rgba(0,0,0,0.28)] transition-transform duration-300 group-hover:scale-[1.02]"
             />
           </Link>
 
@@ -149,9 +149,9 @@ export const Header = () => {
               <Image
                 src="/images/logo_carpediem.webp"
                 alt="Carpe Diem bei Ben Logo"
-                width={220}
-                height={147}
-                className="h-16 w-auto object-contain"
+                width={300}
+                height={200}
+                className="h-20 w-auto object-contain"
               />
             </Link>
             <button
