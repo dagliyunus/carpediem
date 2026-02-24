@@ -4,20 +4,6 @@ import { SignatureDishesCarousel } from '@/components/sections/SignatureDishesCa
 
 const dishes = [
   {
-    name: 'Gourmet Taco Variation',
-    description: 'Vier verschiedene Tacos mit hausgemachten Toppings und frischen Kräutern.',
-    image:
-      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=85&w=1600',
-    category: 'Vorspeise',
-  },
-  {
-    name: 'Lammrippen Kebab',
-    description: 'Zarte Lammrippen vom Grill, serviert mit Joghurt-Salat und Grillgemüse.',
-    image:
-      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=85&w=1600',
-    category: 'Hauptgang',
-  },
-  {
     name: 'Mediterrane Bowl',
     description: 'Frische Zutaten der Saison, kunstvoll angerichtet mit feinstem Dressing.',
     image:
@@ -30,12 +16,12 @@ const weeklySpecials = [
   {
     day: 'Jeden Donnerstag',
     title: 'Argentinischer Entrecôte',
-    description: 'ca. 200 gr mit Rosmarinkartoffeln und Salat',
+    description: 'ca. 250 g mit Rosmarinkartoffeln und Salat',
     price: '22,- €',
   },
   {
     day: 'Jeden Freitag',
-    title: 'Sphagetti',
+    title: 'Spaghetti',
     price: 'je 14,- €',
     options: [
       'mit Lachs und Parmesan',
@@ -48,7 +34,7 @@ const weeklySpecials = [
     title: 'Manti',
     price: '12,50 €',
     description:
-      'mit Hackfleisch gefullte Teigtaschen, dazu Joghurt-Knoblauch-Sosse',
+      'mit Hackfleisch gefullte Teigtaschen, dazu Joghurt-Knoblauch-Soße',
   },
 ];
 
