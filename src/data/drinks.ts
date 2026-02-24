@@ -117,7 +117,7 @@ export const leftDrinkSections: DrinkSection[] = [
       { type: 'item', name: 'Tasse Kaffee, groß²', price: '4,50 €' },
       { type: 'item', name: 'Espresso²', price: '2,50 €' },
       { type: 'item', name: 'Espresso Macchiato², D', price: '3,- €' },
-      { type: 'item', name: 'Cappucino², D', price: '4,- €' },
+      { type: 'item', name: 'Cappuccino², D', price: '4,- €' },
       { type: 'item', name: 'Latte Macchiato², D', price: '5,- €' },
       { type: 'item', name: 'Milchkaffee², D', price: '5,- €' },
       {
