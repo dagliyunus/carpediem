@@ -28,7 +28,7 @@ export const siteConfig = {
   },
   reservations: {
     mode: 'NATIVE' as ReservationMode,
-    embedUrl: 'https://booking-widget.example.com',
+    embedUrl: '',
     policies: {
       cancellation: 'Stornierungen sind bis zu 2 Stunden vor dem Termin kostenfrei möglich.',
       noShow: 'Bei Nichterscheinen ohne Absage behalten wir uns vor, den Tisch nach 15 Minuten freizugeben.',

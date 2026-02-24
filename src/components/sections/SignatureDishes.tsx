@@ -15,7 +15,7 @@ const dishes = [
 const weeklySpecials = [
   {
     day: 'Jeden Donnerstag',
-    title: 'Argentinischer Entrecôte',
+    title: 'Argentinisches Entrecôte',
     description: 'ca. 250 g mit Rosmarinkartoffeln und Salat',
     price: '22,- €',
   },
