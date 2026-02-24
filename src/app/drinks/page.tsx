@@ -8,6 +8,7 @@ import {
   leftDrinkSections,
   rightDrinkSections,
 } from '@/data/drinks';
+import { PageManagedContent } from '@/components/cms/PageManagedContent';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Getränke',
@@ -142,6 +143,7 @@ export default function DrinksPage() {
           </section>
         </div>
       </div>
+      <PageManagedContent slug="drinks" />
     </div>
   );
 }

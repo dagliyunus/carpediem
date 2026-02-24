@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         '/category/',
         '/tag/',
         '/author/',
+        '/admin/',
         '/blog',
         '/hello-world',
       ],

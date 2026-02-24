@@ -1,0 +1,146 @@
+import { ContentStatus, SeoTargetType } from '@prisma/client';
+import { db } from '@/lib/db';
+import { getOrCreateSiteSetting } from '@/lib/cms/content';
+
+export async function getPublishedMagazinPosts() {
+  return db.article.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      publishedAt: {
+        lte: new Date(),
+      },
+    },
+    include: {
+      coverImage: {
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+          filename: true,
+        },
+      },
+      categories: {
+        include: {
+          category: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: [
+      {
+        publishedAt: 'desc',
+      },
+      {
+        createdAt: 'desc',
+      },
+    ],
+  });
+}
+
+export async function getMagazinPostBySlug(slug: string) {
+  return db.article.findUnique({
+    where: { slug },
+    include: {
+      coverImage: {
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+          filename: true,
+        },
+      },
+      categories: {
+        include: {
+          category: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getSiteCmsData() {
+  const site = await getOrCreateSiteSetting();
+  const seo = await db.seoMeta.findUnique({
+    where: {
+      targetType_targetId: {
+        targetType: SeoTargetType.GLOBAL,
+        targetId: 'global',
+      },
+    },
+    include: {
+      ogImage: {
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+        },
+      },
+    },
+  });
+
+  const social = await db.socialAccount.findMany({
+    where: {
+      siteSettingId: 'global',
+      isActive: true,
+    },
+    orderBy: {
+      sortOrder: 'asc',
+    },
+  });
+
+  return { site, seo, social };
+}
+
+export async function getPageContent(slug: string) {
+  return db.page.findUnique({
+    where: {
+      slug,
+    },
+    include: {
+      heroImage: {
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+          filename: true,
+        },
+      },
+      mediaLinks: {
+        include: {
+          media: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+              filename: true,
+              mediaType: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}

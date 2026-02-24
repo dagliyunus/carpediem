@@ -1,22 +1,27 @@
 import React from 'react';
 import { siteConfig } from '@/config/siteConfig';
+import { getPublicSiteRuntime } from '@/lib/cms/runtime';
 
-export const JsonLd = () => {
-  const baseUrl = siteConfig.seo.domain;
+export const JsonLd = async () => {
+  const runtime = await getPublicSiteRuntime();
+
+  const baseUrl = runtime.site?.siteUrl || siteConfig.seo.domain;
   const logoUrl = `${baseUrl}/images/logo_carpediem.webp`;
-  const coverImageUrl = `${baseUrl}/images/outside_night.webp`;
-  const sameAs = Object.values(siteConfig.contact.socials);
+  const coverImageUrl = runtime.seo?.ogImage?.url || `${baseUrl}/images/outside_night.webp`;
+  const sameAs = runtime.social.map((item) => item.url);
+  const businessPhone = runtime.site?.businessPhone || siteConfig.contact.phone;
+  const businessEmail = runtime.site?.businessEmail || siteConfig.contact.email;
 
   const restaurantSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Restaurant',
-    name: siteConfig.name,
+    '@type': runtime.seo?.schemaType || 'Restaurant',
+    name: runtime.site?.siteName || siteConfig.name,
     image: [coverImageUrl, logoUrl],
     '@id': `${baseUrl}#restaurant`,
     url: baseUrl,
     logo: logoUrl,
-    telephone: siteConfig.contact.phone,
-    email: siteConfig.contact.email,
+    telephone: businessPhone,
+    email: businessEmail,
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Am Kurpark 6',
@@ -36,12 +41,19 @@ export const JsonLd = () => {
       .map((h) => ({
         '@type': 'OpeningHoursSpecification',
         dayOfWeek:
-          h.days === 'Mo' ? 'Monday' :
-          h.days === 'Di' ? 'Tuesday' :
-          h.days === 'Mi' ? 'Wednesday' :
-          h.days === 'Do' ? 'Thursday' :
-          h.days === 'Fr' ? 'Friday' :
-          h.days === 'Sa' ? 'Saturday' : 'Sunday',
+          h.days === 'Mo'
+            ? 'Monday'
+            : h.days === 'Di'
+              ? 'Tuesday'
+              : h.days === 'Mi'
+                ? 'Wednesday'
+                : h.days === 'Do'
+                  ? 'Thursday'
+                  : h.days === 'Fr'
+                    ? 'Friday'
+                    : h.days === 'Sa'
+                      ? 'Saturday'
+                      : 'Sunday',
         opens: h.open,
         closes: h.close,
       })),
@@ -57,15 +69,15 @@ export const JsonLd = () => {
     '@type': 'WebSite',
     '@id': `${baseUrl}#website`,
     url: baseUrl,
-    name: siteConfig.name,
-    inLanguage: 'de-DE',
+    name: runtime.site?.siteName || siteConfig.name,
+    inLanguage: runtime.site?.defaultLocale || 'de-DE',
   };
 
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': `${baseUrl}#organization`,
-    name: siteConfig.name,
+    name: runtime.site?.siteName || siteConfig.name,
     url: baseUrl,
     logo: logoUrl,
     sameAs,
@@ -73,8 +85,8 @@ export const JsonLd = () => {
       {
         '@type': 'ContactPoint',
         contactType: 'customer service',
-        telephone: siteConfig.contact.phone,
-        email: siteConfig.contact.email,
+        telephone: businessPhone,
+        email: businessEmail,
         areaServed: 'DE',
         availableLanguage: ['de'],
       },

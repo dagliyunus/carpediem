@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { db } from '@/lib/db';
 
 type RateLimitState = {
   count: number;
@@ -218,6 +219,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Delivery failed' }, { status: 502 });
     }
   }
+
+  await db.contactMessage.create({
+    data: {
+      name,
+      email,
+      subject,
+      message,
+      ip,
+      userAgent: req.headers.get('user-agent') || null,
+      status: 'RECEIVED',
+    },
+  });
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

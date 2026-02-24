@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { siteConfig } from '@/config/siteConfig';
 import { NativeReservationForm } from '@/components/forms/NativeReservationForm';
 import { buildMetadata } from '@/lib/seo';
+import { PageManagedContent } from '@/components/cms/PageManagedContent';
 
 import Image from 'next/image';
 
@@ -92,6 +93,7 @@ export default function ReservationPage() {
           </div>
         </div>
       </div>
+      <PageManagedContent slug="reservieren" />
     </div>
   );
 }

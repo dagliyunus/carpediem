@@ -1,17 +1,20 @@
 import { MetadataRoute } from 'next';
+import { ContentStatus } from '@prisma/client';
 import { siteConfig } from '@/config/siteConfig';
+import { db } from '@/lib/db';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.seo.domain;
   const lastModified = new Date();
 
-  const routes = [
+  const baseRoutes = [
     '',
     '/menu',
     '/drinks',
     '/reservieren',
     '/galerie',
     '/kontakt',
+    '/magazin',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified,
@@ -19,5 +22,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  return routes;
+  const posts = await db.article.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      publishedAt: {
+        lte: new Date(),
+      },
+    },
+    select: {
+      slug: true,
+      updatedAt: true,
+      publishedAt: true,
+    },
+    orderBy: {
+      publishedAt: 'desc',
+    },
+    take: 500,
+  });
+
+  const postRoutes = posts.map((post) => ({
+    url: `${baseUrl}/magazin/${post.slug}`,
+    lastModified: post.updatedAt || post.publishedAt || lastModified,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  return [...baseRoutes, ...postRoutes];
 }

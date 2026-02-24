@@ -10,6 +10,7 @@ import { ContactFormSection } from "@/components/sections/ContactFormSection";
 import { Reveal } from "@/components/ui/Reveal";
 import { buildMetadata } from "@/lib/seo";
 import Image from "next/image";
+import { PageManagedContent } from "@/components/cms/PageManagedContent";
 
 export const metadata: Metadata = buildMetadata({
   title: "Restaurant in Bad Saarow am Kurpark",
@@ -38,6 +39,7 @@ export default function Home() {
       <Reveal delayMs={200}>
         <LocalRelevance />
       </Reveal>
+      <PageManagedContent slug="home" />
       
       {/* Trust Section */}
       <section className="py-32 bg-transparent text-white overflow-hidden relative z-10 border-t border-white/5">

@@ -5,6 +5,7 @@ import { siteConfig } from '@/config/siteConfig';
 import { GoogleMapEmbed } from '@/components/maps/GoogleMapEmbed';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { buildMetadata } from '@/lib/seo';
+import { PageManagedContent } from '@/components/cms/PageManagedContent';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Kontakt & Anfahrt',
@@ -150,6 +151,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      <PageManagedContent slug="kontakt" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { db } from '@/lib/db';
 
 type RateLimitState = {
   count: number;
@@ -214,6 +215,20 @@ export async function POST(req: Request) {
     console.error('Reservation email delivery failed', error);
     return NextResponse.json({ error: 'Delivery failed' }, { status: 502 });
   }
+
+  await db.reservationRequest.create({
+    data: {
+      name,
+      email,
+      phone,
+      date,
+      time,
+      guests,
+      note: note || null,
+      ip,
+      status: 'RECEIVED',
+    },
+  });
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

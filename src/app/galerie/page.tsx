@@ -2,6 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { buildMetadata } from '@/lib/seo';
+import { PageManagedContent } from '@/components/cms/PageManagedContent';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Galerie',
@@ -56,6 +57,7 @@ export default function GalleryPage() {
           ))}
         </div>
       </div>
+      <PageManagedContent slug="galerie" />
     </div>
   );
 }

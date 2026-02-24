@@ -10,6 +10,7 @@ import {
   saladNote,
   sideDishColumns,
 } from '@/data/menu';
+import { PageManagedContent } from '@/components/cms/PageManagedContent';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Speisekarte',
@@ -137,6 +138,7 @@ export default function MenuPage() {
           </section>
         </div>
       </div>
+      <PageManagedContent slug="menu" />
     </div>
   );
 }
