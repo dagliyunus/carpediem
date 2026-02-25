@@ -6,7 +6,7 @@ export const JsonLd = async () => {
   const runtime = await getPublicSiteRuntime();
 
   const baseUrl = runtime.site?.siteUrl || siteConfig.seo.domain;
-  const logoUrl = `${baseUrl}/images/logo_carpediem.webp`;
+  const logoUrl = `${baseUrl}/images/logo.webp`;
   const coverImageUrl = runtime.seo?.ogImage?.url || `${baseUrl}/images/outside_night.webp`;
   const sameAs = runtime.social.map((item) => item.url);
   const businessPhone = runtime.site?.businessPhone || siteConfig.contact.phone;

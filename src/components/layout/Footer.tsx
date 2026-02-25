@@ -37,7 +37,7 @@ export const Footer = async () => {
             <div className="mt-auto pt-8">
               <span className="inline-flex items-center justify-center rounded-[1.1rem] bg-white/95 px-2.5 py-1 ring-1 ring-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.28)] backdrop-blur-md">
                 <Image
-                  src="/images/logo_carpediem.webp"
+                  src="/images/logo.webp"
                   alt={`${siteName} Logo`}
                   width={260}
                   height={173}

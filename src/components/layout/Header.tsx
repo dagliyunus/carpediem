@@ -73,7 +73,7 @@ export const Header = () => {
           <Link href="/" className="group flex items-center">
             <span className="inline-flex items-center justify-center rounded-[1.3rem] bg-white/95 px-2.5 sm:px-3 py-1 ring-1 ring-white/80 shadow-[0_14px_32px_rgba(0,0,0,0.3)] backdrop-blur-md">
               <Image
-                src="/images/logo_carpediem.webp"
+                src="/images/logo.webp"
                 alt="Carpe Diem bei Ben Logo"
                 width={420}
                 height={280}
@@ -151,7 +151,7 @@ export const Header = () => {
             <Link href="/" onClick={() => setMobileMenu({ open: false, path: pathname })}>
               <span className="inline-flex items-center justify-center rounded-[1rem] bg-white/95 px-2 py-0.5 ring-1 ring-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
                 <Image
-                  src="/images/logo_carpediem.webp"
+                  src="/images/logo.webp"
                   alt="Carpe Diem bei Ben Logo"
                   width={300}
                   height={200}
