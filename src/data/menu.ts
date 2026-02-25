@@ -39,14 +39,14 @@ export const grillItems: MenuRow[] = [
     name: 'Bifteki gefüllt mit Käse, Tomate und Metaxa-Sauce',
     price: '26,00 €',
   },
-  { name: 'Hähnchenbrüste, ca. 250g', price: '22,00 €' },
+  { name: 'Hähnchenbrust, ca. 250g', price: '22,00 €' },
   { name: 'Fleischteller mit drei Fleischsorten', price: '26,50 €' },
   { name: 'Zanderfilet', price: '19,50 €' },
   { name: 'Wolfsbarschfilet', price: '19,50 €' },
   { name: 'Lachsfilet', price: '19,50 €' },
   { name: 'Welsfilet', price: '18,50 €' },
   { name: 'Fischteller mit drei Fischsorten', price: '26,50 €' },
-  { name: 'Meeresfrüchteplatte mit Salat und Salicome', price: '26,50 €' },
+  { name: 'Meeresfrüchteplatte mit Salat und Salicorne', price: '26,50 €' },
 ];
 
 export const burgerColumns: MenuRow[][] = [
@@ -85,7 +85,7 @@ export const sideDishColumns: MenuRow[][] = [
       details: ['(bitte bei der Bedienung erfragen)'],
     },
     {
-      name: 'Salicorne (Meerespargel) Salat,',
+      name: 'Salicorne (Meeresspargel) Salat,',
       price: '9,- €',
       style: 'bullet',
       details: ['mit Tomaten, Zwiebeln und Brot'],

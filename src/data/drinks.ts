@@ -24,7 +24,7 @@ export type DrinkSection = {
 
 export const leftDrinkSections: DrinkSection[] = [
   {
-    title: 'Aperetivo, mit je 4cl',
+    title: 'Aperitivo, mit je 4cl',
     rows: [
       { type: 'item', name: 'Aperol Spritz¹,⁹', price: '9,- €' },
       { type: 'item', name: 'Gin Tonic', price: '9,- €' },

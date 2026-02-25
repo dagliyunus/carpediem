@@ -26,7 +26,7 @@ const weeklySpecials = [
     options: [
       'mit Lachs und Parmesan',
       'mit Hähnchenbrustfilet',
-      'mit Meererfruechten',
+      'mit Meeresfrüchten',
     ],
   },
   {
@@ -34,7 +34,7 @@ const weeklySpecials = [
     title: 'Manti',
     price: '12,50 €',
     description:
-      'mit Hackfleisch gefullte Teigtaschen, dazu Joghurt-Knoblauch-Soße',
+      'mit Hackfleisch gefüllte Teigtaschen, dazu Joghurt-Knoblauch-Soße',
   },
 ];
 
