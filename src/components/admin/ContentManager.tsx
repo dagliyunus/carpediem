@@ -2,6 +2,7 @@
 
 import { ContentStatus, MediaType } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
+import { AdminMultiMediaPicker, AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
 
 type PageItem = {
   id: string;
@@ -25,33 +26,28 @@ type MediaItem = {
   url: string;
   filename: string;
   mediaType: MediaType;
+  altText?: string | null;
 };
 
 type FormState = {
-  slug: string;
   title: string;
   headline: string;
   subheadline: string;
   body: string;
-  template: string;
   status: ContentStatus;
   publishedAt: string;
   heroImageId: string;
-  sectionsJson: string;
   mediaIds: string[];
 };
 
 const emptyForm: FormState = {
-  slug: '',
   title: '',
   headline: '',
   subheadline: '',
   body: '',
-  template: 'standard',
   status: ContentStatus.DRAFT,
   publishedAt: '',
   heroImageId: '',
-  sectionsJson: '',
   mediaIds: [],
 };
 
@@ -108,16 +104,13 @@ export function ContentManager() {
     }
 
     setForm({
-      slug: selectedPage.slug,
       title: selectedPage.title,
       headline: selectedPage.headline || '',
       subheadline: selectedPage.subheadline || '',
       body: selectedPage.body || '',
-      template: selectedPage.template,
       status: selectedPage.status,
       publishedAt: toDatetimeLocal(selectedPage.publishedAt),
       heroImageId: selectedPage.heroImageId || '',
-      sectionsJson: selectedPage.sections ? JSON.stringify(selectedPage.sections, null, 2) : '',
       mediaIds: selectedPage.mediaLinks.map((link) => link.mediaId),
     });
   }, [selectedPage]);
@@ -135,28 +128,14 @@ export function ContentManager() {
     setMessage(null);
     setSaving(true);
 
-    let parsedSections: unknown = undefined;
-    if (form.sectionsJson.trim()) {
-      try {
-        parsedSections = JSON.parse(form.sectionsJson);
-      } catch {
-        setMessage('Sections JSON ist nicht gueltig.');
-        setSaving(false);
-        return;
-      }
-    }
-
     const body = {
-      slug: form.slug,
       title: form.title,
       headline: form.headline,
       subheadline: form.subheadline,
       body: form.body,
-      template: form.template,
       status: form.status,
       publishedAt: fromDatetimeLocal(form.publishedAt),
       heroImageId: form.heroImageId || null,
-      sections: parsedSections,
       mediaIds: form.mediaIds,
     };
 
@@ -238,7 +217,7 @@ export function ContentManager() {
                 }`}
               >
                 <p className="text-sm font-semibold">{page.title}</p>
-                <p className="text-xs uppercase tracking-[0.14em] text-accent-300">/{page.slug}</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-accent-300">{page.status}</p>
               </button>
             ))
           )}
@@ -247,15 +226,6 @@ export function ContentManager() {
 
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Slug</span>
-            <input
-              value={form.slug}
-              onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-              placeholder="kontakt"
-            />
-          </label>
           <label className="space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Status</span>
             <select
@@ -314,14 +284,6 @@ export function ContentManager() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Template</span>
-            <input
-              value={form.template}
-              onChange={(event) => setForm((prev) => ({ ...prev, template: event.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-            />
-          </label>
-          <label className="space-y-1 block">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Publizieren am</span>
             <input
               type="datetime-local"
@@ -332,50 +294,23 @@ export function ContentManager() {
           </label>
         </div>
 
-        <label className="space-y-1 block">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Hero-Bild</span>
-          <select
-            value={form.heroImageId}
-            onChange={(event) => setForm((prev) => ({ ...prev, heroImageId: event.target.value }))}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          >
-            <option value="">Keins</option>
-            {media
-              .filter((item) => item.mediaType === MediaType.IMAGE)
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.filename}
-                </option>
-              ))}
-          </select>
-        </label>
+        <AdminSingleMediaPicker
+          label="Hero-Bild"
+          hint="Waehlen Sie das Bild, das im Kopfbereich der Seite erscheinen soll."
+          items={media}
+          selectedId={form.heroImageId}
+          onSelect={(id) => setForm((prev) => ({ ...prev, heroImageId: id }))}
+          emptyLabel="Kein Hero-Bild"
+          acceptedTypes={[MediaType.IMAGE]}
+        />
 
-        <label className="space-y-1 block">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sections (JSON)</span>
-          <textarea
-            value={form.sectionsJson}
-            onChange={(event) => setForm((prev) => ({ ...prev, sectionsJson: event.target.value }))}
-            className="h-36 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white font-mono"
-            placeholder='[{"type":"hero","title":"..."}]'
-          />
-        </label>
-
-        <div>
-          <p className="mb-2 text-xs uppercase tracking-[0.16em] text-accent-300">Verknuepfte Medien</p>
-          <div className="max-h-44 space-y-2 overflow-auto rounded-xl border border-white/10 bg-black/20 p-3">
-            {media.map((item) => (
-              <label key={item.id} className="flex items-center gap-2 text-sm text-white/80">
-                <input
-                  type="checkbox"
-                  checked={form.mediaIds.includes(item.id)}
-                  onChange={() => toggleMedia(item.id)}
-                />
-                <span>{item.filename}</span>
-                <span className="text-xs uppercase text-accent-300">{item.mediaType}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <AdminMultiMediaPicker
+          label="Verknuepfte Medien"
+          hint="Ausgewaehlte Medien koennen auf der Seite verwendet werden."
+          items={media}
+          selectedIds={form.mediaIds}
+          onToggle={toggleMedia}
+        />
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>

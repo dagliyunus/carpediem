@@ -87,7 +87,7 @@ export async function PATCH(
           headline: parsed.data.headline?.trim() || null,
           subheadline: parsed.data.subheadline?.trim() || null,
           body: parsed.data.body?.trim() || null,
-          template: parsed.data.template?.trim() || 'standard',
+          template: parsed.data.template === undefined ? undefined : parsed.data.template.trim() || 'standard',
           status: parsed.data.status,
           publishedAt: parsed.data.publishedAt ? new Date(parsed.data.publishedAt) : null,
           heroImageId: parsed.data.heroImageId || null,

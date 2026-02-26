@@ -1,8 +1,9 @@
 'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { SeoTargetType } from '@prisma/client';
+import { MediaType, SeoTargetType } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
+import { AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
 
 type SeoItem = {
   id: string;
@@ -22,7 +23,10 @@ type SeoItem = {
 
 type MediaItem = {
   id: string;
+  url: string;
+  mediaType: MediaType;
   filename: string;
+  altText?: string | null;
 };
 
 type FormState = {
@@ -54,6 +58,20 @@ const emptyForm: FormState = {
   schemaType: 'Restaurant',
   ogImageId: '',
 };
+
+function getSeoTargetLabel(item: SeoItem) {
+  if (item.targetType === SeoTargetType.GLOBAL) return 'Website gesamt';
+  if (item.targetType === SeoTargetType.PAGE) return 'Seite';
+  if (item.targetType === SeoTargetType.ARTICLE) return 'Magazinbeitrag';
+  return item.targetType;
+}
+
+function getSeoTargetLabelByType(targetType: SeoTargetType) {
+  if (targetType === SeoTargetType.GLOBAL) return 'Website gesamt';
+  if (targetType === SeoTargetType.PAGE) return 'Seite';
+  if (targetType === SeoTargetType.ARTICLE) return 'Magazinbeitrag';
+  return targetType;
+}
 
 export function SeoManager() {
   const [items, setItems] = useState<SeoItem[]>([]);
@@ -159,8 +177,9 @@ export function SeoManager() {
                   : 'border-white/10 bg-black/20 hover:border-white/20'
               }`}
             >
-              <p className="text-sm font-semibold text-white">
-                {item.targetType} · {item.targetId}
+              <p className="text-sm font-semibold text-white">{getSeoTargetLabel(item)}</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-accent-300">
+                {item.targetType === SeoTargetType.GLOBAL ? 'Standard' : item.targetId}
               </p>
             </button>
           ))}
@@ -168,31 +187,13 @@ export function SeoManager() {
       </div>
 
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Target Type</span>
-            <select
-              value={form.targetType}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, targetType: event.target.value as SeoTargetType }))
-              }
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-            >
-              {Object.values(SeoTargetType).map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Target ID</span>
-            <input
-              value={form.targetId}
-              onChange={(event) => setForm((prev) => ({ ...prev, targetId: event.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-            />
-          </label>
+        <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-accent-300">SEO Ziel</p>
+          <p className="mt-1 text-sm text-white/80">
+            {form.targetType === SeoTargetType.GLOBAL
+              ? 'Website gesamt'
+              : `${getSeoTargetLabelByType(form.targetType)} (${form.targetId})`}
+          </p>
         </div>
 
         <label className="space-y-1 block">
@@ -280,21 +281,14 @@ export function SeoManager() {
           </label>
         </div>
 
-        <label className="space-y-1 block">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">OG Bild</span>
-          <select
-            value={form.ogImageId}
-            onChange={(event) => setForm((prev) => ({ ...prev, ogImageId: event.target.value }))}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          >
-            <option value="">Kein Bild</option>
-            {media.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.filename}
-              </option>
-            ))}
-          </select>
-        </label>
+        <AdminSingleMediaPicker
+          label="OG Bild"
+          hint="Dieses Bild wird fuer Link-Vorschau in Social Media verwendet."
+          items={media}
+          selectedId={form.ogImageId}
+          onSelect={(id) => setForm((prev) => ({ ...prev, ogImageId: id }))}
+          emptyLabel="Kein OG-Bild"
+        />
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>

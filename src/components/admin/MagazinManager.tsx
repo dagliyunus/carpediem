@@ -2,6 +2,7 @@
 
 import { ContentStatus, MediaType } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
+import { AdminMultiMediaPicker, AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
 
 type ArticleItem = {
   id: string;
@@ -20,8 +21,10 @@ type ArticleItem = {
 
 type MediaItem = {
   id: string;
+  url: string;
   filename: string;
   mediaType: MediaType;
+  altText?: string | null;
 };
 
 type FormState = {
@@ -252,15 +255,12 @@ export function MagazinManager() {
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
             />
           </label>
-          <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Slug</span>
-            <input
-              value={form.slug}
-              onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-              placeholder="sommer-terrasse-bad-saarow"
-            />
-          </label>
+          <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Link-Adresse</p>
+            <p className="mt-1 text-sm text-white/80">
+              Wird automatisch aus dem Titel erstellt.
+            </p>
+          </div>
         </div>
 
         <label className="space-y-1 block">
@@ -339,40 +339,23 @@ export function MagazinManager() {
           </label>
         </div>
 
-        <label className="space-y-1 block">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Cover Bild</span>
-          <select
-            value={form.coverImageId}
-            onChange={(event) => setForm((prev) => ({ ...prev, coverImageId: event.target.value }))}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          >
-            <option value="">Kein Cover</option>
-            {media
-              .filter((item) => item.mediaType === MediaType.IMAGE)
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.filename}
-                </option>
-              ))}
-          </select>
-        </label>
+        <AdminSingleMediaPicker
+          label="Cover-Bild"
+          hint="Dieses Bild wird im Magazin-Listing und im Artikelkopf angezeigt."
+          items={media}
+          selectedId={form.coverImageId}
+          onSelect={(id) => setForm((prev) => ({ ...prev, coverImageId: id }))}
+          emptyLabel="Kein Cover-Bild"
+          acceptedTypes={[MediaType.IMAGE]}
+        />
 
-        <div>
-          <p className="mb-2 text-xs uppercase tracking-[0.16em] text-accent-300">Zusaetzliche Medienlinks</p>
-          <div className="max-h-44 space-y-2 overflow-auto rounded-xl border border-white/10 bg-black/20 p-3">
-            {media.map((item) => (
-              <label key={item.id} className="flex items-center gap-2 text-sm text-white/80">
-                <input
-                  type="checkbox"
-                  checked={form.mediaIds.includes(item.id)}
-                  onChange={() => toggleMedia(item.id)}
-                />
-                <span>{item.filename}</span>
-                <span className="text-xs uppercase text-accent-300">{item.mediaType}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <AdminMultiMediaPicker
+          label="Zusaetzliche Medien"
+          hint="Waehlen Sie weitere Bilder oder Videos fuer diesen Beitrag."
+          items={media}
+          selectedIds={form.mediaIds}
+          onToggle={toggleMedia}
+        />
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>

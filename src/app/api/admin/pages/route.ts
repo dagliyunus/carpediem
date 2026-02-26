@@ -7,7 +7,7 @@ import { recordAuditLog } from '@/lib/admin/audit';
 import { slugify } from '@/lib/cms/content';
 
 const pageSchema = z.object({
-  slug: z.string().min(1).max(120),
+  slug: z.string().max(120).optional(),
   title: z.string().min(2).max(160),
   headline: z.string().max(220).optional(),
   subheadline: z.string().max(320).optional(),
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid page payload.', details: parsed.error.issues }, { status: 400 });
   }
 
-  const safeSlug = slugify(parsed.data.slug);
+  const safeSlug = slugify(parsed.data.slug || parsed.data.title);
   if (!safeSlug) {
     return NextResponse.json({ error: 'Invalid slug.' }, { status: 400 });
   }
