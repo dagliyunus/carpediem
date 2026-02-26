@@ -2,9 +2,19 @@ import { ContentStatus, SeoTargetType } from '@prisma/client';
 import { unstable_noStore as noStore } from 'next/cache';
 import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
+import { publishDueScheduledArticles } from '@/lib/cms/scheduler';
+
+async function publishDueScheduledArticlesSafe() {
+  try {
+    await publishDueScheduledArticles();
+  } catch {
+    // Keep content queries resilient even if scheduler check fails.
+  }
+}
 
 export async function getPublishedMagazinPosts() {
   noStore();
+  await publishDueScheduledArticlesSafe();
 
   return db.article.findMany({
     where: {
@@ -50,6 +60,7 @@ export async function getPublishedMagazinPosts() {
 
 export async function getMagazinPostBySlug(slug: string) {
   noStore();
+  await publishDueScheduledArticlesSafe();
 
   return db.article.findUnique({
     where: { slug },
