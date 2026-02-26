@@ -24,10 +24,12 @@ function filterItems(items: PickerMediaItem[], acceptedTypes?: MediaType[]) {
 }
 
 function MediaPreview({ item }: { item: PickerMediaItem }) {
+  const previewSrc = `/api/admin/media/${item.id}/preview`;
+
   if (item.mediaType === MediaType.IMAGE) {
     return (
       <Image
-        src={item.url}
+        src={previewSrc}
         alt={item.altText || item.filename}
         fill
         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
@@ -39,7 +41,7 @@ function MediaPreview({ item }: { item: PickerMediaItem }) {
   if (item.mediaType === MediaType.VIDEO) {
     return (
       <video
-        src={item.url}
+        src={previewSrc}
         muted
         playsInline
         preload="metadata"

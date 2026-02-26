@@ -52,6 +52,7 @@ export function MediaManager() {
     () => items.find((item) => item.id === selectedId) || null,
     [items, selectedId]
   );
+  const selectedPreviewUrl = selected ? `/api/admin/media/${selected.id}/preview` : '';
 
   useEffect(() => {
     if (!selected) {
@@ -219,12 +220,12 @@ export function MediaManager() {
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               {selected.mediaType === MediaType.IMAGE ? (
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/10">
-                  <Image src={selected.url} alt={selected.altText || selected.filename} fill className="object-cover" />
+                  <Image src={selectedPreviewUrl} alt={selected.altText || selected.filename} fill className="object-cover" />
                 </div>
               ) : selected.mediaType === MediaType.VIDEO ? (
-                <video src={selected.url} controls className="w-full rounded-xl border border-white/10" />
+                <video src={selectedPreviewUrl} controls className="w-full rounded-xl border border-white/10" />
               ) : (
-                <a href={selected.url} target="_blank" rel="noreferrer" className="text-primary-300 underline">
+                <a href={selectedPreviewUrl} target="_blank" rel="noreferrer" className="text-primary-300 underline">
                   Datei in neuem Tab oeffnen
                 </a>
               )}
