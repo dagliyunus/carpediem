@@ -106,6 +106,15 @@ export async function upsertArticle(input: UpsertArticleInput) {
   const categories = normalizeUniqueList(input.categoryNames);
   const tags = normalizeUniqueList(input.tagNames);
   const mediaIds = Array.from(new Set((input.mediaIds || []).filter(Boolean)));
+  const resolvedPublishedAt =
+    input.status === ContentStatus.PUBLISHED
+      ? input.publishedAt
+        ? new Date(input.publishedAt)
+        : new Date()
+      : input.publishedAt
+        ? new Date(input.publishedAt)
+        : null;
+  const resolvedScheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
 
   return db.$transaction(async (tx) => {
     if (input.id) {
@@ -132,8 +141,8 @@ export async function upsertArticle(input: UpsertArticleInput) {
           readTimeMinutes: estimateReadTimeMinutes(safeContent),
           coverImageId: input.coverImageId || null,
           authorId: input.authorId || null,
-          publishedAt: input.publishedAt ? new Date(input.publishedAt) : null,
-          scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+          publishedAt: resolvedPublishedAt,
+          scheduledAt: resolvedScheduledAt,
         },
       });
 
@@ -195,8 +204,8 @@ export async function upsertArticle(input: UpsertArticleInput) {
         readTimeMinutes: estimateReadTimeMinutes(safeContent),
         coverImageId: input.coverImageId || null,
         authorId: input.authorId || null,
-        publishedAt: input.publishedAt ? new Date(input.publishedAt) : null,
-        scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+        publishedAt: resolvedPublishedAt,
+        scheduledAt: resolvedScheduledAt,
       },
     });
 

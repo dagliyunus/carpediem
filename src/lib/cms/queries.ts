@@ -4,12 +4,11 @@ import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
 
 export async function getPublishedMagazinPosts() {
+  noStore();
+
   return db.article.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
-      publishedAt: {
-        lte: new Date(),
-      },
     },
     include: {
       coverImage: {
@@ -50,6 +49,8 @@ export async function getPublishedMagazinPosts() {
 }
 
 export async function getMagazinPostBySlug(slug: string) {
+  noStore();
+
   return db.article.findUnique({
     where: { slug },
     include: {

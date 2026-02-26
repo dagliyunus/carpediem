@@ -5,7 +5,7 @@ export default function AdminSeoPage() {
   return (
     <AdminCard
       title="SEO Management"
-      subtitle="Meta-Daten, Canonicals, Robots, OpenGraph und strukturierte Daten zentral verwalten"
+      subtitle="PageSpeed-Test direkt ueber die offizielle Google-Seite starten"
     >
       <SeoManager />
     </AdminCard>

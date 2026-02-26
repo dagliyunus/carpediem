@@ -416,13 +416,14 @@ export function ContentManager() {
           onSubmit={(event) => void uploadAndAttachMedia(event)}
           className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4"
         >
-          <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Datei hochladen</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Bild/Video hinzufuegen</p>
           <p className="text-xs text-accent-400">
             Bild oder Video wird direkt der aktuell gewaehlten Seite zugeordnet.
           </p>
           <input
             name="file"
             type="file"
+            accept="image/*,video/*"
             required
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
@@ -446,9 +447,9 @@ export function ContentManager() {
           <button
             type="submit"
             disabled={uploading || !selectedPage}
-            className="rounded-full border border-primary-500/40 px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary-200 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-primary-600 px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {uploading ? 'Upload ...' : 'Datei hochladen'}
+            {uploading ? 'Upload ...' : 'Bild/Video hinzufuegen'}
           </button>
         </form>
 
