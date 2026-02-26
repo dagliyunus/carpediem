@@ -2,6 +2,97 @@ import { AiChannel, ContentStatus, Prisma, SeoTargetType, SocialPlatform } from 
 import { db } from '@/lib/db';
 
 const WORDS_PER_MINUTE = 220;
+const TAG_LIMIT = 8;
+const CATEGORY_LIMIT = 3;
+
+const STOP_WORDS = new Set([
+  'a',
+  'ab',
+  'aber',
+  'als',
+  'am',
+  'an',
+  'auch',
+  'auf',
+  'aus',
+  'bei',
+  'ben',
+  'bis',
+  'carpe',
+  'das',
+  'de',
+  'dem',
+  'den',
+  'der',
+  'des',
+  'diem',
+  'die',
+  'ein',
+  'eine',
+  'einem',
+  'einen',
+  'einer',
+  'es',
+  'for',
+  'fuer',
+  'fur',
+  'im',
+  'in',
+  'ist',
+  'mit',
+  'nach',
+  'oder',
+  'of',
+  'on',
+  'the',
+  'to',
+  'und',
+  'unser',
+  'unsere',
+  'von',
+  'vor',
+  'wie',
+  'wir',
+  'you',
+  'zum',
+  'zur',
+]);
+
+const CATEGORY_RULES: Array<{ name: string; keywords: string[] }> = [
+  {
+    name: 'Events',
+    keywords: ['event', 'events', 'live', 'musik', 'dj', 'konzert', 'party', 'abend'],
+  },
+  {
+    name: 'Kulinarik',
+    keywords: ['kulinar', 'gericht', 'speise', 'menu', 'menue', 'taste', 'rezept', 'kueche'],
+  },
+  {
+    name: 'Fisch & Meeresfruechte',
+    keywords: ['fisch', 'meeresfrucht', 'seafood', 'dorade', 'lachs', 'thunfisch'],
+  },
+  {
+    name: 'Grill',
+    keywords: ['grill', 'steak', 'haehnchen', 'fleisch', 'bbq'],
+  },
+  {
+    name: 'Getraenke',
+    keywords: ['cocktail', 'wein', 'getraenk', 'drink', 'aperitivo', 'bar'],
+  },
+  {
+    name: 'Bad Saarow',
+    keywords: ['bad saarow', 'saarow'],
+  },
+];
+
+const PHRASE_TAG_RULES: Array<{ pattern: RegExp; tag: string }> = [
+  { pattern: /\bbad\s*saarow\b/, tag: 'bad saarow' },
+  { pattern: /\bcarpe\s*diem\b/, tag: 'carpe diem' },
+  { pattern: /\bmediterran\w*\b/, tag: 'mediterran' },
+  { pattern: /\blive\s*musik\b/, tag: 'live musik' },
+  { pattern: /\bfisch\b/, tag: 'fisch' },
+  { pattern: /\bgrill\w*\b/, tag: 'grill' },
+];
 
 export function slugify(input: string) {
   return input
@@ -47,6 +138,75 @@ function normalizeUniqueList(values: string[] | undefined) {
         .map((item) => item.slice(0, 80))
     )
   );
+}
+
+function normalizeText(input: string) {
+  return input
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/-/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function tokenize(input: string) {
+  return normalizeText(input)
+    .split(' ')
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3)
+    .filter((token) => !STOP_WORDS.has(token))
+    .filter((token) => !/^\d+$/.test(token));
+}
+
+function inferArticleTaxonomy(input: {
+  title: string;
+  excerpt?: string | null;
+  content: string;
+}) {
+  const normalizedTitle = normalizeText(input.title);
+  const normalizedExcerpt = normalizeText(input.excerpt || '');
+  const normalizedContent = normalizeText(input.content);
+  const merged = `${normalizedTitle} ${normalizedExcerpt} ${normalizedContent}`.trim();
+
+  const tokenWeights = new Map<string, number>();
+  const addWeightedTokens = (tokens: string[], weight: number) => {
+    for (const token of tokens) {
+      tokenWeights.set(token, (tokenWeights.get(token) || 0) + weight);
+    }
+  };
+
+  addWeightedTokens(tokenize(input.title), 3);
+  addWeightedTokens(tokenize(input.excerpt || ''), 2);
+  addWeightedTokens(tokenize(input.content), 1);
+
+  const inferredCategories = CATEGORY_RULES.filter((rule) =>
+    rule.keywords.some((keyword) => merged.includes(keyword))
+  ).map((rule) => rule.name);
+
+  if (inferredCategories.length === 0) {
+    inferredCategories.push('Magazin');
+  }
+
+  const phraseTags = PHRASE_TAG_RULES.filter((rule) => rule.pattern.test(merged)).map((rule) => rule.tag);
+
+  const rankedTokenTags = Array.from(tokenWeights.entries())
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0]);
+    })
+    .map(([token]) => token);
+
+  const uniqueTags = Array.from(new Set([...phraseTags, ...rankedTokenTags])).slice(0, TAG_LIMIT);
+  if (uniqueTags.length === 0) {
+    uniqueTags.push('magazin');
+  }
+
+  return {
+    categoryNames: inferredCategories.slice(0, CATEGORY_LIMIT),
+    tagNames: uniqueTags,
+  };
 }
 
 async function resolveCategories(tx: Prisma.TransactionClient, names: string[]) {
@@ -103,18 +263,29 @@ export async function upsertArticle(input: UpsertArticleInput) {
     throw new Error('A valid slug could not be generated.');
   }
 
-  const categories = normalizeUniqueList(input.categoryNames);
-  const tags = normalizeUniqueList(input.tagNames);
+  const manualCategories = normalizeUniqueList(input.categoryNames);
+  const manualTags = normalizeUniqueList(input.tagNames);
+  const inferredTaxonomy = inferArticleTaxonomy({
+    title: safeTitle,
+    excerpt: input.excerpt?.trim() || '',
+    content: safeContent,
+  });
+  const categories = manualCategories.length > 0 ? manualCategories : inferredTaxonomy.categoryNames;
+  const tags = manualTags.length > 0 ? manualTags : inferredTaxonomy.tagNames;
   const mediaIds = Array.from(new Set((input.mediaIds || []).filter(Boolean)));
+  const parsedPublishedAt = input.publishedAt ? new Date(input.publishedAt) : null;
+  const parsedScheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
+  const scheduleReferenceAt = parsedScheduledAt || parsedPublishedAt;
+
+  if (input.status === ContentStatus.SCHEDULED && !scheduleReferenceAt) {
+    throw new Error('For scheduled posts, set Publish At or Schedule At.');
+  }
+
   const resolvedPublishedAt =
     input.status === ContentStatus.PUBLISHED
-      ? input.publishedAt
-        ? new Date(input.publishedAt)
-        : new Date()
-      : input.publishedAt
-        ? new Date(input.publishedAt)
-        : null;
-  const resolvedScheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
+      ? parsedPublishedAt || new Date()
+      : parsedPublishedAt;
+  const resolvedScheduledAt = input.status === ContentStatus.SCHEDULED ? scheduleReferenceAt : parsedScheduledAt;
 
   return db.$transaction(async (tx) => {
     if (input.id) {

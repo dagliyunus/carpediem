@@ -410,6 +410,7 @@ export function MagazinManager() {
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
               placeholder="Events, Kulinarik"
             />
+            <p className="text-[11px] text-accent-400">Leer lassen = automatische Kategorien aus dem Inhalt.</p>
           </label>
           <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Tags (Komma)</span>
@@ -419,6 +420,7 @@ export function MagazinManager() {
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
               placeholder="bad-saarow, sommer"
             />
+            <p className="text-[11px] text-accent-400">Leer lassen = automatische Tags aus dem Inhalt.</p>
           </label>
         </div>
 
