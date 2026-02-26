@@ -26,6 +26,12 @@ export const siteConfig = {
       pinterest: 'https://pinterest.com/carpediembadsaarow',
     },
   },
+  legal: {
+    proprietor: 'Benan Aslim Aslan',
+    steuerNr: '061/202/05240 N07',
+    steuerId: '64 895 207 712',
+    ustId: 'DE232313322',
+  },
   reservations: {
     mode: 'NATIVE' as ReservationMode,
     embedUrl: '',

@@ -5,7 +5,7 @@ export default function AdminContentPage() {
   return (
     <AdminCard
       title="Seiteninhalte"
-      subtitle="Dynamische Seitenverwaltung fuer Startseite, Kontakt, Reservierung, Galerie und weitere Inhalte"
+      subtitle="Inhalte und Medien fuer Startseite, Galerie und Magazin"
     >
       <ContentManager />
     </AdminCard>

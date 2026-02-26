@@ -55,12 +55,23 @@ export default function ImpressumPage() {
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-white">3. Inhaltlich verantwortlich</h2>
               <p>
-                Verantwortlich fuer die Inhalte dieser Website ist {siteConfig.name}, Anschrift wie oben.
+                {siteConfig.legal.proprietor}, Anschrift wie oben.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white">4. Verbraucherstreitbeilegung (VSBG)</h2>
+              <h2 className="text-2xl font-bold text-white">4. Steuerliche Angaben</h2>
+              <p>
+                Steuernummer: {siteConfig.legal.steuerNr}
+                <br />
+                Steuer-Identifikationsnummer: {siteConfig.legal.steuerId}
+                <br />
+                Umsatzsteuer-Identifikationsnummer: {siteConfig.legal.ustId}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white">5. Verbraucherstreitbeilegung (VSBG)</h2>
               <p>
                 Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer
                 Verbraucherschlichtungsstelle teilzunehmen.
@@ -68,7 +79,7 @@ export default function ImpressumPage() {
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white">5. Hinweis zur EU-Online-Streitbeilegung</h2>
+              <h2 className="text-2xl font-bold text-white">6. Hinweis zur EU-Online-Streitbeilegung</h2>
               <p>
                 Die fruehere EU-Online-Streitbeilegungsplattform (ODR/OS-Plattform) wurde unionsrechtlich
                 eingestellt (Aufhebung der Verordnung (EU) Nr. 524/2013 mit Wirkung zum 20. Juli 2025).
@@ -77,7 +88,7 @@ export default function ImpressumPage() {
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white">6. Haftung fuer Inhalte und Links</h2>
+              <h2 className="text-2xl font-bold text-white">7. Haftung fuer Inhalte und Links</h2>
               <p>
                 Wir sind fuer eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
                 Fuer Inhalte externer Links uebernehmen wir keine Gewaehr; fuer diese Inhalte sind ausschliesslich
@@ -87,7 +98,7 @@ export default function ImpressumPage() {
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white">7. Urheberrecht</h2>
+              <h2 className="text-2xl font-bold text-white">8. Urheberrecht</h2>
               <p>
                 Die durch den Seitenbetreiber erstellten Inhalte und Werke auf dieser Website unterliegen dem
                 deutschen Urheberrecht. Vervielfaeltigung, Bearbeitung, Verbreitung und jede Art der Verwertung

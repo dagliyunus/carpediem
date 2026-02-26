@@ -50,7 +50,7 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { href: '/admin/magazin', label: 'Neuen Magazin-Beitrag erstellen' },
-            { href: '/admin/media', label: 'Bild oder Video hochladen' },
+            { href: '/admin/content', label: 'Startseite, Galerie und Magazin-Medien verwalten' },
             { href: '/admin/seo', label: 'SEO-Metadaten bearbeiten' },
             { href: '/admin/ai-agent', label: 'AI Agent-Zeitfenster setzen' },
           ].map((item) => (

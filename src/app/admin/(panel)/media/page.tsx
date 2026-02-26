@@ -1,13 +1,5 @@
-import { AdminCard } from '@/components/admin/AdminCard';
-import { MediaManager } from '@/components/admin/MediaManager';
+import { redirect } from 'next/navigation';
 
 export default function AdminMediaPage() {
-  return (
-    <AdminCard
-      title="Medienbibliothek"
-      subtitle="Blob-gestuetzte Medienverwaltung mit sicherer Speicherbereinigung bei Loeschvorgaengen"
-    >
-      <MediaManager />
-    </AdminCard>
-  );
+  redirect('/admin/content');
 }

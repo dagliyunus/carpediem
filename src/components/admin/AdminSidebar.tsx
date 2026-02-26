@@ -7,7 +7,6 @@ const navItems = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/content', label: 'Seiteninhalte' },
   { href: '/admin/magazin', label: 'Magazin-Beitraege' },
-  { href: '/admin/media', label: 'Medienbibliothek' },
   { href: '/admin/seo', label: 'SEO' },
   { href: '/admin/social', label: 'Social Accounts' },
   { href: '/admin/ai-agent', label: 'AI Agenten' },
