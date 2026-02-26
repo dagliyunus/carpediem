@@ -63,6 +63,31 @@ function fromDatetimeLocal(value: string) {
   return new Date(value).toISOString();
 }
 
+function isSystemMediaAsset(item: MediaItem) {
+  const filename = item.filename.toLowerCase();
+  const url = item.url.toLowerCase();
+
+  if (
+    filename.includes('favicon') ||
+    filename.includes('logo') ||
+    filename.includes('apple-touch-icon') ||
+    filename.includes('android-chrome') ||
+    filename.includes('site.webmanifest') ||
+    filename.includes('manifest') ||
+    filename.includes('mstile') ||
+    filename.includes('hero-bg') ||
+    filename === 'smoke.png'
+  ) {
+    return true;
+  }
+
+  if (url.includes('/icons/') || url.includes('/legacy-assets/images/icons/')) {
+    return true;
+  }
+
+  return false;
+}
+
 export function ContentManager() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -95,6 +120,25 @@ export function ContentManager() {
   const selectedPage = useMemo(
     () => pages.find((page) => page.id === selectedId) || null,
     [pages, selectedId]
+  );
+  const nonSystemMedia = useMemo(
+    () => media.filter((item) => !isSystemMediaAsset(item)),
+    [media]
+  );
+
+  const scopedMedia = useMemo(() => {
+    if (!selectedPage) return nonSystemMedia;
+
+    const scopedIds = new Set<string>();
+    if (selectedPage.heroImageId) scopedIds.add(selectedPage.heroImageId);
+    selectedPage.mediaLinks.forEach((link) => scopedIds.add(link.mediaId));
+
+    return nonSystemMedia.filter((item) => scopedIds.has(item.id));
+  }, [nonSystemMedia, selectedPage]);
+
+  const scopedImages = useMemo(
+    () => scopedMedia.filter((item) => item.mediaType === MediaType.IMAGE),
+    [scopedMedia]
   );
 
   useEffect(() => {
@@ -135,8 +179,11 @@ export function ContentManager() {
       body: form.body,
       status: form.status,
       publishedAt: fromDatetimeLocal(form.publishedAt),
-      heroImageId: form.heroImageId || null,
-      mediaIds: form.mediaIds,
+      heroImageId:
+        form.heroImageId && nonSystemMedia.some((item) => item.id === form.heroImageId)
+          ? form.heroImageId
+          : null,
+      mediaIds: form.mediaIds.filter((id) => nonSystemMedia.some((item) => item.id === id)),
     };
 
     try {
@@ -296,8 +343,12 @@ export function ContentManager() {
 
         <AdminSingleMediaPicker
           label="Hero-Bild"
-          hint="Waehlen Sie das Bild, das im Kopfbereich der Seite erscheinen soll."
-          items={media}
+          hint={
+            selectedPage
+              ? 'Es werden nur Medien gezeigt, die bereits mit dieser Seite verknuepft sind.'
+              : 'Beim Erstellen einer neuen Seite koennen Sie passende Bilder auswaehlen.'
+          }
+          items={scopedImages}
           selectedId={form.heroImageId}
           onSelect={(id) => setForm((prev) => ({ ...prev, heroImageId: id }))}
           emptyLabel="Kein Hero-Bild"
@@ -306,8 +357,12 @@ export function ContentManager() {
 
         <AdminMultiMediaPicker
           label="Verknuepfte Medien"
-          hint="Ausgewaehlte Medien koennen auf der Seite verwendet werden."
-          items={media}
+          hint={
+            selectedPage
+              ? 'Sie sehen nur Medien dieser Seite. Systemdateien wie Logo/Favicon werden ausgeblendet.'
+              : 'Waehlen Sie Medien fuer die neue Seite aus.'
+          }
+          items={scopedMedia}
           selectedIds={form.mediaIds}
           onToggle={toggleMedia}
         />
