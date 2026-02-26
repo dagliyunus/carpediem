@@ -8,6 +8,7 @@ export type CookieConsent = {
 
 const STORAGE_KEY = 'cookie-consent';
 const EVENT_NAME = 'carpediem:cookie-consent';
+export const OPEN_SETTINGS_EVENT_NAME = 'carpediem:cookie-settings-open';
 
 let lastRawConsent: string | null = null;
 let lastParsedConsent: CookieConsent | null = null;
@@ -49,6 +50,11 @@ export function clearCookieConsent() {
   lastRawConsent = null;
   lastParsedConsent = null;
   window.dispatchEvent(new Event(EVENT_NAME));
+}
+
+export function openCookieSettings() {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(OPEN_SETTINGS_EVENT_NAME));
 }
 
 function subscribe(onStoreChange: () => void) {
