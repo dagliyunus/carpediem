@@ -16,6 +16,14 @@ const updateSchema = z.object({
   heroImageId: z.string().cuid().nullable().optional(),
   sections: z.unknown().optional(),
   mediaIds: z.array(z.string().cuid()).optional(),
+  mediaLinks: z
+    .array(
+      z.object({
+        mediaId: z.string().cuid(),
+        fieldKey: z.string().min(1).max(120).optional(),
+      })
+    )
+    .optional(),
 });
 
 function sanitizeJsonPayload(
@@ -29,6 +37,29 @@ function sanitizeJsonPayload(
   } catch {
     return undefined;
   }
+}
+
+function normalizePageMediaLinks(input: {
+  mediaIds?: string[];
+  mediaLinks?: Array<{ mediaId: string; fieldKey?: string }>;
+}) {
+  const links =
+    input.mediaLinks && input.mediaLinks.length > 0
+      ? input.mediaLinks.map((link) => ({
+          mediaId: link.mediaId,
+          fieldKey: (link.fieldKey || 'content').trim() || 'content',
+        }))
+      : (input.mediaIds || []).map((mediaId) => ({
+          mediaId,
+          fieldKey: 'content',
+        }));
+
+  const unique = new Map<string, { mediaId: string; fieldKey: string }>();
+  for (const link of links) {
+    unique.set(`${link.mediaId}:${link.fieldKey}`, link);
+  }
+
+  return Array.from(unique.values());
 }
 
 export async function GET(
@@ -97,13 +128,17 @@ export async function PATCH(
 
       await tx.pageMediaLink.deleteMany({ where: { pageId: id } });
 
-      const mediaIds = Array.from(new Set((parsed.data.mediaIds || []).filter(Boolean)));
-      if (mediaIds.length > 0) {
+      const mediaLinks = normalizePageMediaLinks({
+        mediaIds: parsed.data.mediaIds,
+        mediaLinks: parsed.data.mediaLinks,
+      });
+
+      if (mediaLinks.length > 0) {
         await tx.pageMediaLink.createMany({
-          data: mediaIds.map((mediaId) => ({
+          data: mediaLinks.map((link) => ({
             pageId: id,
-            mediaId,
-            fieldKey: 'content',
+            mediaId: link.mediaId,
+            fieldKey: link.fieldKey,
           })),
           skipDuplicates: true,
         });

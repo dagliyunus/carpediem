@@ -127,43 +127,62 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
     .split(/\n{2,}/)
     .map((entry) => entry.trim())
     .filter(Boolean);
+  const formattedDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('de-DE') : '-';
 
   return (
     <div className="pt-32 pb-24">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mx-auto max-w-4xl space-y-10">
-          <div className="space-y-4">
-            <Link
-              href="/magazin"
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary-300"
-            >
-              <span aria-hidden>←</span> Zurueck zum Magazin
-            </Link>
-            <h1 className="font-serif text-5xl md:text-7xl font-bold text-white leading-[0.95]">{post.title}</h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-accent-300">
-              <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('de-DE') : '-'}</span>
-              <span>•</span>
-              <span>{post.readTimeMinutes || 1} Min. Lesezeit</span>
-              {post.author ? (
-                <>
-                  <span>•</span>
-                  <span>{post.author.name}</span>
-                </>
-              ) : null}
-            </div>
-          </div>
+        <div className="mx-auto max-w-5xl space-y-10">
+          <Link
+            href="/magazin"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary-300"
+          >
+            <span aria-hidden>←</span> Zurueck zum Magazin
+          </Link>
 
           {post.coverImage?.url ? (
-            <div className="relative aspect-[16/9] overflow-hidden rounded-[2.5rem] border border-white/10">
-              <Image
-                src={post.coverImage.url}
-                alt={post.coverImage.altText || post.title}
-                fill
-                sizes="100vw"
-                className="object-cover"
-              />
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10">
+              <div className="relative aspect-[16/9]">
+                <Image
+                  src={post.coverImage.url}
+                  alt={post.coverImage.altText || post.title}
+                  fill
+                  sizes="100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/5" />
+                <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
+                  <div className="mb-4 flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-200">
+                    <span>{formattedDate}</span>
+                    <span>•</span>
+                    <span>{post.readTimeMinutes || 1} Min. Lesezeit</span>
+                    {post.author ? (
+                      <>
+                        <span>•</span>
+                        <span>{post.author.name}</span>
+                      </>
+                    ) : null}
+                  </div>
+                  <h1 className="font-serif text-4xl font-bold leading-[0.95] text-white md:text-6xl">{post.title}</h1>
+                </div>
+              </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="space-y-4">
+              <h1 className="font-serif text-5xl font-bold leading-[0.95] text-white md:text-7xl">{post.title}</h1>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-accent-300">
+                <span>{formattedDate}</span>
+                <span>•</span>
+                <span>{post.readTimeMinutes || 1} Min. Lesezeit</span>
+                {post.author ? (
+                  <>
+                    <span>•</span>
+                    <span>{post.author.name}</span>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          )}
 
           {post.excerpt ? <p className="text-xl text-accent-200 leading-relaxed italic">{post.excerpt}</p> : null}
 

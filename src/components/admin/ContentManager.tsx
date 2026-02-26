@@ -2,7 +2,8 @@
 
 import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { AdminMultiMediaPicker } from '@/components/admin/MediaPicker';
+import { Trash2 } from 'lucide-react';
+import Image from 'next/image';
 
 type PageItem = {
   id: string;
@@ -18,6 +19,7 @@ type PageItem = {
   sections: unknown;
   mediaLinks: Array<{
     mediaId: string;
+    fieldKey: string;
   }>;
 };
 
@@ -30,6 +32,11 @@ type MediaItem = {
   altText?: string | null;
 };
 
+type FormMediaLink = {
+  mediaId: string;
+  fieldKey: string;
+};
+
 type FormState = {
   title: string;
   headline: string;
@@ -38,7 +45,13 @@ type FormState = {
   status: ContentStatus;
   publishedAt: string;
   heroImageId: string;
-  mediaIds: string[];
+  mediaLinks: FormMediaLink[];
+};
+
+type UploadTargetOption = {
+  key: string;
+  label: string;
+  helper: string;
 };
 
 const emptyForm: FormState = {
@@ -49,7 +62,7 @@ const emptyForm: FormState = {
   status: ContentStatus.DRAFT,
   publishedAt: '',
   heroImageId: '',
-  mediaIds: [],
+  mediaLinks: [],
 };
 
 const MANAGED_PAGE_SLUGS = ['home', 'galerie', 'magazin'] as const;
@@ -64,6 +77,31 @@ const MANAGED_PAGE_LABELS: Record<(typeof MANAGED_PAGE_SLUGS)[number], string> =
   home: 'Startseite',
   galerie: 'Galerie',
   magazin: 'Magazin',
+};
+
+const SECTION_LABELS: Record<string, string> = {
+  content: 'Seiteninhalt',
+  fish_showcase: 'Fish Showcase',
+  video_showcase: 'Video Showcase',
+};
+
+const HOME_UPLOAD_TARGETS: UploadTargetOption[] = [
+  {
+    key: 'fish_showcase',
+    label: 'Fish Showcase',
+    helper: 'Nur Bilder fuer den Fish-Showcase Bereich.',
+  },
+  {
+    key: 'video_showcase',
+    label: 'Video Showcase',
+    helper: 'Nur Videos fuer den Video-Showcase Bereich.',
+  },
+];
+
+const DEFAULT_UPLOAD_TARGET: UploadTargetOption = {
+  key: 'content',
+  label: 'Seiteninhalt',
+  helper: 'Medien fuer diese Seite.',
 };
 
 function toDatetimeLocal(value: string | null) {
@@ -104,6 +142,46 @@ function isSystemMediaAsset(item: MediaItem) {
   return false;
 }
 
+function normalizeMediaLinks(links: FormMediaLink[]) {
+  const unique = new Map<string, FormMediaLink>();
+  for (const link of links) {
+    const fieldKey = link.fieldKey?.trim() || 'content';
+    if (!link.mediaId) continue;
+    unique.set(`${link.mediaId}:${fieldKey}`, {
+      mediaId: link.mediaId,
+      fieldKey,
+    });
+  }
+  return Array.from(unique.values());
+}
+
+function upsertMediaLink(links: FormMediaLink[], entry: FormMediaLink) {
+  return normalizeMediaLinks([
+    ...links,
+    {
+      mediaId: entry.mediaId,
+      fieldKey: entry.fieldKey,
+    },
+  ]);
+}
+
+function getUploadTargetOptions(pageSlug?: string): UploadTargetOption[] {
+  if (pageSlug === 'home') {
+    return HOME_UPLOAD_TARGETS;
+  }
+  return [DEFAULT_UPLOAD_TARGET];
+}
+
+function getSectionLabel(fieldKey: string) {
+  return SECTION_LABELS[fieldKey] || fieldKey;
+}
+
+function canUploadForTarget(targetKey: string, file: File) {
+  if (targetKey === 'fish_showcase') return file.type.startsWith('image/');
+  if (targetKey === 'video_showcase') return file.type.startsWith('video/');
+  return file.type.startsWith('image/') || file.type.startsWith('video/');
+}
+
 export function ContentManager() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -112,6 +190,8 @@ export function ContentManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deletingMediaId, setDeletingMediaId] = useState<string | null>(null);
+  const [uploadTargetKey, setUploadTargetKey] = useState<string>('content');
   const [message, setMessage] = useState<string | null>(null);
 
   async function loadData() {
@@ -150,25 +230,41 @@ export function ContentManager() {
     [pages, selectedId]
   );
 
+  const uploadTargets = useMemo(
+    () => getUploadTargetOptions(selectedPage?.slug),
+    [selectedPage?.slug]
+  );
+
+  useEffect(() => {
+    if (uploadTargets.length === 0) return;
+    const isValidTarget = uploadTargets.some((target) => target.key === uploadTargetKey);
+    if (!isValidTarget) {
+      setUploadTargetKey(uploadTargets[0].key);
+    }
+  }, [uploadTargetKey, uploadTargets]);
+
   const nonSystemMedia = useMemo(
     () => media.filter((item) => !isSystemMediaAsset(item)),
     [media]
   );
 
-  const linkedMediaIds = useMemo(() => {
-    const ids = new Set<string>(form.mediaIds);
-    if (form.heroImageId) ids.add(form.heroImageId);
-    return ids;
-  }, [form.heroImageId, form.mediaIds]);
+  const mediaById = useMemo(() => {
+    const map = new Map<string, MediaItem>();
+    for (const item of nonSystemMedia) {
+      map.set(item.id, item);
+    }
+    return map;
+  }, [nonSystemMedia]);
 
-  const linkedMedia = useMemo(
-    () => nonSystemMedia.filter((item) => linkedMediaIds.has(item.id)),
-    [linkedMediaIds, nonSystemMedia]
-  );
-
-  const linkedImages = useMemo(
-    () => linkedMedia.filter((item) => item.mediaType === MediaType.IMAGE),
-    [linkedMedia]
+  const linkedMediaEntries = useMemo(
+    () =>
+      normalizeMediaLinks(form.mediaLinks)
+        .map((entry) => ({
+          ...entry,
+          media: mediaById.get(entry.mediaId) || null,
+        }))
+        .filter((entry) => Boolean(entry.media)),
+    [form.mediaLinks, mediaById]
   );
 
   useEffect(() => {
@@ -185,24 +281,34 @@ export function ContentManager() {
       status: selectedPage.status,
       publishedAt: toDatetimeLocal(selectedPage.publishedAt),
       heroImageId: selectedPage.heroImageId || '',
-      mediaIds: selectedPage.mediaLinks.map((link) => link.mediaId),
+      mediaLinks: normalizeMediaLinks(
+        (selectedPage.mediaLinks || []).map((link) => ({
+          mediaId: link.mediaId,
+          fieldKey: link.fieldKey || 'content',
+        }))
+      ),
     });
   }, [selectedPage]);
 
-  function toggleMedia(mediaId: string) {
-    setForm((prev) => {
-      const exists = prev.mediaIds.includes(mediaId);
-      const nextMediaIds = exists
-        ? prev.mediaIds.filter((id) => id !== mediaId)
-        : [...prev.mediaIds, mediaId];
-      const nextHeroImageId = exists && prev.heroImageId === mediaId ? '' : prev.heroImageId;
+  function buildPagePayload(next: { mediaLinks?: FormMediaLink[]; heroImageId?: string | null } = {}) {
+    const normalizedMediaLinks = normalizeMediaLinks(next.mediaLinks ?? form.mediaLinks).filter((link) =>
+      nonSystemMedia.some((item) => item.id === link.mediaId)
+    );
 
-      return {
-        ...prev,
-        mediaIds: nextMediaIds,
-        heroImageId: nextHeroImageId,
-      };
-    });
+    const rawHeroImageId = next.heroImageId === undefined ? form.heroImageId : next.heroImageId || '';
+    const safeHeroImageId =
+      rawHeroImageId && nonSystemMedia.some((item) => item.id === rawHeroImageId) ? rawHeroImageId : null;
+
+    return {
+      title: form.title,
+      headline: form.headline,
+      subheadline: form.subheadline,
+      body: form.body,
+      status: form.status,
+      publishedAt: fromDatetimeLocal(form.publishedAt),
+      heroImageId: safeHeroImageId,
+      mediaLinks: normalizedMediaLinks,
+    };
   }
 
   async function savePage() {
@@ -215,27 +321,13 @@ export function ContentManager() {
 
     setSaving(true);
 
-    const body = {
-      title: form.title,
-      headline: form.headline,
-      subheadline: form.subheadline,
-      body: form.body,
-      status: form.status,
-      publishedAt: fromDatetimeLocal(form.publishedAt),
-      heroImageId:
-        form.heroImageId && nonSystemMedia.some((item) => item.id === form.heroImageId)
-          ? form.heroImageId
-          : null,
-      mediaIds: form.mediaIds.filter((id) => nonSystemMedia.some((item) => item.id === id)),
-    };
-
     try {
       const response = await fetch(`/api/admin/pages/${selectedId}`, {
         method: 'PATCH',
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(buildPagePayload()),
       });
 
       const result = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -252,6 +344,31 @@ export function ContentManager() {
     }
   }
 
+  async function persistMediaLinks(nextLinks: FormMediaLink[], nextHeroImageId?: string | null) {
+    if (!selectedPage) return false;
+
+    const response = await fetch(`/api/admin/pages/${selectedPage.id}`, {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(
+        buildPagePayload({
+          mediaLinks: nextLinks,
+          heroImageId: nextHeroImageId,
+        })
+      ),
+    });
+
+    const result = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (!response.ok) {
+      setMessage(result?.error || 'Seitenmedien konnten nicht aktualisiert werden.');
+      return false;
+    }
+
+    return true;
+  }
+
   async function uploadAndAttachMedia(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
@@ -261,11 +378,28 @@ export function ContentManager() {
       return;
     }
 
+    const target = uploadTargets.find((item) => item.key === uploadTargetKey);
+    if (!target) {
+      setMessage('Bitte Bereich fuer den Upload auswaehlen.');
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
     const file = formData.get('file');
 
     if (!(file instanceof File)) {
       setMessage('Bitte Datei auswaehlen.');
+      return;
+    }
+
+    if (!canUploadForTarget(target.key, file)) {
+      setMessage(
+        target.key === 'video_showcase'
+          ? 'Fuer Video Showcase sind nur Videos erlaubt.'
+          : target.key === 'fish_showcase'
+            ? 'Fuer Fish Showcase sind nur Bilder erlaubt.'
+            : 'Dateityp fuer diesen Bereich nicht erlaubt.'
+      );
       return;
     }
 
@@ -286,26 +420,144 @@ export function ContentManager() {
       }
 
       const uploadedItem = result.item;
-      setMedia((prev) => [uploadedItem, ...prev]);
-      setForm((prev) => {
-        const mediaIds = prev.mediaIds.includes(uploadedItem.id)
-          ? prev.mediaIds
-          : [uploadedItem.id, ...prev.mediaIds];
-
-        return {
-          ...prev,
-          mediaIds,
-          heroImageId:
-            !prev.heroImageId && uploadedItem.mediaType === MediaType.IMAGE
-              ? uploadedItem.id
-              : prev.heroImageId,
-        };
+      const nextLinks = upsertMediaLink(form.mediaLinks, {
+        mediaId: uploadedItem.id,
+        fieldKey: target.key,
       });
+
+      const linked = await persistMediaLinks(nextLinks);
+      if (!linked) {
+        setMessage('Datei hochgeladen, aber Verknuepfung zur Seite fehlgeschlagen. Bitte erneut speichern.');
+        return;
+      }
+
+      setMedia((prev) => [uploadedItem, ...prev]);
+      setForm((prev) => ({
+        ...prev,
+        mediaLinks: nextLinks,
+      }));
       event.currentTarget.reset();
-      setMessage('Datei hochgeladen und der Seite zugeordnet. Bitte Seite speichern.');
+      await loadData();
+      setMessage(`Datei hochgeladen und zu "${target.label}" hinzugefuegt.`);
     } finally {
       setUploading(false);
     }
+  }
+
+  async function deleteLinkedMedia(mediaId: string) {
+    if (!selectedPage) return;
+
+    const targetMedia = mediaById.get(mediaId);
+    if (!targetMedia) {
+      setMessage('Medium nicht gefunden.');
+      return;
+    }
+
+    if (!window.confirm(`Medium "${targetMedia.filename}" wirklich aus Blob und Datenbank loeschen?`)) {
+      return;
+    }
+
+    setDeletingMediaId(mediaId);
+    setMessage(null);
+
+    try {
+      const nextLinks = form.mediaLinks.filter((link) => link.mediaId !== mediaId);
+      const nextHeroImageId = form.heroImageId === mediaId ? '' : form.heroImageId;
+
+      const unlinked = await persistMediaLinks(nextLinks, nextHeroImageId);
+      if (!unlinked) {
+        return;
+      }
+
+      const response = await fetch(`/api/admin/media/${mediaId}`, {
+        method: 'DELETE',
+      });
+      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        setMessage(result?.error || 'Datei konnte nicht geloescht werden.');
+        await loadData();
+        return;
+      }
+
+      setMedia((prev) => prev.filter((item) => item.id !== mediaId));
+      setForm((prev) => ({
+        ...prev,
+        mediaLinks: prev.mediaLinks.filter((link) => link.mediaId !== mediaId),
+        heroImageId: prev.heroImageId === mediaId ? '' : prev.heroImageId,
+      }));
+      await loadData();
+      setMessage('Medium erfolgreich aus Seite, Blob und Datenbank entfernt.');
+    } finally {
+      setDeletingMediaId(null);
+    }
+  }
+
+  function renderMediaSection(fieldKey: string, title: string, hint: string) {
+    const entries = linkedMediaEntries.filter((entry) => entry.fieldKey === fieldKey && entry.media);
+
+    return (
+      <div className="space-y-2 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-accent-300">{title}</p>
+          <p className="mt-1 text-xs text-accent-400">{hint}</p>
+        </div>
+
+        {entries.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-white/15 bg-black/30 px-3 py-4 text-sm text-accent-300">
+            Noch keine Medien in diesem Bereich.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {entries.map((entry) => {
+              const mediaItem = entry.media;
+              if (!mediaItem) return null;
+              const previewSrc = `/api/admin/media/${mediaItem.id}/preview`;
+              const isDeleting = deletingMediaId === mediaItem.id;
+
+              return (
+                <article key={`${entry.fieldKey}-${mediaItem.id}`} className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
+                  <div className="relative aspect-video overflow-hidden bg-black/60">
+                    {mediaItem.mediaType === MediaType.IMAGE ? (
+                      <Image
+                        src={previewSrc}
+                        alt={mediaItem.altText || mediaItem.filename}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <video
+                        src={previewSrc}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => void deleteLinkedMedia(mediaItem.id)}
+                      disabled={isDeleting}
+                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
+                      aria-label={`Medium ${mediaItem.filename} loeschen`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1 px-3 py-2">
+                    <p className="line-clamp-1 text-sm font-semibold text-white">{mediaItem.filename}</p>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">{getSectionLabel(entry.fieldKey)} • {mediaItem.mediaType}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -339,7 +591,7 @@ export function ContentManager() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
+      <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
         {!selectedPage ? (
           <p className="text-sm text-accent-300">Keine verwaltbare Seite gefunden.</p>
         ) : null}
@@ -363,7 +615,7 @@ export function ContentManager() {
           </label>
         </div>
 
-        <label className="space-y-1 block">
+        <label className="block space-y-1">
           <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Titel</span>
           <input
             value={form.title}
@@ -373,7 +625,7 @@ export function ContentManager() {
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Headline</span>
             <input
               value={form.headline}
@@ -381,7 +633,7 @@ export function ContentManager() {
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
             />
           </label>
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Subheadline</span>
             <input
               value={form.subheadline}
@@ -391,7 +643,7 @@ export function ContentManager() {
           </label>
         </div>
 
-        <label className="space-y-1 block">
+        <label className="block space-y-1">
           <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Textinhalt</span>
           <textarea
             value={form.body}
@@ -401,7 +653,7 @@ export function ContentManager() {
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Publizieren am</span>
             <input
               type="datetime-local"
@@ -418,8 +670,29 @@ export function ContentManager() {
         >
           <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Bild/Video hinzufuegen</p>
           <p className="text-xs text-accent-400">
-            Bild oder Video wird direkt der aktuell gewaehlten Seite zugeordnet.
+            Waehlen Sie zuerst den Zielbereich aus. Die Datei wird danach sofort verknuepft.
           </p>
+
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Bereich</span>
+            <select
+              value={uploadTargetKey}
+              onChange={(event) => setUploadTargetKey(event.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            >
+              {uploadTargets.map((target) => (
+                <option key={target.key} value={target.key}>
+                  {target.label}
+                </option>
+              ))}
+            </select>
+            {uploadTargets.find((target) => target.key === uploadTargetKey)?.helper ? (
+              <p className="text-xs text-accent-400">
+                {uploadTargets.find((target) => target.key === uploadTargetKey)?.helper}
+              </p>
+            ) : null}
+          </label>
+
           <input
             name="file"
             type="file"
@@ -453,45 +726,14 @@ export function ContentManager() {
           </button>
         </form>
 
-        <AdminMultiMediaPicker
-          label="Seitenmedien"
-          hint="Nur Medien dieser Seite. Bilder und Videos koennen hier hinzugefuegt oder entfernt werden."
-          items={linkedMedia}
-          selectedIds={form.mediaIds}
-          onToggle={toggleMedia}
-        />
-
-        <div className="space-y-1">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">
-            Hero-Bild (optional, innerhalb der Seitenmedien)
-          </span>
-          <select
-            value={form.heroImageId}
-            onChange={(event) =>
-              setForm((prev) => {
-                const nextHeroImageId = event.target.value;
-                const nextMediaIds =
-                  nextHeroImageId && !prev.mediaIds.includes(nextHeroImageId)
-                    ? [...prev.mediaIds, nextHeroImageId]
-                    : prev.mediaIds;
-
-                return {
-                  ...prev,
-                  heroImageId: nextHeroImageId,
-                  mediaIds: nextMediaIds,
-                };
-              })
-            }
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          >
-            <option value="">Kein Hero-Bild</option>
-            {linkedImages.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.filename}
-              </option>
-            ))}
-          </select>
-        </div>
+        {selectedPage?.slug === 'home' ? (
+          <div className="space-y-4">
+            {renderMediaSection('fish_showcase', 'Fish Showcase', 'Nur Bilder fuer diesen Homepage-Bereich.')}
+            {renderMediaSection('video_showcase', 'Video Showcase', 'Nur Videos fuer diesen Homepage-Bereich.')}
+          </div>
+        ) : (
+          renderMediaSection('content', 'Seitenmedien', 'Nur Medien dieser Seite.')
+        )}
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>

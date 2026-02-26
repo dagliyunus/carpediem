@@ -135,7 +135,8 @@ export async function getPageContent(slug: string) {
         },
       },
       mediaLinks: {
-        include: {
+        select: {
+          fieldKey: true,
           media: {
             select: {
               id: true,
@@ -143,6 +144,10 @@ export async function getPageContent(slug: string) {
               altText: true,
               filename: true,
               mediaType: true,
+              width: true,
+              height: true,
+              title: true,
+              caption: true,
             },
           },
         },

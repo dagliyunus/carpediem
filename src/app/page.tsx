@@ -11,6 +11,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { buildMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { PageManagedContent } from "@/components/cms/PageManagedContent";
+import { getPageContent } from "@/lib/cms/queries";
+import { MediaType } from "@prisma/client";
 
 export const metadata: Metadata = buildMetadata({
   title: "Restaurant in Bad Saarow am Kurpark",
@@ -19,7 +21,31 @@ export const metadata: Metadata = buildMetadata({
   path: "/",
 });
 
-export default function Home() {
+export default async function Home() {
+  const homePage = await getPageContent("home");
+  const homeMediaLinks = homePage?.mediaLinks || [];
+
+  const fishShowcaseItems = homeMediaLinks
+    .filter((link) => link.fieldKey === "fish_showcase" && link.media.mediaType === MediaType.IMAGE)
+    .map((link) => ({
+      id: link.media.id,
+      src: link.media.url,
+      alt: link.media.altText || link.media.filename,
+      title: link.media.title || null,
+      description: link.media.caption || null,
+    }));
+
+  const videoShowcaseItems = homeMediaLinks
+    .filter((link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO)
+    .map((link) => ({
+      id: link.media.id,
+      src: link.media.url,
+      title: link.media.title || null,
+      description: link.media.caption || null,
+      width: link.media.width,
+      height: link.media.height,
+    }));
+
   return (
     <div className="flex flex-col w-full">
       <Hero />
@@ -27,14 +53,14 @@ export default function Home() {
         <SignatureDishes />
       </Reveal>
       <Reveal delayMs={80}>
-        <FishShowcase />
+        <FishShowcase items={fishShowcaseItems.length > 0 ? fishShowcaseItems : undefined} />
       </Reveal>
       <Reveal delayMs={100}>
         <SocialMedia />
       </Reveal>
       <MusicSection />
       <Reveal delayMs={140}>
-        <VideoShowcase />
+        <VideoShowcase items={videoShowcaseItems.length > 0 ? videoShowcaseItems : undefined} />
       </Reveal>
       <Reveal delayMs={200}>
         <LocalRelevance />

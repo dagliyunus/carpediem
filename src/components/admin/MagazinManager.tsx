@@ -1,7 +1,8 @@
 'use client';
 
-import { ContentStatus } from '@prisma/client';
-import { useEffect, useMemo, useState } from 'react';
+import { ContentStatus, MediaType } from '@prisma/client';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
 
 type ArticleItem = {
   id: string;
@@ -12,8 +13,17 @@ type ArticleItem = {
   status: ContentStatus;
   publishedAt: string | null;
   scheduledAt: string | null;
+  coverImageId: string | null;
   categories: Array<{ category: { name: string } }>;
   tags: Array<{ tag: { name: string } }>;
+};
+
+type MediaItem = {
+  id: string;
+  url: string;
+  filename: string;
+  mediaType: MediaType;
+  altText?: string | null;
 };
 
 type FormState = {
@@ -26,6 +36,7 @@ type FormState = {
   scheduledAt: string;
   categories: string;
   tags: string;
+  coverImageId: string;
 };
 
 const emptyForm: FormState = {
@@ -38,6 +49,7 @@ const emptyForm: FormState = {
   scheduledAt: '',
   categories: '',
   tags: '',
+  coverImageId: '',
 };
 
 function toDatetimeLocal(value: string | null) {
@@ -54,20 +66,28 @@ function fromDatetimeLocal(value: string) {
 
 export function MagazinManager() {
   const [items, setItems] = useState<ArticleItem[]>([]);
+  const [imageMedia, setImageMedia] = useState<MediaItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [deletingCover, setDeletingCover] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   async function loadData() {
     setLoading(true);
     try {
-      const articleRes = await fetch('/api/admin/articles', { cache: 'no-store' });
+      const [articleRes, mediaRes] = await Promise.all([
+        fetch('/api/admin/articles', { cache: 'no-store' }),
+        fetch('/api/admin/media?type=IMAGE', { cache: 'no-store' }),
+      ]);
 
       const articleData = (await articleRes.json()) as { items: ArticleItem[] };
+      const mediaData = (await mediaRes.json()) as { items: MediaItem[] };
 
       setItems(articleData.items || []);
+      setImageMedia(mediaData.items || []);
     } finally {
       setLoading(false);
     }
@@ -80,6 +100,11 @@ export function MagazinManager() {
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) || null,
     [items, selectedId]
+  );
+
+  const selectedCover = useMemo(
+    () => imageMedia.find((item) => item.id === form.coverImageId) || null,
+    [form.coverImageId, imageMedia]
   );
 
   useEffect(() => {
@@ -98,6 +123,7 @@ export function MagazinManager() {
       scheduledAt: toDatetimeLocal(selectedItem.scheduledAt),
       categories: selectedItem.categories.map((item) => item.category.name).join(', '),
       tags: selectedItem.tags.map((item) => item.tag.name).join(', '),
+      coverImageId: selectedItem.coverImageId || '',
     });
   }, [selectedItem]);
 
@@ -113,7 +139,7 @@ export function MagazinManager() {
       status: form.status,
       publishedAt: fromDatetimeLocal(form.publishedAt),
       scheduledAt: fromDatetimeLocal(form.scheduledAt),
-      coverImageId: null,
+      coverImageId: form.coverImageId || null,
       mediaIds: [],
       categoryNames: form.categories
         .split(',')
@@ -174,6 +200,97 @@ export function MagazinManager() {
     setMessage('Beitrag geloescht.');
   }
 
+  async function uploadCoverImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+
+    const formData = new FormData(event.currentTarget);
+    const file = formData.get('file');
+
+    if (!(file instanceof File) || file.size <= 0) {
+      setMessage('Bitte ein Bild auswaehlen.');
+      return;
+    }
+
+    try {
+      setUploadingCover(true);
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { item?: MediaItem; error?: string }
+        | null;
+
+      if (!response.ok || !result?.item) {
+        setMessage(result?.error || 'Upload fehlgeschlagen.');
+        return;
+      }
+
+      if (result.item.mediaType !== MediaType.IMAGE) {
+        setMessage('Bitte nur Bilddateien als Cover verwenden.');
+        return;
+      }
+
+      setImageMedia((prev) => {
+        if (prev.some((item) => item.id === result.item?.id)) return prev;
+        return [result.item as MediaItem, ...prev];
+      });
+      setForm((prev) => ({
+        ...prev,
+        coverImageId: result.item?.id || '',
+      }));
+      event.currentTarget.reset();
+      setMessage('Cover-Bild hochgeladen. Bitte Beitrag speichern.');
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
+  async function deleteSelectedCoverAsset() {
+    if (!form.coverImageId) {
+      setMessage('Kein Cover-Bild ausgewaehlt.');
+      return;
+    }
+
+    if (selectedItem?.coverImageId === form.coverImageId) {
+      setMessage(
+        'Bitte zuerst speichern, damit das Cover vom Beitrag getrennt wird. Danach koennen Sie die Datei loeschen.'
+      );
+      return;
+    }
+
+    const target = imageMedia.find((item) => item.id === form.coverImageId);
+    if (!target) {
+      setMessage('Cover-Datei nicht gefunden.');
+      return;
+    }
+
+    if (!window.confirm(`Datei "${target.filename}" wirklich aus dem Speicher loeschen?`)) {
+      return;
+    }
+
+    try {
+      setDeletingCover(true);
+      const response = await fetch(`/api/admin/media/${target.id}`, {
+        method: 'DELETE',
+      });
+      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        setMessage(result?.error || 'Datei konnte nicht geloescht werden.');
+        return;
+      }
+
+      setImageMedia((prev) => prev.filter((item) => item.id !== target.id));
+      setForm((prev) => ({ ...prev, coverImageId: '' }));
+      setMessage('Cover-Datei aus dem Blob-Speicher entfernt.');
+    } finally {
+      setDeletingCover(false);
+    }
+  }
+
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
@@ -213,9 +330,9 @@ export function MagazinManager() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
+      <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Titel</span>
             <input
               value={form.title}
@@ -225,13 +342,11 @@ export function MagazinManager() {
           </label>
           <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
             <p className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Link-Adresse</p>
-            <p className="mt-1 text-sm text-white/80">
-              Wird automatisch aus dem Titel erstellt.
-            </p>
+            <p className="mt-1 text-sm text-white/80">Wird automatisch aus dem Titel erstellt.</p>
           </div>
         </div>
 
-        <label className="space-y-1 block">
+        <label className="block space-y-1">
           <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Kurzbeschreibung</span>
           <textarea
             value={form.excerpt}
@@ -240,7 +355,7 @@ export function MagazinManager() {
           />
         </label>
 
-        <label className="space-y-1 block">
+        <label className="block space-y-1">
           <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Inhalt</span>
           <textarea
             value={form.content}
@@ -250,7 +365,7 @@ export function MagazinManager() {
         </label>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Status</span>
             <select
               value={form.status}
@@ -266,8 +381,8 @@ export function MagazinManager() {
               ))}
             </select>
           </label>
-          <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Publish At</span>
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Veroeffentlichen am</span>
             <input
               type="datetime-local"
               value={form.publishedAt}
@@ -275,8 +390,8 @@ export function MagazinManager() {
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
             />
           </label>
-          <label className="space-y-1 block">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Schedule At</span>
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Planen fuer</span>
             <input
               type="datetime-local"
               value={form.scheduledAt}
@@ -287,7 +402,7 @@ export function MagazinManager() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Kategorien (Komma)</span>
             <input
               value={form.categories}
@@ -296,7 +411,7 @@ export function MagazinManager() {
               placeholder="Events, Kulinarik"
             />
           </label>
-          <label className="space-y-1 block">
+          <label className="block space-y-1">
             <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Tags (Komma)</span>
             <input
               value={form.tags}
@@ -305,6 +420,78 @@ export function MagazinManager() {
               placeholder="bad-saarow, sommer"
             />
           </label>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+          <AdminSingleMediaPicker
+            label="Beitragsbild"
+            hint="Dieses Bild wird fuer die Magazin-Karte und im Artikelkopf verwendet."
+            items={imageMedia}
+            selectedId={form.coverImageId}
+            onSelect={(id) => setForm((prev) => ({ ...prev, coverImageId: id }))}
+            emptyLabel="Kein Cover-Bild"
+            acceptedTypes={[MediaType.IMAGE]}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setForm((prev) => ({ ...prev, coverImageId: '' }))}
+              className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/80"
+            >
+              Cover entfernen
+            </button>
+            <button
+              type="button"
+              onClick={() => void deleteSelectedCoverAsset()}
+              disabled={!form.coverImageId || deletingCover}
+              className="rounded-full border border-red-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-red-200 disabled:opacity-60"
+            >
+              {deletingCover ? 'Loesche Datei ...' : 'Cover-Datei loeschen'}
+            </button>
+          </div>
+
+          {selectedCover ? (
+            <p className="text-xs text-accent-300">
+              Ausgewaehlt: <span className="font-semibold text-white">{selectedCover.filename}</span>
+            </p>
+          ) : null}
+
+          <form onSubmit={uploadCoverImage} className="grid gap-3 rounded-xl border border-white/10 bg-black/30 p-3 sm:grid-cols-3">
+            <label className="block space-y-1 sm:col-span-3">
+              <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Neues Cover hochladen</span>
+              <input
+                type="file"
+                name="file"
+                accept="image/*"
+                required
+                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-primary-600 file:px-3 file:py-1 file:text-xs file:font-semibold file:uppercase file:tracking-[0.14em] file:text-white"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs uppercase tracking-[0.14em] text-accent-300">Titel (optional)</span>
+              <input
+                name="title"
+                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs uppercase tracking-[0.14em] text-accent-300">Alt-Text (optional)</span>
+              <input
+                name="altText"
+                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white"
+              />
+            </label>
+            <div className="flex items-end">
+              <button
+                type="submit"
+                disabled={uploadingCover}
+                className="w-full rounded-full bg-primary-600 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white disabled:opacity-70"
+              >
+                {uploadingCover ? 'Lade hoch ...' : 'Bild hochladen'}
+              </button>
+            </div>
+          </form>
         </div>
 
         {message ? (

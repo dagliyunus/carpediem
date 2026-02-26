@@ -1,12 +1,40 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
-const showcaseItems = [
+type FishShowcaseItem = {
+  id: number;
+  src: string;
+  alt: string;
+  title: string;
+  description: string;
+  className: string;
+};
+
+type FishShowcaseInputItem = {
+  id: string;
+  src: string;
+  alt?: string | null;
+  title?: string | null;
+  description?: string | null;
+};
+
+const GRID_PATTERNS = [
+  'md:col-span-8 md:row-span-2',
+  'md:col-span-4 md:row-span-2',
+  'md:col-span-8 md:row-span-2',
+  'md:col-span-4 md:row-span-2',
+  'md:col-span-8 md:row-span-2',
+  'md:col-span-4 md:row-span-2',
+  'md:col-span-8 md:col-start-3 md:row-span-2',
+  'md:col-span-8 md:col-start-3 md:row-span-2',
+];
+
+const defaultShowcaseItems: FishShowcaseItem[] = [
   // Pair 1
   {
     id: 6,
@@ -77,7 +105,21 @@ const showcaseItems = [
   },
 ];
 
-export function FishShowcase() {
+function buildDynamicShowcaseItems(items?: FishShowcaseInputItem[]): FishShowcaseItem[] {
+  if (!items || items.length === 0) return defaultShowcaseItems;
+
+  return items.map((item, index) => ({
+    id: index + 1,
+    src: item.src,
+    alt: item.alt || item.title || `Fish Showcase ${index + 1}`,
+    title: item.title || `Fish Highlight ${index + 1}`,
+    description: item.description || 'Frisch, hochwertig und direkt aus dem Carpe Diem.',
+    className: GRID_PATTERNS[index % GRID_PATTERNS.length],
+  }));
+}
+
+export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {
+  const showcaseItems = useMemo(() => buildDynamicShowcaseItems(items), [items]);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const isMounted = typeof window !== 'undefined';
 

@@ -10,13 +10,23 @@ type VideoOrientation = 'portrait' | 'landscape';
 type VideoItem = {
   id: number;
   src: string;
-  poster: string;
+  poster?: string;
   title: string;
   description: string;
   orientation: VideoOrientation;
 };
 
-const videoItems: VideoItem[] = [
+type VideoShowcaseInputItem = {
+  id: string;
+  src: string;
+  poster?: string | null;
+  title?: string | null;
+  description?: string | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+const defaultVideoItems: VideoItem[] = [
   {
     id: 1,
     src: '/images/videos/1.mp4',
@@ -75,6 +85,24 @@ const videoItems: VideoItem[] = [
   },
 ];
 
+function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
+  if (!items || items.length === 0) return defaultVideoItems;
+
+  return items.map((item, index) => {
+    const orientation: VideoOrientation =
+      item.width && item.height ? (item.width >= item.height ? 'landscape' : 'portrait') : 'landscape';
+
+    return {
+      id: index + 1,
+      src: item.src,
+      poster: item.poster || undefined,
+      title: item.title || `Video Highlight ${index + 1}`,
+      description: item.description || 'Live-Einblick aus dem Carpe Diem.',
+      orientation,
+    };
+  });
+}
+
 function getCardAspectClass(orientation: VideoOrientation) {
   return orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video';
 }
@@ -86,22 +114,23 @@ function getModalFrameClass(orientation: VideoOrientation) {
   return 'w-[min(95vw,1240px)] aspect-video max-h-[86vh]';
 }
 
-export function VideoShowcase() {
+export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
+  const videoItems = useMemo(() => buildDynamicVideoItems(items), [items]);
   const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
   const isMounted = typeof window !== 'undefined';
   const portraitVideos = useMemo(
     () => videoItems.filter((video) => video.orientation === 'portrait'),
-    []
+    [videoItems]
   );
   const landscapeVideos = useMemo(
     () => videoItems.filter((video) => video.orientation === 'landscape'),
-    []
+    [videoItems]
   );
 
   const activeVideo = useMemo(() => {
     if (activeVideoIndex === null) return null;
     return videoItems[activeVideoIndex] ?? null;
-  }, [activeVideoIndex]);
+  }, [activeVideoIndex, videoItems]);
 
   const closeLightbox = () => setActiveVideoIndex(null);
 
@@ -159,7 +188,7 @@ export function VideoShowcase() {
       document.documentElement.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevBodyOverflow;
     };
-  }, [activeVideoIndex]);
+  }, [activeVideoIndex, videoItems]);
 
   return (
     <section className="relative z-10 py-16 sm:py-20 md:py-32 overflow-hidden border-y border-white/5 bg-black">
@@ -198,13 +227,23 @@ export function VideoShowcase() {
               onClick={() => setActiveVideoIndex(index)}
               className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)}`}
             >
-              <Image
-                src={item.poster}
-                alt={item.title}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
-              />
+              {item.poster ? (
+                <Image
+                  src={item.poster}
+                  alt={item.title}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                />
+              ) : (
+                <video
+                  src={item.src}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-55" />
 
               <div className="absolute inset-0 flex items-center justify-center">
@@ -236,13 +275,23 @@ export function VideoShowcase() {
                 onClick={() => setActiveVideoIndex(index)}
                 className={`group relative flex w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/50 shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer text-left ${getCardAspectClass(item.orientation)}`}
               >
-                <Image
-                  src={item.poster}
-                  alt={item.title}
-                  fill
-                  sizes="(min-width: 1536px) 33vw, (min-width: 1024px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                />
+                {item.poster ? (
+                  <Image
+                    src={item.poster}
+                    alt={item.title}
+                    fill
+                    sizes="(min-width: 1536px) 33vw, (min-width: 1024px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                  />
+                ) : (
+                  <video
+                    src={item.src}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-55" />
 
                 <div className="absolute inset-0 flex items-center justify-center">
