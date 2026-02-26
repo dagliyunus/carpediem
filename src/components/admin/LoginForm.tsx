@@ -53,7 +53,7 @@ export function LoginForm() {
           required
           autoComplete="email"
           className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none ring-primary-400 transition focus:ring-2"
-          placeholder="admin@pivado.de"
+          placeholder="admin@carpediem.local"
         />
       </div>
       <div>

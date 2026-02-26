@@ -15,11 +15,12 @@ export async function PageManagedContent({ slug }: { slug: string }) {
 
   if (!page) return null;
 
-  const hasContent = page.headline || page.subheadline || page.body || page.heroImage || page.sections;
+  const sections = isSectionArray(page.sections) ? page.sections : [];
+  const hasContent = Boolean(
+    page.headline || page.subheadline || page.body || page.heroImage || sections.length > 0
+  );
 
   if (!hasContent) return null;
-
-  const sections = isSectionArray(page.sections) ? page.sections : [];
 
   return (
     <section className="py-14">

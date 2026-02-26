@@ -36,7 +36,7 @@ function buildBlobPath(fileName: string, mediaType: MediaType) {
     mediaType === MediaType.IMAGE ? 'images' : mediaType === MediaType.VIDEO ? 'videos' : 'files';
   const random = crypto.randomUUID();
 
-  return `pivado/${prefix}/${year}/${month}/${random}-${fileName}`;
+  return `carpediem/${prefix}/${year}/${month}/${random}-${fileName}`;
 }
 
 function resolveBlobAccess(): BlobAccess {

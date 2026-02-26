@@ -10,20 +10,20 @@ import {
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@pivado.local').toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@carpediem.local').toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   const admin = await prisma.adminUser.upsert({
     where: { email: adminEmail },
     update: {
-      name: 'Pivado Admin',
+      name: 'Carpe Diem Admin',
       passwordHash,
       isActive: true,
     },
     create: {
       email: adminEmail,
-      name: 'Pivado Admin',
+      name: 'Carpe Diem Admin',
       passwordHash,
       role: 'OWNER',
       isActive: true,
@@ -35,14 +35,14 @@ async function main() {
     update: {},
     create: {
       id: 'global',
-      siteName: 'Pivado',
+      siteName: 'Carpe Diem bei Ben',
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.carpediem-badsaarow.de',
       brandTagline: 'Mediterrane Kueche in Bad Saarow',
       defaultLocale: 'de-DE',
       timezone: 'Europe/Berlin',
-      defaultSeoTitle: 'Pivado - Mediterrane Kueche in Bad Saarow',
+      defaultSeoTitle: 'Carpe Diem bei Ben - Mediterrane Kueche in Bad Saarow',
       defaultSeoDescription:
-        'Pivado ist Ihr Restaurant in Bad Saarow: mediterrane Spezialitaeten, Galerie, Reservierung und Magazin.',
+        'Carpe Diem bei Ben ist Ihr Restaurant in Bad Saarow: mediterrane Spezialitaeten, Galerie, Reservierung und Magazin.',
     },
   });
 
@@ -50,9 +50,9 @@ async function main() {
     {
       slug: 'home',
       title: 'Startseite',
-      headline: 'Willkommen bei Pivado',
-      subheadline: 'Mediterrane Kueche im Herzen von Bad Saarow',
-      body: 'Diese Inhalte koennen im Admin-Bereich bearbeitet werden.',
+      headline: null,
+      subheadline: null,
+      body: null,
       status: ContentStatus.PUBLISHED,
       publishedAt: new Date(),
     },
@@ -119,10 +119,10 @@ async function main() {
     create: {
       targetType: SeoTargetType.GLOBAL,
       targetId: 'global',
-      title: 'Pivado - Restaurant Bad Saarow',
+      title: 'Carpe Diem bei Ben - Restaurant Bad Saarow',
       description:
-        'Pivado in Bad Saarow: mediterrane Spezialitaeten, Events, Reservierung und aktuelle Magazin-Inhalte.',
-      keywords: 'pivado, bad saarow, restaurant, mediterran, magazin',
+        'Carpe Diem bei Ben in Bad Saarow: mediterrane Spezialitaeten, Events, Reservierung und aktuelle Magazin-Inhalte.',
+      keywords: 'carpe diem, bad saarow, restaurant, mediterran, magazin',
       canonicalUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.carpediem-badsaarow.de',
       twitterCard: 'summary_large_image',
       robots: 'index,follow',
@@ -178,17 +178,17 @@ async function main() {
     {
       channel: AiChannel.INSTAGRAM,
       promptTemplate:
-        'Erzeuge taeglich einen Instagram-Post mit Hook, Caption, Hashtags und CTA im Tonfall von Pivado.',
+        'Erzeuge taeglich einen Instagram-Post mit Hook, Caption, Hashtags und CTA im Tonfall von Carpe Diem bei Ben.',
     },
     {
       channel: AiChannel.PINTEREST,
       promptTemplate:
-        'Erzeuge taeglich einen Pinterest-Pin-Text mit SEO-Titel, Beschreibung und relevanten Keywords fuer Pivado.',
+        'Erzeuge taeglich einen Pinterest-Pin-Text mit SEO-Titel, Beschreibung und relevanten Keywords fuer Carpe Diem bei Ben.',
     },
     {
       channel: AiChannel.TIKTOK,
       promptTemplate:
-        'Erzeuge taeglich ein TikTok-Content-Briefing mit Skriptidee, Hook, Shotlist und Caption fuer Pivado.',
+        'Erzeuge taeglich ein TikTok-Content-Briefing mit Skriptidee, Hook, Shotlist und Caption fuer Carpe Diem bei Ben.',
     },
   ];
 

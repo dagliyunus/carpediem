@@ -242,13 +242,13 @@ export async function getOrCreateSiteSetting() {
     update: {},
     create: {
       id: 'global',
-      siteName: 'Pivado',
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pivado.de',
+      siteName: 'Carpe Diem bei Ben',
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.carpediem-badsaarow.de',
       brandTagline: 'Mediterrane Gastronomie in Bad Saarow',
       defaultLocale: 'de-DE',
       timezone: 'Europe/Berlin',
-      defaultSeoTitle: 'Pivado',
-      defaultSeoDescription: 'Pivado in Bad Saarow - mediterrane Küche, Ambiente und Reservierung.',
+      defaultSeoTitle: 'Carpe Diem bei Ben',
+      defaultSeoDescription: 'Carpe Diem bei Ben in Bad Saarow - mediterrane Kueche, Ambiente und Reservierung.',
     },
   });
 }

@@ -7,7 +7,7 @@ import { getPublishedMagazinPosts } from '@/lib/cms/queries';
 export const metadata: Metadata = buildMetadata({
   title: 'Magazin',
   description:
-    'Aktuelle Geschichten, Einblicke und News aus dem Pivado in Bad Saarow. Entdecken Sie unsere neuesten Inhalte.',
+    'Aktuelle Geschichten, Einblicke und News aus dem Carpe Diem bei Ben in Bad Saarow. Entdecken Sie unsere neuesten Inhalte.',
   path: '/magazin',
 });
 
@@ -19,7 +19,7 @@ export default async function MagazinPage() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-6xl mx-auto space-y-14">
           <header className="text-center space-y-5">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-400">Pivado Journal</p>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-400">Carpe Diem Journal</p>
             <h1 className="font-serif text-6xl md:text-8xl font-bold text-white tracking-tight">Magazin</h1>
             <p className="mx-auto max-w-3xl text-lg text-accent-200 font-light">
               Inspirierende Stories, saisonale Empfehlungen und Einblicke hinter die Kulissen unseres Hauses.

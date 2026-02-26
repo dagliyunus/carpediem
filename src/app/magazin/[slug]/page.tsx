@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const description =
     seo?.description ||
     createExcerpt(post.content, post.excerpt) ||
-    'Aktueller Magazinbeitrag aus dem Pivado.';
+    'Aktueller Magazinbeitrag aus dem Carpe Diem bei Ben.';
   const canonical = seo?.canonicalUrl || `${siteConfig.seo.domain}/magazin/${post.slug}`;
   const ogImage = seo?.ogImage?.url || post.coverImage?.url || `${siteConfig.seo.domain}/images/outside_night.webp`;
 

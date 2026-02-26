@@ -1,4 +1,5 @@
 import { ContentStatus, SeoTargetType } from '@prisma/client';
+import { unstable_noStore as noStore } from 'next/cache';
 import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
 
@@ -82,6 +83,8 @@ export async function getMagazinPostBySlug(slug: string) {
 }
 
 export async function getSiteCmsData() {
+  noStore();
+
   const site = await getOrCreateSiteSetting();
   const seo = await db.seoMeta.findUnique({
     where: {
@@ -115,6 +118,8 @@ export async function getSiteCmsData() {
 }
 
 export async function getPageContent(slug: string) {
+  noStore();
+
   return db.page.findUnique({
     where: {
       slug,

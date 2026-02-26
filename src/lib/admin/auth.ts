@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 
-export const ADMIN_COOKIE_NAME = 'pivado_admin_session';
+export const ADMIN_COOKIE_NAME = 'carpediem_admin_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14;
 
 type SessionPayload = {

@@ -1,4 +1,4 @@
-# Pivado / Carpe Diem Website
+# Carpe Diem Website
 
 Next.js App Router website with a fully dynamic CMS backend:
 
@@ -53,7 +53,7 @@ BLOB_ACCESS=public
 
 NEXT_PUBLIC_SITE_URL=https://www.carpediem-badsaarow.de
 
-ADMIN_EMAIL=admin@pivado.local
+ADMIN_EMAIL=admin@carpediem.local
 ADMIN_PASSWORD=
 ADMIN_SESSION_SECRET=
 
@@ -67,7 +67,7 @@ RESERVATION_FROM_NAME=Neu Tischreservierung
 RESERVATION_FROM_EMAIL=
 RESERVATION_TO_EMAIL=
 
-CONTACT_FROM_NAME=Kontaktformular Pivado
+CONTACT_FROM_NAME=Kontaktformular Carpe Diem
 CONTACT_FROM_EMAIL=
 CONTACT_TO_EMAIL=
 CONTACT_WEBHOOK_URL=
