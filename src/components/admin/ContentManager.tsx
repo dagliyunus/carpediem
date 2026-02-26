@@ -25,6 +25,7 @@ type MediaItem = {
   id: string;
   url: string;
   filename: string;
+  key?: string | null;
   mediaType: MediaType;
   altText?: string | null;
 };
@@ -65,6 +66,7 @@ function fromDatetimeLocal(value: string) {
 
 function isSystemMediaAsset(item: MediaItem) {
   const filename = item.filename.toLowerCase();
+  const key = (item.key || '').toLowerCase();
   const url = item.url.toLowerCase();
 
   if (
@@ -81,11 +83,31 @@ function isSystemMediaAsset(item: MediaItem) {
     return true;
   }
 
-  if (url.includes('/icons/') || url.includes('/legacy-assets/images/icons/')) {
+  if (url.includes('/icons/') || key.includes('/images/icons/')) {
     return true;
   }
 
   return false;
+}
+
+function getPageMediaKeywords(slug: string) {
+  switch (slug) {
+    case 'galerie':
+      return ['galerie_page', 'videos'];
+    case 'menu':
+      return ['fish'];
+    case 'home':
+      return ['outside_night'];
+    default:
+      return [slug];
+  }
+}
+
+function isLikelyMediaForPage(item: MediaItem, slug: string) {
+  const value = `${item.key || ''} ${item.filename} ${item.url}`.toLowerCase();
+  const keywords = getPageMediaKeywords(slug.toLowerCase());
+
+  return keywords.some((keyword) => value.includes(keyword));
 }
 
 export function ContentManager() {
@@ -132,8 +154,14 @@ export function ContentManager() {
     const scopedIds = new Set<string>();
     if (selectedPage.heroImageId) scopedIds.add(selectedPage.heroImageId);
     selectedPage.mediaLinks.forEach((link) => scopedIds.add(link.mediaId));
+    const linked = nonSystemMedia.filter((item) => scopedIds.has(item.id));
+    const inferred = nonSystemMedia.filter((item) => isLikelyMediaForPage(item, selectedPage.slug));
 
-    return nonSystemMedia.filter((item) => scopedIds.has(item.id));
+    const merged = new Map<string, MediaItem>();
+    linked.forEach((item) => merged.set(item.id, item));
+    inferred.forEach((item) => merged.set(item.id, item));
+
+    return Array.from(merged.values());
   }, [nonSystemMedia, selectedPage]);
 
   const scopedImages = useMemo(
