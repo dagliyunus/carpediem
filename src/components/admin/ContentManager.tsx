@@ -90,26 +90,6 @@ function isSystemMediaAsset(item: MediaItem) {
   return false;
 }
 
-function getPageMediaKeywords(slug: string) {
-  switch (slug) {
-    case 'galerie':
-      return ['galerie_page', 'videos'];
-    case 'menu':
-      return ['fish'];
-    case 'home':
-      return ['outside_night'];
-    default:
-      return [slug];
-  }
-}
-
-function isLikelyMediaForPage(item: MediaItem, slug: string) {
-  const value = `${item.key || ''} ${item.filename} ${item.url}`.toLowerCase();
-  const keywords = getPageMediaKeywords(slug.toLowerCase());
-
-  return keywords.some((keyword) => value.includes(keyword));
-}
-
 export function ContentManager() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -143,30 +123,31 @@ export function ContentManager() {
     () => pages.find((page) => page.id === selectedId) || null,
     [pages, selectedId]
   );
+
   const nonSystemMedia = useMemo(
     () => media.filter((item) => !isSystemMediaAsset(item)),
     [media]
   );
 
-  const scopedMedia = useMemo(() => {
-    if (!selectedPage) return nonSystemMedia;
+  const linkedMediaIds = useMemo(() => {
+    const ids = new Set<string>(form.mediaIds);
+    if (form.heroImageId) ids.add(form.heroImageId);
+    return ids;
+  }, [form.heroImageId, form.mediaIds]);
 
-    const scopedIds = new Set<string>();
-    if (selectedPage.heroImageId) scopedIds.add(selectedPage.heroImageId);
-    selectedPage.mediaLinks.forEach((link) => scopedIds.add(link.mediaId));
-    const linked = nonSystemMedia.filter((item) => scopedIds.has(item.id));
-    const inferred = nonSystemMedia.filter((item) => isLikelyMediaForPage(item, selectedPage.slug));
+  const linkedMedia = useMemo(
+    () => nonSystemMedia.filter((item) => linkedMediaIds.has(item.id)),
+    [linkedMediaIds, nonSystemMedia]
+  );
 
-    const merged = new Map<string, MediaItem>();
-    linked.forEach((item) => merged.set(item.id, item));
-    inferred.forEach((item) => merged.set(item.id, item));
+  const linkedImages = useMemo(
+    () => linkedMedia.filter((item) => item.mediaType === MediaType.IMAGE),
+    [linkedMedia]
+  );
 
-    return Array.from(merged.values());
-  }, [nonSystemMedia, selectedPage]);
-
-  const scopedImages = useMemo(
-    () => scopedMedia.filter((item) => item.mediaType === MediaType.IMAGE),
-    [scopedMedia]
+  const availableMedia = useMemo(
+    () => nonSystemMedia.filter((item) => !linkedMediaIds.has(item.id)),
+    [linkedMediaIds, nonSystemMedia]
   );
 
   useEffect(() => {
@@ -188,12 +169,19 @@ export function ContentManager() {
   }, [selectedPage]);
 
   function toggleMedia(mediaId: string) {
-    setForm((prev) => ({
-      ...prev,
-      mediaIds: prev.mediaIds.includes(mediaId)
+    setForm((prev) => {
+      const exists = prev.mediaIds.includes(mediaId);
+      const nextMediaIds = exists
         ? prev.mediaIds.filter((id) => id !== mediaId)
-        : [...prev.mediaIds, mediaId],
-    }));
+        : [...prev.mediaIds, mediaId];
+      const nextHeroImageId = exists && prev.heroImageId === mediaId ? '' : prev.heroImageId;
+
+      return {
+        ...prev,
+        mediaIds: nextMediaIds,
+        heroImageId: nextHeroImageId,
+      };
+    });
   }
 
   async function savePage() {
@@ -373,10 +361,10 @@ export function ContentManager() {
           label="Hero-Bild"
           hint={
             selectedPage
-              ? 'Es werden nur Medien gezeigt, die bereits mit dieser Seite verknuepft sind.'
+              ? 'Waehlen Sie aus bereits verknuepften Bildern dieser Seite.'
               : 'Beim Erstellen einer neuen Seite koennen Sie passende Bilder auswaehlen.'
           }
-          items={scopedImages}
+          items={linkedImages}
           selectedId={form.heroImageId}
           onSelect={(id) => setForm((prev) => ({ ...prev, heroImageId: id }))}
           emptyLabel="Kein Hero-Bild"
@@ -384,14 +372,22 @@ export function ContentManager() {
         />
 
         <AdminMultiMediaPicker
-          label="Verknuepfte Medien"
+          label="Seitenmedien"
           hint={
             selectedPage
-              ? 'Sie sehen nur Medien dieser Seite. Systemdateien wie Logo/Favicon werden ausgeblendet.'
-              : 'Waehlen Sie Medien fuer die neue Seite aus.'
+              ? 'Nur Medien dieser Seite. Entfernen Sie hier nicht benoetigte Dateien.'
+              : 'Medien, die mit dieser neuen Seite verknuepft sind.'
           }
-          items={scopedMedia}
+          items={linkedMedia}
           selectedIds={form.mediaIds}
+          onToggle={toggleMedia}
+        />
+
+        <AdminMultiMediaPicker
+          label="Medienbibliothek (Hinzufuegen)"
+          hint="Fuegen Sie weitere Bilder/Videos zur Seite hinzu. Systemdateien sind ausgeblendet."
+          items={availableMedia}
+          selectedIds={[]}
           onToggle={toggleMedia}
         />
 
