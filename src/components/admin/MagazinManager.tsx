@@ -1,8 +1,7 @@
 'use client';
 
-import { ContentStatus, MediaType } from '@prisma/client';
+import { ContentStatus } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
-import { AdminMultiMediaPicker, AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
 
 type ArticleItem = {
   id: string;
@@ -13,18 +12,8 @@ type ArticleItem = {
   status: ContentStatus;
   publishedAt: string | null;
   scheduledAt: string | null;
-  coverImageId: string | null;
   categories: Array<{ category: { name: string } }>;
   tags: Array<{ tag: { name: string } }>;
-  mediaLinks: Array<{ mediaId: string }>;
-};
-
-type MediaItem = {
-  id: string;
-  url: string;
-  filename: string;
-  mediaType: MediaType;
-  altText?: string | null;
 };
 
 type FormState = {
@@ -35,10 +24,8 @@ type FormState = {
   status: ContentStatus;
   publishedAt: string;
   scheduledAt: string;
-  coverImageId: string;
   categories: string;
   tags: string;
-  mediaIds: string[];
 };
 
 const emptyForm: FormState = {
@@ -49,10 +36,8 @@ const emptyForm: FormState = {
   status: ContentStatus.DRAFT,
   publishedAt: '',
   scheduledAt: '',
-  coverImageId: '',
   categories: '',
   tags: '',
-  mediaIds: [],
 };
 
 function toDatetimeLocal(value: string | null) {
@@ -69,7 +54,6 @@ function fromDatetimeLocal(value: string) {
 
 export function MagazinManager() {
   const [items, setItems] = useState<ArticleItem[]>([]);
-  const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -79,16 +63,11 @@ export function MagazinManager() {
   async function loadData() {
     setLoading(true);
     try {
-      const [articleRes, mediaRes] = await Promise.all([
-        fetch('/api/admin/articles', { cache: 'no-store' }),
-        fetch('/api/admin/media', { cache: 'no-store' }),
-      ]);
+      const articleRes = await fetch('/api/admin/articles', { cache: 'no-store' });
 
       const articleData = (await articleRes.json()) as { items: ArticleItem[] };
-      const mediaData = (await mediaRes.json()) as { items: MediaItem[] };
 
       setItems(articleData.items || []);
-      setMedia(mediaData.items || []);
     } finally {
       setLoading(false);
     }
@@ -117,21 +96,10 @@ export function MagazinManager() {
       status: selectedItem.status,
       publishedAt: toDatetimeLocal(selectedItem.publishedAt),
       scheduledAt: toDatetimeLocal(selectedItem.scheduledAt),
-      coverImageId: selectedItem.coverImageId || '',
       categories: selectedItem.categories.map((item) => item.category.name).join(', '),
       tags: selectedItem.tags.map((item) => item.tag.name).join(', '),
-      mediaIds: selectedItem.mediaLinks.map((item) => item.mediaId),
     });
   }, [selectedItem]);
-
-  function toggleMedia(mediaId: string) {
-    setForm((prev) => ({
-      ...prev,
-      mediaIds: prev.mediaIds.includes(mediaId)
-        ? prev.mediaIds.filter((id) => id !== mediaId)
-        : [...prev.mediaIds, mediaId],
-    }));
-  }
 
   async function saveArticle() {
     setSaving(true);
@@ -145,8 +113,8 @@ export function MagazinManager() {
       status: form.status,
       publishedAt: fromDatetimeLocal(form.publishedAt),
       scheduledAt: fromDatetimeLocal(form.scheduledAt),
-      coverImageId: form.coverImageId || null,
-      mediaIds: form.mediaIds,
+      coverImageId: null,
+      mediaIds: [],
       categoryNames: form.categories
         .split(',')
         .map((value) => value.trim())
@@ -338,24 +306,6 @@ export function MagazinManager() {
             />
           </label>
         </div>
-
-        <AdminSingleMediaPicker
-          label="Cover-Bild"
-          hint="Dieses Bild wird im Magazin-Listing und im Artikelkopf angezeigt."
-          items={media}
-          selectedId={form.coverImageId}
-          onSelect={(id) => setForm((prev) => ({ ...prev, coverImageId: id }))}
-          emptyLabel="Kein Cover-Bild"
-          acceptedTypes={[MediaType.IMAGE]}
-        />
-
-        <AdminMultiMediaPicker
-          label="Zusaetzliche Medien"
-          hint="Waehlen Sie weitere Bilder oder Videos fuer diesen Beitrag."
-          items={media}
-          selectedIds={form.mediaIds}
-          onToggle={toggleMedia}
-        />
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>

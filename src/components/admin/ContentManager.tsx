@@ -2,7 +2,7 @@
 
 import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { AdminMultiMediaPicker, AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
+import { AdminMultiMediaPicker } from '@/components/admin/MediaPicker';
 
 type PageItem = {
   id: string;
@@ -452,25 +452,45 @@ export function ContentManager() {
           </button>
         </form>
 
-        <AdminSingleMediaPicker
-          label="Hero-Bild"
-          hint={
-            'Waehlen Sie aus bereits verknuepften Bildern dieser Seite.'
-          }
-          items={linkedImages}
-          selectedId={form.heroImageId}
-          onSelect={(id) => setForm((prev) => ({ ...prev, heroImageId: id }))}
-          emptyLabel="Kein Hero-Bild"
-          acceptedTypes={[MediaType.IMAGE]}
-        />
-
         <AdminMultiMediaPicker
           label="Seitenmedien"
-          hint="Nur Medien dieser Seite. Entfernen Sie hier nicht benoetigte Dateien."
+          hint="Nur Medien dieser Seite. Bilder und Videos koennen hier hinzugefuegt oder entfernt werden."
           items={linkedMedia}
           selectedIds={form.mediaIds}
           onToggle={toggleMedia}
         />
+
+        <div className="space-y-1">
+          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">
+            Hero-Bild (optional, innerhalb der Seitenmedien)
+          </span>
+          <select
+            value={form.heroImageId}
+            onChange={(event) =>
+              setForm((prev) => {
+                const nextHeroImageId = event.target.value;
+                const nextMediaIds =
+                  nextHeroImageId && !prev.mediaIds.includes(nextHeroImageId)
+                    ? [...prev.mediaIds, nextHeroImageId]
+                    : prev.mediaIds;
+
+                return {
+                  ...prev,
+                  heroImageId: nextHeroImageId,
+                  mediaIds: nextMediaIds,
+                };
+              })
+            }
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+          >
+            <option value="">Kein Hero-Bild</option>
+            {linkedImages.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.filename}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {message ? (
           <p className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-accent-100">{message}</p>
