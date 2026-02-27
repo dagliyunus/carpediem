@@ -211,13 +211,13 @@ export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {
           </p>
         </div>
 
-        {/* Main Content - Bento Grid / Mosaic Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 lg:gap-8 auto-rows-[auto] md:auto-rows-[200px]">
+        {/* Main Content - Uniform two-column grid */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:gap-8">
           {showcaseItems.map((item, index) => (
             <div 
               key={item.id} 
               onClick={() => openLightbox(index)}
-              className={`group relative flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer aspect-[3/5] min-h-[260px] md:min-h-0 md:aspect-auto ${item.className}`}
+              className="group relative flex aspect-[16/10] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] shadow-2xl transition-all duration-700 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] cursor-pointer"
             >
               <Image
                 src={item.src}
