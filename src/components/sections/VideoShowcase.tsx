@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { defaultVideoShowcaseItems } from '@/lib/cms/home-showcase-defaults';
 
 type VideoOrientation = 'portrait' | 'landscape';
 
@@ -27,24 +26,13 @@ type VideoShowcaseInputItem = {
   height?: number | null;
 };
 
-const defaultVideoItems: VideoItem[] = defaultVideoShowcaseItems.map((item, index) => ({
-  id: index + 1,
-  src: item.src,
-  poster: item.poster,
-  title: item.title,
-  description: item.description,
-  orientation: item.orientation,
-}));
-
 function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
-  if (!items || items.length === 0) return defaultVideoItems;
-
-  const uploadedItems = items.map((item, index) => {
+  return (items || []).map((item, index) => {
     const orientation: VideoOrientation =
       item.width && item.height ? (item.width >= item.height ? 'landscape' : 'portrait') : 'landscape';
 
     return {
-      id: defaultVideoItems.length + index + 1,
+      id: index + 1,
       src: item.src,
       poster: item.poster || undefined,
       title: item.title || `Video Highlight ${index + 1}`,
@@ -52,8 +40,6 @@ function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
       orientation,
     };
   });
-
-  return [...defaultVideoItems, ...uploadedItems];
 }
 
 function getCardAspectClass(orientation: VideoOrientation) {

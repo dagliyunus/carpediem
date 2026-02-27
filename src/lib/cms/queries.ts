@@ -151,6 +151,7 @@ export async function getPageContent(slug: string) {
           media: {
             select: {
               id: true,
+              key: true,
               url: true,
               altText: true,
               filename: true,

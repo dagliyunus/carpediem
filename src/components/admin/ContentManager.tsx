@@ -4,7 +4,6 @@ import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { defaultFishShowcaseItems, defaultVideoShowcaseItems } from '@/lib/cms/home-showcase-defaults';
 
 type PageItem = {
   id: string;
@@ -30,6 +29,8 @@ type MediaItem = {
   filename: string;
   key?: string | null;
   mediaType: MediaType;
+  title?: string | null;
+  caption?: string | null;
   altText?: string | null;
 };
 
@@ -62,7 +63,6 @@ type DisplayMediaItem = {
   title: string;
   previewSrc: string;
   altText?: string | null;
-  isStatic: boolean;
 };
 
 const emptyForm: FormState = {
@@ -218,6 +218,42 @@ function getTargetFieldLabels(targetKey: string) {
     caption: 'Beschreibung (optional)',
     helper: 'Diese Angaben werden fuer die Darstellung des Mediums verwendet.',
   };
+}
+
+function buildVideoPosterCandidates(media: MediaItem) {
+  const candidates = new Set<string>();
+  const filename = media.filename.trim();
+  const key = (media.key || '').trim();
+
+  if (filename) {
+    const baseName = filename.replace(/\.[^.]+$/, '');
+    for (const ext of ['webp', 'png', 'jpg', 'jpeg']) {
+      candidates.add(`${baseName}-poster.${ext}`.toLowerCase());
+    }
+  }
+
+  if (key) {
+    const baseKey = key.replace(/\.[^.]+$/, '');
+    for (const ext of ['webp', 'png', 'jpg', 'jpeg']) {
+      candidates.add(`${baseKey}-poster.${ext}`.toLowerCase());
+    }
+  }
+
+  return Array.from(candidates);
+}
+
+function findRelatedPoster(media: MediaItem, mediaItems: MediaItem[]) {
+  if (media.mediaType !== MediaType.VIDEO) return null;
+
+  const candidates = buildVideoPosterCandidates(media);
+  return (
+    mediaItems.find((item) => {
+      if (item.mediaType !== MediaType.IMAGE) return false;
+      const filename = item.filename.toLowerCase();
+      const key = (item.key || '').toLowerCase();
+      return candidates.some((candidate) => filename === candidate || key === candidate);
+    }) || null
+  );
 }
 
 export function ContentManager() {
@@ -503,7 +539,14 @@ export function ContentManager() {
     setMessage(null);
 
     try {
-      const nextLinks = form.mediaLinks.filter((link) => link.mediaId !== mediaId);
+      const relatedPoster = findRelatedPoster(targetMedia, nonSystemMedia);
+      const idsToRemove = new Set([mediaId]);
+
+      if (relatedPoster) {
+        idsToRemove.add(relatedPoster.id);
+      }
+
+      const nextLinks = form.mediaLinks.filter((link) => !idsToRemove.has(link.mediaId));
       const nextHeroImageId = form.heroImageId === mediaId ? '' : form.heroImageId;
 
       const unlinked = await persistMediaLinks(nextLinks, nextHeroImageId);
@@ -511,21 +554,23 @@ export function ContentManager() {
         return;
       }
 
-      const response = await fetch(`/api/admin/media/${mediaId}`, {
-        method: 'DELETE',
-      });
-      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+      for (const id of idsToRemove) {
+        const response = await fetch(`/api/admin/media/${id}`, {
+          method: 'DELETE',
+        });
+        const result = (await response.json().catch(() => null)) as { error?: string } | null;
 
-      if (!response.ok) {
-        setMessage(result?.error || 'Datei konnte nicht geloescht werden.');
-        await loadData();
-        return;
+        if (!response.ok) {
+          setMessage(result?.error || 'Datei konnte nicht geloescht werden.');
+          await loadData();
+          return;
+        }
       }
 
-      setMedia((prev) => prev.filter((item) => item.id !== mediaId));
+      setMedia((prev) => prev.filter((item) => !idsToRemove.has(item.id)));
       setForm((prev) => ({
         ...prev,
-        mediaLinks: prev.mediaLinks.filter((link) => link.mediaId !== mediaId),
+        mediaLinks: prev.mediaLinks.filter((link) => !idsToRemove.has(link.mediaId)),
         heroImageId: prev.heroImageId === mediaId ? '' : prev.heroImageId,
       }));
       await loadData();
@@ -536,45 +581,32 @@ export function ContentManager() {
   }
 
   function renderMediaSection(fieldKey: string, title: string, hint: string) {
-    const dynamicEntries: DisplayMediaItem[] = linkedMediaEntries
-      .filter((entry) => entry.fieldKey === fieldKey && entry.media)
+    const allowedMediaType =
+      fieldKey === 'fish_showcase' ? MediaType.IMAGE : fieldKey === 'video_showcase' ? MediaType.VIDEO : null;
+
+    const entries: DisplayMediaItem[] = linkedMediaEntries
+      .filter(
+        (entry) =>
+          entry.fieldKey === fieldKey &&
+          entry.media &&
+          (!allowedMediaType || entry.media.mediaType === allowedMediaType)
+      )
       .map((entry) => {
         const mediaItem = entry.media;
+        const poster = findRelatedPoster(mediaItem!, nonSystemMedia);
+
         return {
           id: mediaItem!.id,
           fieldKey: entry.fieldKey,
           mediaType: mediaItem!.mediaType,
-          title: mediaItem!.filename,
-          previewSrc: `/api/admin/media/${mediaItem!.id}/preview`,
+          title: mediaItem!.title || mediaItem!.filename,
+          previewSrc:
+            mediaItem!.mediaType === MediaType.VIDEO && poster
+              ? `/api/admin/media/${poster.id}/preview`
+              : `/api/admin/media/${mediaItem!.id}/preview`,
           altText: mediaItem!.altText,
-          isStatic: false,
         };
       });
-
-    const staticEntries: DisplayMediaItem[] =
-      selectedPage?.slug === 'home' && fieldKey === 'fish_showcase'
-        ? defaultFishShowcaseItems.map((item) => ({
-            id: item.id,
-            fieldKey,
-            mediaType: MediaType.IMAGE,
-            title: item.title,
-            previewSrc: item.src,
-            altText: item.alt,
-            isStatic: true,
-          }))
-        : selectedPage?.slug === 'home' && fieldKey === 'video_showcase'
-          ? defaultVideoShowcaseItems.map((item) => ({
-              id: item.id,
-              fieldKey,
-              mediaType: MediaType.VIDEO,
-              title: item.title,
-              previewSrc: item.poster,
-              altText: item.title,
-              isStatic: true,
-            }))
-          : [];
-
-    const entries = [...staticEntries, ...dynamicEntries];
 
     return (
       <div className="space-y-2 rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -613,27 +645,21 @@ export function ContentManager() {
                       />
                     )}
 
-                    {entry.isStatic ? (
-                      <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
-                        Statisch
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => void deleteLinkedMedia(entry.id)}
-                        disabled={isDeleting}
-                        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
-                        aria-label={`Medium ${entry.title} loeschen`}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => void deleteLinkedMedia(entry.id)}
+                      disabled={isDeleting}
+                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
+                      aria-label={`Medium ${entry.title} loeschen`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
 
                   <div className="space-y-1 px-3 py-2">
                     <p className="line-clamp-1 text-sm font-semibold text-white">{entry.title}</p>
                     <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">
-                      {getSectionLabel(entry.fieldKey)} • {entry.mediaType}{entry.isStatic ? ' • Statisch' : ''}
+                      {getSectionLabel(entry.fieldKey)} • {entry.mediaType}
                     </p>
                   </div>
                 </article>

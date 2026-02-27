@@ -25,6 +25,32 @@ export const metadata: Metadata = buildMetadata({
 export default async function Home() {
   const homePage = await getPageContent("home");
   const homeMediaLinks = homePage?.mediaLinks || [];
+  const homeImageMedia = homeMediaLinks
+    .filter((link) => link.media.mediaType === MediaType.IMAGE)
+    .map((link) => link.media);
+
+  const findVideoPoster = (filename: string, key?: string | null) => {
+    const candidates = new Set<string>();
+    const baseFilename = filename.replace(/\.[^.]+$/, "");
+    const baseKey = (key || "").replace(/\.[^.]+$/, "");
+
+    for (const ext of ["webp", "png", "jpg", "jpeg"]) {
+      candidates.add(`${baseFilename}-poster.${ext}`.toLowerCase());
+      if (baseKey) {
+        candidates.add(`${baseKey}-poster.${ext}`.toLowerCase());
+      }
+    }
+
+    return (
+      homeImageMedia.find((media) => {
+        const candidateFilename = media.filename.toLowerCase();
+        const candidateKey = (media.key || "").toLowerCase();
+        return Array.from(candidates).some(
+          (expected) => candidateFilename === expected || candidateKey === expected
+        );
+      }) || null
+    );
+  };
 
   const fishShowcaseItems = homeMediaLinks
     .filter((link) => link.fieldKey === "fish_showcase" && link.media.mediaType === MediaType.IMAGE)
@@ -38,14 +64,19 @@ export default async function Home() {
 
   const videoShowcaseItems = homeMediaLinks
     .filter((link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO)
-    .map((link) => ({
-      id: link.media.id,
-      src: getPublicMediaUrl(link.media.id, link.media.url),
-      title: link.media.title || null,
-      description: link.media.caption || null,
-      width: link.media.width,
-      height: link.media.height,
-    }));
+    .map((link) => {
+      const poster = findVideoPoster(link.media.filename, link.media.key);
+
+      return {
+        id: link.media.id,
+        src: getPublicMediaUrl(link.media.id, link.media.url),
+        poster: poster ? getPublicMediaUrl(poster.id, poster.url) : null,
+        title: link.media.title || null,
+        description: link.media.caption || null,
+        width: link.media.width,
+        height: link.media.height,
+      };
+    });
 
   return (
     <div className="flex flex-col w-full">
@@ -54,14 +85,14 @@ export default async function Home() {
         <SignatureDishes />
       </Reveal>
       <Reveal delayMs={80}>
-        <FishShowcase items={fishShowcaseItems.length > 0 ? fishShowcaseItems : undefined} />
+        <FishShowcase items={fishShowcaseItems} />
       </Reveal>
       <Reveal delayMs={100}>
         <SocialMedia />
       </Reveal>
       <MusicSection />
       <Reveal delayMs={140}>
-        <VideoShowcase items={videoShowcaseItems.length > 0 ? videoShowcaseItems : undefined} />
+        <VideoShowcase items={videoShowcaseItems} />
       </Reveal>
       <Reveal delayMs={200}>
         <LocalRelevance />
