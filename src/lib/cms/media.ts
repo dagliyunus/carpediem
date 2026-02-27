@@ -7,9 +7,7 @@ type BlobAccess = 'public' | 'private';
 
 type UploadInput = {
   file: File;
-  title?: string;
   altText?: string;
-  caption?: string;
   uploadedById?: string;
 };
 
@@ -43,7 +41,7 @@ function resolveBlobAccess(): BlobAccess {
   return process.env.BLOB_ACCESS === 'private' ? 'private' : 'public';
 }
 
-export async function uploadMediaAsset({ file, title, altText, caption, uploadedById }: UploadInput) {
+export async function uploadMediaAsset({ file, altText, uploadedById }: UploadInput) {
   if (!(file instanceof File)) {
     throw new Error('No file provided.');
   }
@@ -96,9 +94,7 @@ export async function uploadMediaAsset({ file, title, altText, caption, uploaded
       mimeType,
       mediaType,
       sizeBytes: file.size,
-      title: title?.trim() || null,
       altText: altText?.trim() || null,
-      caption: caption?.trim() || null,
       uploadedById,
     },
   });

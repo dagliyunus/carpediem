@@ -11,8 +11,6 @@ type VideoItem = {
   id: number;
   src: string;
   poster?: string;
-  title: string;
-  description: string;
   orientation: VideoOrientation;
 };
 
@@ -20,8 +18,6 @@ type VideoShowcaseInputItem = {
   id: string;
   src: string;
   poster?: string | null;
-  title?: string | null;
-  description?: string | null;
   width?: number | null;
   height?: number | null;
 };
@@ -35,8 +31,6 @@ function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
       id: index + 1,
       src: item.src,
       poster: item.poster || undefined,
-      title: item.title || `Video Highlight ${index + 1}`,
-      description: item.description || 'Live-Einblick aus dem Carpe Diem.',
       orientation,
     };
   });
@@ -169,7 +163,7 @@ export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
               {item.poster ? (
                 <Image
                   src={item.poster}
-                  alt={item.title}
+                  alt={`Video Vorschau ${item.id}`}
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -190,15 +184,6 @@ export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
                   <Play className="h-7 w-7 md:h-9 md:w-9 fill-current ml-1" />
                 </div>
               </div>
-
-              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">
-                <h3 className="font-serif text-xl md:text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
-                  {item.description}
-                </p>
-              </div>
             </button>
             );
           })}
@@ -217,7 +202,7 @@ export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
                 {item.poster ? (
                   <Image
                     src={item.poster}
-                    alt={item.title}
+                    alt={`Video Vorschau ${item.id}`}
                     fill
                     sizes="(min-width: 1536px) 33vw, (min-width: 1024px) 50vw, 100vw"
                     className="object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -238,15 +223,6 @@ export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
                     <Play className="h-7 w-7 md:h-9 md:w-9 fill-current ml-1" />
                   </div>
                 </div>
-
-                <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8 transform translate-y-1 transition-transform duration-500 group-hover:translate-y-0">
-                  <h3 className="font-serif text-xl md:text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
-                    {item.description}
-                  </p>
-                </div>
               </button>
             );
           })}
@@ -260,7 +236,7 @@ export function VideoShowcase({ items }: { items?: VideoShowcaseInputItem[] }) {
               onClick={closeLightbox}
               role="dialog"
               aria-modal="true"
-              aria-label={`${activeVideo.title} Video`}
+              aria-label="Video Vorschau"
             >
               <button
                 onClick={closeLightbox}

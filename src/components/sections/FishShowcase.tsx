@@ -10,25 +10,19 @@ type FishShowcaseItem = {
   id: number;
   src: string;
   alt: string;
-  title: string;
-  description: string;
 };
 
 type FishShowcaseInputItem = {
   id: string;
   src: string;
   alt?: string | null;
-  title?: string | null;
-  description?: string | null;
 };
 
 function buildDynamicShowcaseItems(items?: FishShowcaseInputItem[]): FishShowcaseItem[] {
   return (items || []).map((item, index) => ({
     id: index + 1,
     src: item.src,
-    alt: item.alt || item.title || `Fish Showcase ${index + 1}`,
-    title: item.title || `Fish Highlight ${index + 1}`,
-    description: item.description || 'Frisch, hochwertig und direkt aus dem Carpe Diem.',
+    alt: item.alt || `Fish Showcase ${index + 1}`,
   }));
 }
 
@@ -139,15 +133,6 @@ export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {
                 </div>
               </div>
 
-              {/* Overlay Text - Minimal */}
-              <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-2 transition-transform duration-500 group-hover:translate-y-0">
-                <h3 className="font-serif text-2xl text-white mb-2 opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-lg">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-white/80 font-light tracking-wide opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 drop-shadow-md">
-                  {item.description}
-                </p>
-              </div>
             </div>
           ))}
         </div>
@@ -211,15 +196,6 @@ export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {
                       sizes="100vw"
                       priority
                     />
-                  </div>
-
-                  <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none">
-                    <h3 className="text-2xl font-serif text-white mb-2 drop-shadow-xl">
-                      {showcaseItems[selectedImage].title}
-                    </h3>
-                    <p className="text-white/70 font-light tracking-wide drop-shadow-lg">
-                      {showcaseItems[selectedImage].description}
-                    </p>
                   </div>
                 </div>
               </div>,

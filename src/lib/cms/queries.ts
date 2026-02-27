@@ -158,8 +158,6 @@ export async function getPageContent(slug: string) {
               mediaType: true,
               width: true,
               height: true,
-              title: true,
-              caption: true,
             },
           },
         },

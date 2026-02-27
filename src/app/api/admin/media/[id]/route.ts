@@ -6,9 +6,7 @@ import { removeMediaAsset } from '@/lib/cms/media';
 import { recordAuditLog } from '@/lib/admin/audit';
 
 const patchSchema = z.object({
-  title: z.string().max(120).optional(),
   altText: z.string().max(200).optional(),
-  caption: z.string().max(500).optional(),
 });
 
 export async function PATCH(
@@ -29,9 +27,7 @@ export async function PATCH(
   const media = await db.mediaAsset.update({
     where: { id },
     data: {
-      title: parsed.data.title?.trim() || null,
       altText: parsed.data.altText?.trim() || null,
-      caption: parsed.data.caption?.trim() || null,
     },
   });
 

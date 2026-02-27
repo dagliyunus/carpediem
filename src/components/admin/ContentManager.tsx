@@ -29,8 +29,6 @@ type MediaItem = {
   filename: string;
   key?: string | null;
   mediaType: MediaType;
-  title?: string | null;
-  caption?: string | null;
   altText?: string | null;
 };
 
@@ -196,27 +194,21 @@ function canUploadForTarget(targetKey: string, file: File) {
 function getTargetFieldLabels(targetKey: string) {
   if (targetKey === 'fish_showcase') {
     return {
-      title: 'Titel im Bild (optional)',
       altText: 'Alt-Text fuer Bild (optional)',
-      caption: 'Untertitel im Bild (optional)',
-      helper: 'Titel und Untertitel erscheinen direkt auf der Fish-Showcase Karte.',
+      helper: 'Dieses Bild wird ohne eingeblendeten Titel oder Untertitel dargestellt.',
     };
   }
 
   if (targetKey === 'video_showcase') {
     return {
-      title: 'Video-Titel (optional)',
-      altText: 'Alt-Text / Postertext (optional)',
-      caption: 'Video-Untertitel (optional)',
-      helper: 'Titel und Untertitel erscheinen direkt auf der Video-Showcase Karte.',
+      altText: 'Alt-Text fuer Video (optional)',
+      helper: 'Dieses Video wird ohne eingeblendeten Titel oder Untertitel dargestellt.',
     };
   }
 
   return {
-    title: 'Titel (optional)',
     altText: 'Alt-Text (optional)',
-    caption: 'Beschreibung (optional)',
-    helper: 'Diese Angaben werden fuer die Darstellung des Mediums verwendet.',
+    helper: 'Alt-Text wird fuer die Darstellung und Barrierefreiheit verwendet.',
   };
 }
 
@@ -599,7 +591,7 @@ export function ContentManager() {
           id: mediaItem!.id,
           fieldKey: entry.fieldKey,
           mediaType: mediaItem!.mediaType,
-          title: mediaItem!.title || mediaItem!.filename,
+          title: mediaItem!.filename,
           previewSrc:
             mediaItem!.mediaType === MediaType.VIDEO && poster
               ? `/api/admin/media/${poster.id}/preview`
@@ -812,21 +804,9 @@ export function ContentManager() {
             required
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="title"
-              placeholder={uploadFieldLabels.title}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-            />
-            <input
-              name="altText"
-              placeholder={uploadFieldLabels.altText}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-            />
-          </div>
           <input
-            name="caption"
-            placeholder={uploadFieldLabels.caption}
+            name="altText"
+            placeholder={uploadFieldLabels.altText}
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
           <button

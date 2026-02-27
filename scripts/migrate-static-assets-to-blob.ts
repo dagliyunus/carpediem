@@ -118,9 +118,7 @@ async function uploadAsset(asset: LocalAsset, preferredAccess: BlobAccess) {
       mimeType,
       mediaType,
       sizeBytes: fileBuffer.byteLength,
-      title: filename,
       altText: filename,
-      caption: `Legacy static asset migrated from ${asset.aliasPath}`,
     },
     create: {
       key,
@@ -129,9 +127,7 @@ async function uploadAsset(asset: LocalAsset, preferredAccess: BlobAccess) {
       mimeType,
       mediaType,
       sizeBytes: fileBuffer.byteLength,
-      title: filename,
       altText: filename,
-      caption: `Legacy static asset migrated from ${asset.aliasPath}`,
     },
   });
 

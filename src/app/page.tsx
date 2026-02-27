@@ -14,6 +14,7 @@ import { PageManagedContent } from "@/components/cms/PageManagedContent";
 import { getPageContent } from "@/lib/cms/queries";
 import { MediaType } from "@prisma/client";
 import { getPublicMediaUrl } from "@/lib/cms/public-media";
+import { db } from "@/lib/db";
 
 export const metadata: Metadata = buildMetadata({
   title: "Restaurant in Bad Saarow am Kurpark",
@@ -25,32 +26,41 @@ export const metadata: Metadata = buildMetadata({
 export default async function Home() {
   const homePage = await getPageContent("home");
   const homeMediaLinks = homePage?.mediaLinks || [];
-  const homeImageMedia = homeMediaLinks
-    .filter((link) => link.media.mediaType === MediaType.IMAGE)
-    .map((link) => link.media);
+  const homeVideoLinks = homeMediaLinks.filter(
+    (link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO
+  );
 
-  const findVideoPoster = (filename: string, key?: string | null) => {
-    const candidates = new Set<string>();
-    const baseFilename = filename.replace(/\.[^.]+$/, "");
-    const baseKey = (key || "").replace(/\.[^.]+$/, "");
+  const posterKeys = homeVideoLinks.flatMap((link) => {
+    const candidates: string[] = [];
+    const baseFilename = link.media.filename.replace(/\.[^.]+$/, "");
+    const baseKey = (link.media.key || "").replace(/\.[^.]+$/, "");
 
     for (const ext of ["webp", "png", "jpg", "jpeg"]) {
-      candidates.add(`${baseFilename}-poster.${ext}`.toLowerCase());
+      candidates.push(`${baseFilename}-poster.${ext}`);
       if (baseKey) {
-        candidates.add(`${baseKey}-poster.${ext}`.toLowerCase());
+        candidates.push(`${baseKey}-poster.${ext}`);
       }
     }
 
-    return (
-      homeImageMedia.find((media) => {
-        const candidateFilename = media.filename.toLowerCase();
-        const candidateKey = (media.key || "").toLowerCase();
-        return Array.from(candidates).some(
-          (expected) => candidateFilename === expected || candidateKey === expected
-        );
-      }) || null
-    );
-  };
+    return candidates;
+  });
+
+  const posterAssets = posterKeys.length
+    ? await db.mediaAsset.findMany({
+        where: {
+          key: {
+            in: posterKeys,
+          },
+        },
+        select: {
+          id: true,
+          key: true,
+          url: true,
+        },
+      })
+    : [];
+
+  const posterAssetByKey = new Map(posterAssets.map((asset) => [asset.key, asset]));
 
   const fishShowcaseItems = homeMediaLinks
     .filter((link) => link.fieldKey === "fish_showcase" && link.media.mediaType === MediaType.IMAGE)
@@ -58,21 +68,21 @@ export default async function Home() {
       id: link.media.id,
       src: getPublicMediaUrl(link.media.id, link.media.url),
       alt: link.media.altText || link.media.filename,
-      title: link.media.title || null,
-      description: link.media.caption || null,
     }));
 
-  const videoShowcaseItems = homeMediaLinks
-    .filter((link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO)
-    .map((link) => {
-      const poster = findVideoPoster(link.media.filename, link.media.key);
+  const videoShowcaseItems = homeVideoLinks.map((link) => {
+      const baseFilename = link.media.filename.replace(/\.[^.]+$/, "");
+      const baseKey = (link.media.key || "").replace(/\.[^.]+$/, "");
+      const candidateKeys = ["webp", "png", "jpg", "jpeg"].flatMap((ext) => [
+        `${baseFilename}-poster.${ext}`,
+        ...(baseKey ? [`${baseKey}-poster.${ext}`] : []),
+      ]);
+      const poster = candidateKeys.map((key) => posterAssetByKey.get(key)).find(Boolean) || null;
 
       return {
         id: link.media.id,
         src: getPublicMediaUrl(link.media.id, link.media.url),
         poster: poster ? getPublicMediaUrl(poster.id, poster.url) : null,
-        title: link.media.title || null,
-        description: link.media.caption || null,
         width: link.media.width,
         height: link.media.height,
       };

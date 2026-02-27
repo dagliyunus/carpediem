@@ -27,9 +27,7 @@ export async function GET(req: NextRequest) {
         ? {
             OR: [
               { filename: { contains: q, mode: 'insensitive' } },
-              { title: { contains: q, mode: 'insensitive' } },
               { altText: { contains: q, mode: 'insensitive' } },
-              { caption: { contains: q, mode: 'insensitive' } },
             ],
           }
         : {}),
@@ -57,9 +55,7 @@ export async function POST(req: NextRequest) {
   try {
     const media = await uploadMediaAsset({
       file,
-      title: String(formData.get('title') || ''),
       altText: String(formData.get('altText') || ''),
-      caption: String(formData.get('caption') || ''),
       uploadedById: admin.id,
     });
 

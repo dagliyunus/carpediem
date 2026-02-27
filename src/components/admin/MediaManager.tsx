@@ -11,9 +11,7 @@ type MediaItem = {
   mediaType: MediaType;
   mimeType: string;
   sizeBytes: number;
-  title: string | null;
   altText: string | null;
-  caption: string | null;
   createdAt: string;
 };
 
@@ -29,9 +27,7 @@ export function MediaManager() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [metaTitle, setMetaTitle] = useState('');
   const [metaAltText, setMetaAltText] = useState('');
-  const [metaCaption, setMetaCaption] = useState('');
 
   async function loadData() {
     setLoading(true);
@@ -56,15 +52,11 @@ export function MediaManager() {
 
   useEffect(() => {
     if (!selected) {
-      setMetaTitle('');
       setMetaAltText('');
-      setMetaCaption('');
       return;
     }
 
-    setMetaTitle(selected.title || '');
     setMetaAltText(selected.altText || '');
-    setMetaCaption(selected.caption || '');
   }, [selected]);
 
   async function uploadFile(event: FormEvent<HTMLFormElement>) {
@@ -109,9 +101,7 @@ export function MediaManager() {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        title: metaTitle,
         altText: metaAltText,
-        caption: metaCaption,
       }),
     });
 
@@ -161,18 +151,8 @@ export function MediaManager() {
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
           <input
-            name="title"
-            placeholder="Titel"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          />
-          <input
             name="altText"
             placeholder="Alt Text"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-          />
-          <input
-            name="caption"
-            placeholder="Caption"
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
           <button
@@ -231,29 +211,11 @@ export function MediaManager() {
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1 block">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Titel</span>
-                <input
-                  value={metaTitle}
-                  onChange={(event) => setMetaTitle(event.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-              <label className="space-y-1 block">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Alt Text</span>
-                <input
-                  value={metaAltText}
-                  onChange={(event) => setMetaAltText(event.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-            </div>
             <label className="space-y-1 block">
-              <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Caption</span>
+              <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Alt Text</span>
               <textarea
-                value={metaCaption}
-                onChange={(event) => setMetaCaption(event.target.value)}
+                value={metaAltText}
+                onChange={(event) => setMetaAltText(event.target.value)}
                 className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
               />
             </label>
