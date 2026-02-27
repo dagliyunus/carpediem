@@ -182,6 +182,33 @@ function canUploadForTarget(targetKey: string, file: File) {
   return file.type.startsWith('image/') || file.type.startsWith('video/');
 }
 
+function getTargetFieldLabels(targetKey: string) {
+  if (targetKey === 'fish_showcase') {
+    return {
+      title: 'Titel im Bild (optional)',
+      altText: 'Alt-Text fuer Bild (optional)',
+      caption: 'Untertitel im Bild (optional)',
+      helper: 'Titel und Untertitel erscheinen direkt auf der Fish-Showcase Karte.',
+    };
+  }
+
+  if (targetKey === 'video_showcase') {
+    return {
+      title: 'Video-Titel (optional)',
+      altText: 'Alt-Text / Postertext (optional)',
+      caption: 'Video-Untertitel (optional)',
+      helper: 'Titel und Untertitel erscheinen direkt auf der Video-Showcase Karte.',
+    };
+  }
+
+  return {
+    title: 'Titel (optional)',
+    altText: 'Alt-Text (optional)',
+    caption: 'Beschreibung (optional)',
+    helper: 'Diese Angaben werden fuer die Darstellung des Mediums verwendet.',
+  };
+}
+
 export function ContentManager() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -233,6 +260,10 @@ export function ContentManager() {
   const uploadTargets = useMemo(
     () => getUploadTargetOptions(selectedPage?.slug),
     [selectedPage?.slug]
+  );
+  const uploadFieldLabels = useMemo(
+    () => getTargetFieldLabels(uploadTargetKey),
+    [uploadTargetKey]
   );
 
   useEffect(() => {
@@ -691,6 +722,7 @@ export function ContentManager() {
                 {uploadTargets.find((target) => target.key === uploadTargetKey)?.helper}
               </p>
             ) : null}
+            <p className="text-xs text-accent-400">{uploadFieldLabels.helper}</p>
           </label>
 
           <input
@@ -703,18 +735,18 @@ export function ContentManager() {
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               name="title"
-              placeholder="Titel (optional)"
+              placeholder={uploadFieldLabels.title}
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
             />
             <input
               name="altText"
-              placeholder="Alt-Text (optional)"
+              placeholder={uploadFieldLabels.altText}
               className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
             />
           </div>
           <input
             name="caption"
-            placeholder="Beschreibung (optional)"
+            placeholder={uploadFieldLabels.caption}
             className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
           <button

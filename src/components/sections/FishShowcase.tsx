@@ -34,6 +34,8 @@ const GRID_PATTERNS = [
   'md:col-span-8 md:col-start-3 md:row-span-2',
 ];
 
+const UPLOAD_GRID_PATTERNS = GRID_PATTERNS.slice(0, 6);
+
 const defaultShowcaseItems: FishShowcaseItem[] = [
   // Pair 1
   {
@@ -108,16 +110,22 @@ const defaultShowcaseItems: FishShowcaseItem[] = [
 function buildDynamicShowcaseItems(items?: FishShowcaseInputItem[]): FishShowcaseItem[] {
   if (!items || items.length === 0) return defaultShowcaseItems;
 
+  const regularDefaults = defaultShowcaseItems.slice(0, 6);
+  const featuredDefaults = defaultShowcaseItems.slice(6);
+
   const uploadedItems = items.map((item, index) => ({
-    id: defaultShowcaseItems.length + index + 1,
+    id: regularDefaults.length + index + 1,
     src: item.src,
     alt: item.alt || item.title || `Fish Showcase ${index + 1}`,
     title: item.title || `Fish Highlight ${index + 1}`,
     description: item.description || 'Frisch, hochwertig und direkt aus dem Carpe Diem.',
-    className: GRID_PATTERNS[(defaultShowcaseItems.length + index) % GRID_PATTERNS.length],
+    className: UPLOAD_GRID_PATTERNS[index % UPLOAD_GRID_PATTERNS.length],
   }));
 
-  return [...defaultShowcaseItems, ...uploadedItems];
+  return [...regularDefaults, ...uploadedItems, ...featuredDefaults].map((item, index) => ({
+    ...item,
+    id: index + 1,
+  }));
 }
 
 export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {
