@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { defaultFishShowcaseItems } from '@/lib/cms/home-showcase-defaults';
 
 type FishShowcaseItem = {
   id: number;
@@ -36,76 +37,14 @@ const GRID_PATTERNS = [
 
 const UPLOAD_GRID_PATTERNS = GRID_PATTERNS.slice(0, 6);
 
-const defaultShowcaseItems: FishShowcaseItem[] = [
-  // Pair 1
-  {
-    id: 6,
-    src: '/images/fish/Fish9.webp',
-    alt: 'Gourmet Präsentation',
-    title: 'Genussmomente',
-    description: 'Ein Fest für die Sinne',
-    className: 'md:col-span-8 md:row-span-2', // Horizontal Hero
-  },
-  {
-    id: 2,
-    src: '/images/fish/Fish4.webp',
-    alt: 'Frische Zubereitung',
-    title: 'Handwerk & Präzision',
-    description: 'Meisterhafte Verarbeitung',
-    className: 'md:col-span-4 md:row-span-2', // Vertical Sidekick
-  },
-  // Pair 2
-  {
-    id: 3,
-    src: '/images/fish/Fish5.webp',
-    alt: 'Meeresfrüchte Vielfalt',
-    title: 'Vielfalt des Meeres',
-    description: 'Für jeden Geschmack das Richtige',
-    className: 'md:col-span-8 md:row-span-2', // Horizontal
-  },
-  {
-    id: 5,
-    src: '/images/fish/fish7.webp',
-    alt: 'Perfekte Lagerung',
-    title: 'Frische-Garantie',
-    description: 'Optimale Temperaturen',
-    className: 'md:col-span-4 md:row-span-2', // Vertical
-  },
-  // Pair 3
-  {
-    id: 4,
-    src: '/images/fish/Fish6.webp',
-    alt: 'Saisonale Spezialitäten',
-    title: 'Saisonale Highlights',
-    description: 'Das Beste der Jahreszeit',
-    className: 'md:col-span-8 md:row-span-2', // Horizontal
-  },
-  {
-    id: 7,
-    src: '/images/fish/Fish8.webp',
-    alt: 'Kulinarische Kunst',
-    title: 'Haute Cuisine',
-    description: 'Leidenschaft auf dem Teller',
-    className: 'md:col-span-4 md:row-span-2', // Vertical
-  },
-  // Final Feature
-  {
-    id: 1,
-    src: '/images/fish/Fish3.webp',
-    alt: 'Premium Fisch Auswahl',
-    title: 'Exzellente Qualität',
-    description: 'Frisch gefangen und perfekt gekühlt',
-    className: 'md:col-span-8 md:col-start-3 md:row-span-2', // Horizontal Centered
-  },
-  {
-    id: 8,
-    src: '/images/fish/fish11.webp',
-    alt: 'Premium Meeresküche',
-    title: 'Signature Selection',
-    description: 'Neue Genussmomente aus unserer Fischtheke',
-    className: 'md:col-span-8 md:col-start-3 md:row-span-2', // Horizontal Centered
-  },
-];
+const defaultShowcaseItems: FishShowcaseItem[] = defaultFishShowcaseItems.map((item, index) => ({
+  id: index + 1,
+  src: item.src,
+  alt: item.alt,
+  title: item.title,
+  description: item.description,
+  className: GRID_PATTERNS[index % GRID_PATTERNS.length],
+}));
 
 function buildDynamicShowcaseItems(items?: FishShowcaseInputItem[]): FishShowcaseItem[] {
   if (!items || items.length === 0) return defaultShowcaseItems;

@@ -4,6 +4,7 @@ import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import { defaultFishShowcaseItems, defaultVideoShowcaseItems } from '@/lib/cms/home-showcase-defaults';
 
 type PageItem = {
   id: string;
@@ -52,6 +53,16 @@ type UploadTargetOption = {
   key: string;
   label: string;
   helper: string;
+};
+
+type DisplayMediaItem = {
+  id: string;
+  fieldKey: string;
+  mediaType: MediaType;
+  title: string;
+  previewSrc: string;
+  altText?: string | null;
+  isStatic: boolean;
 };
 
 const emptyForm: FormState = {
@@ -525,7 +536,45 @@ export function ContentManager() {
   }
 
   function renderMediaSection(fieldKey: string, title: string, hint: string) {
-    const entries = linkedMediaEntries.filter((entry) => entry.fieldKey === fieldKey && entry.media);
+    const dynamicEntries: DisplayMediaItem[] = linkedMediaEntries
+      .filter((entry) => entry.fieldKey === fieldKey && entry.media)
+      .map((entry) => {
+        const mediaItem = entry.media;
+        return {
+          id: mediaItem!.id,
+          fieldKey: entry.fieldKey,
+          mediaType: mediaItem!.mediaType,
+          title: mediaItem!.filename,
+          previewSrc: `/api/admin/media/${mediaItem!.id}/preview`,
+          altText: mediaItem!.altText,
+          isStatic: false,
+        };
+      });
+
+    const staticEntries: DisplayMediaItem[] =
+      selectedPage?.slug === 'home' && fieldKey === 'fish_showcase'
+        ? defaultFishShowcaseItems.map((item) => ({
+            id: item.id,
+            fieldKey,
+            mediaType: MediaType.IMAGE,
+            title: item.title,
+            previewSrc: item.src,
+            altText: item.alt,
+            isStatic: true,
+          }))
+        : selectedPage?.slug === 'home' && fieldKey === 'video_showcase'
+          ? defaultVideoShowcaseItems.map((item) => ({
+              id: item.id,
+              fieldKey,
+              mediaType: MediaType.VIDEO,
+              title: item.title,
+              previewSrc: item.poster,
+              altText: item.title,
+              isStatic: true,
+            }))
+          : [];
+
+    const entries = [...staticEntries, ...dynamicEntries];
 
     return (
       <div className="space-y-2 rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -541,25 +590,22 @@ export function ContentManager() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {entries.map((entry) => {
-              const mediaItem = entry.media;
-              if (!mediaItem) return null;
-              const previewSrc = `/api/admin/media/${mediaItem.id}/preview`;
-              const isDeleting = deletingMediaId === mediaItem.id;
+              const isDeleting = deletingMediaId === entry.id;
 
               return (
-                <article key={`${entry.fieldKey}-${mediaItem.id}`} className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
+                <article key={`${entry.fieldKey}-${entry.id}`} className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
                   <div className="relative aspect-video overflow-hidden bg-black/60">
-                    {mediaItem.mediaType === MediaType.IMAGE ? (
+                    {entry.mediaType === MediaType.IMAGE ? (
                       <Image
-                        src={previewSrc}
-                        alt={mediaItem.altText || mediaItem.filename}
+                        src={entry.previewSrc}
+                        alt={entry.altText || entry.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
                         className="h-full w-full object-cover"
                       />
                     ) : (
                       <video
-                        src={previewSrc}
+                        src={entry.previewSrc}
                         muted
                         playsInline
                         preload="metadata"
@@ -567,20 +613,28 @@ export function ContentManager() {
                       />
                     )}
 
-                    <button
-                      type="button"
-                      onClick={() => void deleteLinkedMedia(mediaItem.id)}
-                      disabled={isDeleting}
-                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
-                      aria-label={`Medium ${mediaItem.filename} loeschen`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {entry.isStatic ? (
+                      <span className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                        Statisch
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void deleteLinkedMedia(entry.id)}
+                        disabled={isDeleting}
+                        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
+                        aria-label={`Medium ${entry.title} loeschen`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
 
                   <div className="space-y-1 px-3 py-2">
-                    <p className="line-clamp-1 text-sm font-semibold text-white">{mediaItem.filename}</p>
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">{getSectionLabel(entry.fieldKey)} • {mediaItem.mediaType}</p>
+                    <p className="line-clamp-1 text-sm font-semibold text-white">{entry.title}</p>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">
+                      {getSectionLabel(entry.fieldKey)} • {entry.mediaType}{entry.isStatic ? ' • Statisch' : ''}
+                    </p>
                   </div>
                 </article>
               );

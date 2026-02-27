@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { defaultVideoShowcaseItems } from '@/lib/cms/home-showcase-defaults';
 
 type VideoOrientation = 'portrait' | 'landscape';
 
@@ -26,74 +27,24 @@ type VideoShowcaseInputItem = {
   height?: number | null;
 };
 
-const defaultVideoItems: VideoItem[] = [
-  {
-    id: 1,
-    src: '/images/videos/1.mp4',
-    poster: '/images/videos/1-poster.webp',
-    title: 'Live Atmosphaere',
-    description: 'Echte Stimmung aus unseren Abenden',
-    orientation: 'portrait',
-  },
-  {
-    id: 2,
-    src: '/images/videos/2.mp4',
-    poster: '/images/videos/2-poster.webp',
-    title: 'Buehnenmomente',
-    description: 'Musik, die den Raum fuellt',
-    orientation: 'portrait',
-  },
-  {
-    id: 3,
-    src: '/images/videos/3.mp4',
-    poster: '/images/videos/3-poster.webp',
-    title: 'Premium Nights',
-    description: 'Highlights im Carpe Diem',
-    orientation: 'portrait',
-  },
-  {
-    id: 4,
-    src: '/images/videos/4.mp4',
-    poster: '/images/videos/4-poster.webp',
-    title: 'Crowd Energy',
-    description: 'Publikum und Performance in Sync',
-    orientation: 'portrait',
-  },
-  {
-    id: 5,
-    src: '/images/videos/5.mp4',
-    poster: '/images/videos/5-poster.webp',
-    title: 'After Dark',
-    description: 'Unvergessliche Momente bei Nacht',
-    orientation: 'landscape',
-  },
-  {
-    id: 6,
-    src: '/images/videos/6.mp4',
-    poster: '/images/videos/6-poster.webp',
-    title: 'Vibe Sessions',
-    description: 'Rhythmus, Genuss und Emotion',
-    orientation: 'landscape',
-  },
-  {
-    id: 7,
-    src: '/images/videos/7.mp4',
-    poster: '/images/videos/7-poster.webp',
-    title: 'Finale Impression',
-    description: 'Der perfekte Abschluss des Abends',
-    orientation: 'landscape',
-  },
-];
+const defaultVideoItems: VideoItem[] = defaultVideoShowcaseItems.map((item, index) => ({
+  id: index + 1,
+  src: item.src,
+  poster: item.poster,
+  title: item.title,
+  description: item.description,
+  orientation: item.orientation,
+}));
 
 function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
   if (!items || items.length === 0) return defaultVideoItems;
 
-  return items.map((item, index) => {
+  const uploadedItems = items.map((item, index) => {
     const orientation: VideoOrientation =
       item.width && item.height ? (item.width >= item.height ? 'landscape' : 'portrait') : 'landscape';
 
     return {
-      id: index + 1,
+      id: defaultVideoItems.length + index + 1,
       src: item.src,
       poster: item.poster || undefined,
       title: item.title || `Video Highlight ${index + 1}`,
@@ -101,6 +52,8 @@ function buildDynamicVideoItems(items?: VideoShowcaseInputItem[]): VideoItem[] {
       orientation,
     };
   });
+
+  return [...defaultVideoItems, ...uploadedItems];
 }
 
 function getCardAspectClass(orientation: VideoOrientation) {
