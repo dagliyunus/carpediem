@@ -108,14 +108,16 @@ const defaultShowcaseItems: FishShowcaseItem[] = [
 function buildDynamicShowcaseItems(items?: FishShowcaseInputItem[]): FishShowcaseItem[] {
   if (!items || items.length === 0) return defaultShowcaseItems;
 
-  return items.map((item, index) => ({
-    id: index + 1,
+  const uploadedItems = items.map((item, index) => ({
+    id: defaultShowcaseItems.length + index + 1,
     src: item.src,
     alt: item.alt || item.title || `Fish Showcase ${index + 1}`,
     title: item.title || `Fish Highlight ${index + 1}`,
     description: item.description || 'Frisch, hochwertig und direkt aus dem Carpe Diem.',
-    className: GRID_PATTERNS[index % GRID_PATTERNS.length],
+    className: GRID_PATTERNS[(defaultShowcaseItems.length + index) % GRID_PATTERNS.length],
   }));
+
+  return [...defaultShowcaseItems, ...uploadedItems];
 }
 
 export function FishShowcase({ items }: { items?: FishShowcaseInputItem[] }) {

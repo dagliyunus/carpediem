@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { getPageContent } from '@/lib/cms/queries';
+import { getPublicMediaUrl } from '@/lib/cms/public-media';
 
 type SectionItem = {
   title?: string;
@@ -29,7 +30,7 @@ export async function PageManagedContent({ slug }: { slug: string }) {
           {page.heroImage?.url ? (
             <div className="relative aspect-[16/7] border-b border-white/10">
               <Image
-                src={page.heroImage.url}
+                src={getPublicMediaUrl(page.heroImage.id, page.heroImage.url)}
                 alt={page.heroImage.altText || page.title}
                 fill
                 sizes="100vw"

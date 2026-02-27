@@ -13,6 +13,7 @@ import Image from "next/image";
 import { PageManagedContent } from "@/components/cms/PageManagedContent";
 import { getPageContent } from "@/lib/cms/queries";
 import { MediaType } from "@prisma/client";
+import { getPublicMediaUrl } from "@/lib/cms/public-media";
 
 export const metadata: Metadata = buildMetadata({
   title: "Restaurant in Bad Saarow am Kurpark",
@@ -29,7 +30,7 @@ export default async function Home() {
     .filter((link) => link.fieldKey === "fish_showcase" && link.media.mediaType === MediaType.IMAGE)
     .map((link) => ({
       id: link.media.id,
-      src: link.media.url,
+      src: getPublicMediaUrl(link.media.id, link.media.url),
       alt: link.media.altText || link.media.filename,
       title: link.media.title || null,
       description: link.media.caption || null,
@@ -39,7 +40,7 @@ export default async function Home() {
     .filter((link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO)
     .map((link) => ({
       id: link.media.id,
-      src: link.media.url,
+      src: getPublicMediaUrl(link.media.id, link.media.url),
       title: link.media.title || null,
       description: link.media.caption || null,
       width: link.media.width,
