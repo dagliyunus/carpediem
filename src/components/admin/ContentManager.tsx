@@ -60,6 +60,7 @@ type DisplayMediaItem = {
   mediaType: MediaType;
   title: string;
   previewSrc: string;
+  previewType: MediaType;
   altText?: string | null;
 };
 
@@ -74,18 +75,16 @@ const emptyForm: FormState = {
   mediaLinks: [],
 };
 
-const MANAGED_PAGE_SLUGS = ['home', 'galerie', 'magazin'] as const;
+const MANAGED_PAGE_SLUGS = ['home', 'galerie'] as const;
 
 const MANAGED_PAGE_ORDER: Record<(typeof MANAGED_PAGE_SLUGS)[number], number> = {
   home: 0,
   galerie: 1,
-  magazin: 2,
 };
 
 const MANAGED_PAGE_LABELS: Record<(typeof MANAGED_PAGE_SLUGS)[number], string> = {
   home: 'Startseite',
   galerie: 'Galerie',
-  magazin: 'Magazin',
 };
 
 const SECTION_LABELS: Record<string, string> = {
@@ -596,6 +595,8 @@ export function ContentManager() {
             mediaItem!.mediaType === MediaType.VIDEO && poster
               ? `/api/admin/media/${poster.id}/preview`
               : `/api/admin/media/${mediaItem!.id}/preview`,
+          previewType:
+            mediaItem!.mediaType === MediaType.VIDEO && poster ? MediaType.IMAGE : mediaItem!.mediaType,
           altText: mediaItem!.altText,
         };
       });
@@ -619,7 +620,7 @@ export function ContentManager() {
               return (
                 <article key={`${entry.fieldKey}-${entry.id}`} className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
                   <div className="relative aspect-video overflow-hidden bg-black/60">
-                    {entry.mediaType === MediaType.IMAGE ? (
+                    {entry.previewType === MediaType.IMAGE ? (
                       <Image
                         src={entry.previewSrc}
                         alt={entry.altText || entry.title}

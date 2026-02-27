@@ -2,7 +2,7 @@
 
 import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { AdminSingleMediaPicker } from '@/components/admin/MediaPicker';
+import Image from 'next/image';
 
 type ArticleItem = {
   id: string;
@@ -14,6 +14,7 @@ type ArticleItem = {
   publishedAt: string | null;
   scheduledAt: string | null;
   coverImageId: string | null;
+  coverImage?: MediaItem | null;
   categories: Array<{ category: { name: string } }>;
   tags: Array<{ tag: { name: string } }>;
 };
@@ -66,7 +67,7 @@ function fromDatetimeLocal(value: string) {
 
 export function MagazinManager() {
   const [items, setItems] = useState<ArticleItem[]>([]);
-  const [imageMedia, setImageMedia] = useState<MediaItem[]>([]);
+  const [coverMedia, setCoverMedia] = useState<MediaItem | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -78,16 +79,10 @@ export function MagazinManager() {
   async function loadData() {
     setLoading(true);
     try {
-      const [articleRes, mediaRes] = await Promise.all([
-        fetch('/api/admin/articles', { cache: 'no-store' }),
-        fetch('/api/admin/media?type=IMAGE', { cache: 'no-store' }),
-      ]);
-
+      const articleRes = await fetch('/api/admin/articles', { cache: 'no-store' });
       const articleData = (await articleRes.json()) as { items: ArticleItem[] };
-      const mediaData = (await mediaRes.json()) as { items: MediaItem[] };
 
       setItems(articleData.items || []);
-      setImageMedia(mediaData.items || []);
     } finally {
       setLoading(false);
     }
@@ -102,14 +97,10 @@ export function MagazinManager() {
     [items, selectedId]
   );
 
-  const selectedCover = useMemo(
-    () => imageMedia.find((item) => item.id === form.coverImageId) || null,
-    [form.coverImageId, imageMedia]
-  );
-
   useEffect(() => {
     if (!selectedItem) {
       setForm(emptyForm);
+      setCoverMedia(null);
       return;
     }
 
@@ -125,6 +116,7 @@ export function MagazinManager() {
       tags: selectedItem.tags.map((item) => item.tag.name).join(', '),
       coverImageId: selectedItem.coverImageId || '',
     });
+    setCoverMedia(selectedItem.coverImage || null);
   }, [selectedItem]);
 
   async function saveArticle() {
@@ -233,10 +225,7 @@ export function MagazinManager() {
         return;
       }
 
-      setImageMedia((prev) => {
-        if (prev.some((item) => item.id === result.item?.id)) return prev;
-        return [result.item as MediaItem, ...prev];
-      });
+      setCoverMedia(result.item as MediaItem);
       setForm((prev) => ({
         ...prev,
         coverImageId: result.item?.id || '',
@@ -261,7 +250,7 @@ export function MagazinManager() {
       return;
     }
 
-    const target = imageMedia.find((item) => item.id === form.coverImageId);
+    const target = coverMedia && coverMedia.id === form.coverImageId ? coverMedia : null;
     if (!target) {
       setMessage('Cover-Datei nicht gefunden.');
       return;
@@ -283,7 +272,7 @@ export function MagazinManager() {
         return;
       }
 
-      setImageMedia((prev) => prev.filter((item) => item.id !== target.id));
+      setCoverMedia(null);
       setForm((prev) => ({ ...prev, coverImageId: '' }));
       setMessage('Cover-Datei aus dem Blob-Speicher entfernt.');
     } finally {
@@ -301,6 +290,7 @@ export function MagazinManager() {
             onClick={() => {
               setSelectedId(null);
               setForm(emptyForm);
+              setCoverMedia(null);
             }}
             className="rounded-full border border-primary-500/40 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary-300"
           >
@@ -425,20 +415,44 @@ export function MagazinManager() {
         </div>
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-          <AdminSingleMediaPicker
-            label="Beitragsbild"
-            hint="Dieses Bild wird fuer die Magazin-Karte und im Artikelkopf verwendet."
-            items={imageMedia}
-            selectedId={form.coverImageId}
-            onSelect={(id) => setForm((prev) => ({ ...prev, coverImageId: id }))}
-            emptyLabel="Kein Cover-Bild"
-            acceptedTypes={[MediaType.IMAGE]}
-          />
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Beitragsbild</p>
+              <p className="mt-1 text-xs text-accent-400">
+                Dieses Bild wird fuer die Magazin-Karte und im Artikelkopf verwendet.
+              </p>
+            </div>
+
+            {coverMedia ? (
+              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
+                <div className="relative aspect-[16/10] overflow-hidden bg-black/60">
+                  <Image
+                    src={`/api/admin/media/${coverMedia.id}/preview`}
+                    alt={coverMedia.altText || coverMedia.filename}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="space-y-1 px-3 py-2">
+                  <p className="line-clamp-1 text-sm font-semibold text-white">{coverMedia.filename}</p>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">Bild</p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/15 bg-black/30 px-4 py-5 text-sm text-accent-300">
+                Noch kein Beitragsbild hinterlegt.
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setForm((prev) => ({ ...prev, coverImageId: '' }))}
+              onClick={() => {
+                setForm((prev) => ({ ...prev, coverImageId: '' }));
+                setCoverMedia(null);
+              }}
               className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/80"
             >
               Cover entfernen
@@ -453,9 +467,9 @@ export function MagazinManager() {
             </button>
           </div>
 
-          {selectedCover ? (
+          {coverMedia ? (
             <p className="text-xs text-accent-300">
-              Ausgewaehlt: <span className="font-semibold text-white">{selectedCover.filename}</span>
+              Ausgewaehlt: <span className="font-semibold text-white">{coverMedia.filename}</span>
             </p>
           ) : null}
 
