@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ConsentBanner } from "@/components/layout/ConsentBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 import { getPublicSiteRuntime } from "@/lib/cms/runtime";
 
 const inter = Inter({
@@ -23,6 +24,7 @@ const cormorant = Cormorant_Garamond({
   preload: false,
   weight: ["700"],
 });
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const runtime = await getPublicSiteRuntime();
@@ -122,6 +124,7 @@ export default async function RootLayout({
           <Footer />
         </div>
         <ConsentBanner />
+        <Analytics />
       </body>
     </html>
   );

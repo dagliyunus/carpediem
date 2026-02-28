@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { db } from '@/lib/db';
+import { siteConfig } from '@/config/siteConfig';
 
 type RateLimitState = {
   count: number;
@@ -21,6 +22,11 @@ const isValidEmail = (value: string) => {
 const isValidTime = (value: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 
 const isValidGuests = (value: string) => /^([1-8]|9\+)$/.test(value);
+
+const toMinutes = (value: string) => {
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
+};
 
 const getWeekdayFromIsoDate = (value: string) => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -125,6 +131,12 @@ export async function POST(req: Request) {
   }
   if (!isValidTime(time)) {
     return NextResponse.json({ error: 'Invalid time' }, { status: 400 });
+  }
+  if (toMinutes(time) > toMinutes(siteConfig.reservations.lastReservationTime)) {
+    return NextResponse.json(
+      { error: `Die letzte Reservierung ist nur bis ${siteConfig.reservations.lastReservationTime} Uhr moeglich.` },
+      { status: 400 }
+    );
   }
   if (!isValidGuests(guests)) {
     return NextResponse.json({ error: 'Invalid number of guests' }, { status: 400 });

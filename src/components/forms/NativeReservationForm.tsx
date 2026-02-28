@@ -35,6 +35,11 @@ const isClosedDate = (value: string) => {
   return CLOSED_WEEKDAY_INDEXES.has(weekday);
 };
 
+const toMinutes = (value: string) => {
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
 export const NativeReservationForm = () => {
   const [step, setStep] = useState<Step>(1);
   const [status, setStatus] = useState<ReservationStatus>('idle');
@@ -51,7 +56,9 @@ export const NativeReservationForm = () => {
     company: '',
   });
 
-  const timeSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'];
+  const timeSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '17:00', '17:30', '18:00', '18:30', '19:00'].filter(
+    (time) => toMinutes(time) <= toMinutes(siteConfig.reservations.lastReservationTime)
+  );
   const selectedDateIsClosed = isClosedDate(formData.date);
   const canContinueStepOne = Boolean(formData.date) && Boolean(formData.time) && !selectedDateIsClosed;
 
@@ -184,7 +191,9 @@ export const NativeReservationForm = () => {
                     }}
                   />
                 </div>
-                <p className="text-[11px] text-accent-300/85 ml-1">Ruhetage: Dienstag und Mittwoch</p>
+                <p className="text-[11px] text-accent-300/85 ml-1">
+                  Ruhetage: Dienstag und Mittwoch
+                </p>
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400 flex items-center gap-2 ml-1">
@@ -212,6 +221,9 @@ export const NativeReservationForm = () => {
               <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400 flex items-center gap-2 ml-1">
                 <Clock className="w-3.5 h-3.5" /> Verfügbare Uhrzeiten
               </label>
+              <p className="text-[11px] text-accent-300/85 ml-1">
+                Letzte Reservierung: {siteConfig.reservations.lastReservationTime} Uhr
+              </p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {timeSlots.map((time) => (
                   <button
