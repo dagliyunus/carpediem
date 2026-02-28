@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ConsentBanner } from "@/components/layout/ConsentBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
-import { Analytics } from "@vercel/analytics/next";
+import { VercelAnalytics } from "@/components/analytics/VercelAnalytics";
 import { getPublicSiteRuntime } from "@/lib/cms/runtime";
 
 const inter = Inter({
@@ -124,7 +124,7 @@ export default async function RootLayout({
           <Footer />
         </div>
         <ConsentBanner />
-        <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   );
