@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ContentStatus, MediaType, type ContentStatus as ContentStatusValue } from '@/lib/client/prisma-enums';
 import {
@@ -226,6 +226,13 @@ export function MagazinManager() {
   const [message, setMessage] = useState<string | null>(null);
   const [showCategoryEditor, setShowCategoryEditor] = useState(false);
   const [showSeoOverrides, setShowSeoOverrides] = useState(false);
+  const [coverUploadAltText, setCoverUploadAltText] = useState('');
+  const [introUploadAltText, setIntroUploadAltText] = useState('');
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingIntroMedia, setUploadingIntroMedia] = useState(false);
+  const [coverUploadInputKey, setCoverUploadInputKey] = useState(0);
+  const [introUploadInputKey, setIntroUploadInputKey] = useState(0);
+  const editorRef = useRef<HTMLDivElement | null>(null);
 
   async function loadData() {
     setLoading(true);
@@ -324,6 +331,10 @@ export function MagazinManager() {
     () => mediaItems.find((item) => item.id === articleForm.ogImageId) || selectedArticle?.seo?.ogImage || null,
     [articleForm.ogImageId, mediaItems, selectedArticle]
   );
+  const selectedIntroMedia = useMemo(
+    () => mediaItems.find((item) => item.id === categoryForm.introMediaId) || selectedCategory?.introMedia || null,
+    [categoryForm.introMediaId, mediaItems, selectedCategory]
+  );
 
   const isBadSaarowTipps = articleForm.primaryCategorySlug === BAD_SAAROW_TIPPS_CATEGORY_SLUG;
   const selectedArticleCategory = useMemo(
@@ -356,6 +367,100 @@ export function MagazinManager() {
     });
     setShowSeoOverrides(false);
     setMessage(null);
+  }
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth >= 1024) return;
+
+    editorRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [selectedArticleId]);
+
+  async function uploadMediaAsset(input: {
+    file: File;
+    altText: string;
+    acceptedTypes: ContentStatusValue[] | MediaType[];
+  }) {
+    const allowed = input.acceptedTypes as string[];
+    const isImage = input.file.type.startsWith('image/');
+    const isVideo = input.file.type.startsWith('video/');
+    const mediaType =
+      isImage ? MediaType.IMAGE : isVideo ? MediaType.VIDEO : null;
+
+    if (!mediaType || !allowed.includes(mediaType)) {
+      throw new Error('Dateityp fuer diesen Bereich nicht erlaubt.');
+    }
+
+    const formData = new FormData();
+    formData.set('file', input.file);
+
+    if (input.altText.trim()) {
+      formData.set('altText', input.altText.trim());
+    }
+
+    const response = await fetch('/api/admin/media', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = (await response.json().catch(() => null)) as { item?: MediaItem; error?: string } | null;
+
+    if (!response.ok || !result?.item) {
+      throw new Error(result?.error || 'Upload fehlgeschlagen.');
+    }
+
+    setMediaItems((prev) => [result.item!, ...prev]);
+    return result.item;
+  }
+
+  async function handleCoverUpload(file: File | null) {
+    if (!file) return;
+    setUploadingCover(true);
+    setMessage(null);
+
+    try {
+      const item = await uploadMediaAsset({
+        file,
+        altText: coverUploadAltText,
+        acceptedTypes: [MediaType.IMAGE],
+      });
+
+      setArticleForm((prev) => ({ ...prev, coverImageId: item.id }));
+      setCoverUploadAltText('');
+      setCoverUploadInputKey((prev) => prev + 1);
+      setMessage('Cover hochgeladen.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Cover-Upload fehlgeschlagen.');
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
+  async function handleIntroMediaUpload(file: File | null) {
+    if (!file) return;
+    setUploadingIntroMedia(true);
+    setMessage(null);
+
+    try {
+      const item = await uploadMediaAsset({
+        file,
+        altText: introUploadAltText,
+        acceptedTypes: [MediaType.IMAGE, MediaType.VIDEO],
+      });
+
+      setCategoryForm((prev) => ({ ...prev, introMediaId: item.id }));
+      setIntroUploadAltText('');
+      setIntroUploadInputKey((prev) => prev + 1);
+      setMessage('Intro-Medium hochgeladen.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Intro-Upload fehlgeschlagen.');
+    } finally {
+      setUploadingIntroMedia(false);
+    }
   }
 
   async function saveArticle() {
@@ -491,7 +596,7 @@ export function MagazinManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
         <aside className="space-y-6">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -681,14 +786,66 @@ export function MagazinManager() {
                   </label>
                 </div>
 
-                <AdminSingleMediaPicker
-                  label="Intro Medium"
-                  hint="Optionales Bild oder Video aus der bestehenden Media Library."
-                  items={mediaItems}
-                  selectedId={categoryForm.introMediaId}
-                  onSelect={(id) => setCategoryForm((prev) => ({ ...prev, introMediaId: id }))}
-                  acceptedTypes={[MediaType.IMAGE, MediaType.VIDEO]}
-                />
+                <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Intro Medium</p>
+                    <p className="mt-1 text-xs text-accent-400">
+                      Einfach Bild oder Video fuer diese Kategorie hochladen. Die gesamte Media Library wird hier nicht angezeigt.
+                    </p>
+                  </div>
+
+                  {selectedIntroMedia ? (
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/25">
+                      <div className="relative aspect-[16/9] bg-black/40">
+                        {selectedIntroMedia.mediaType === MediaType.VIDEO ? (
+                          <video
+                            src={`/api/admin/media/${selectedIntroMedia.id}/preview`}
+                            controls
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={`/api/admin/media/${selectedIntroMedia.id}/preview`}
+                            alt={selectedIntroMedia.altText || selectedIntroMedia.filename}
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 40vw"
+                            className="object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="space-y-1 px-3 py-2">
+                        <p className="text-sm font-semibold text-white">{selectedIntroMedia.filename}</p>
+                        <p className="text-[11px] text-accent-300">
+                          Alt-Text: {selectedIntroMedia.altText || 'fehlt'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <input
+                    key={introUploadInputKey}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(event) => void handleIntroMediaUpload(event.target.files?.[0] || null)}
+                    disabled={uploadingIntroMedia}
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                  <input
+                    value={introUploadAltText}
+                    onChange={(event) => setIntroUploadAltText(event.target.value)}
+                    placeholder="Alt-Text fuer Intro Medium"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                  {categoryForm.introMediaId ? (
+                    <button
+                      type="button"
+                      onClick={() => setCategoryForm((prev) => ({ ...prev, introMediaId: '' }))}
+                      className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
+                    >
+                      Intro Medium entfernen
+                    </button>
+                  ) : null}
+                </div>
 
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -714,7 +871,7 @@ export function MagazinManager() {
           </div>
         </aside>
 
-        <div className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+        <div ref={editorRef} className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-white">
@@ -919,14 +1076,38 @@ export function MagazinManager() {
               </div>
             ) : null}
 
-            <AdminSingleMediaPicker
-              label="Cover Medium"
-              hint="Published posts brauchen ein Cover mit gepflegtem Alt-Text in der Media Library."
-              items={mediaItems}
-              selectedId={articleForm.coverImageId}
-              onSelect={(id) => setArticleForm((prev) => ({ ...prev, coverImageId: id }))}
-              acceptedTypes={[MediaType.IMAGE]}
-            />
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Cover Medium</p>
+                <p className="mt-1 text-xs text-accent-400">
+                  Laden Sie direkt das Coverbild fuer diesen Beitrag hoch. Die gesamte Media Library wird hier nicht angezeigt.
+                </p>
+              </div>
+
+              <input
+                key={coverUploadInputKey}
+                type="file"
+                accept="image/*"
+                onChange={(event) => void handleCoverUpload(event.target.files?.[0] || null)}
+                disabled={uploadingCover}
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+              />
+              <input
+                value={coverUploadAltText}
+                onChange={(event) => setCoverUploadAltText(event.target.value)}
+                placeholder="Alt-Text fuer Coverbild"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+              />
+              {articleForm.coverImageId ? (
+                <button
+                  type="button"
+                  onClick={() => setArticleForm((prev) => ({ ...prev, coverImageId: '' }))}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
+                >
+                  Cover entfernen
+                </button>
+              ) : null}
+            </div>
 
             <AdminMultiMediaPicker
               label="Galerie / Video"
