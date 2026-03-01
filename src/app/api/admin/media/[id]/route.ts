@@ -4,6 +4,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { removeMediaAsset } from '@/lib/cms/media';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicPresentation } from '@/lib/cms/revalidation';
 
 const patchSchema = z.object({
   altText: z.string().max(200).optional(),
@@ -38,6 +39,8 @@ export async function PATCH(
     entityId: media.id,
   });
 
+  revalidatePublicPresentation();
+
   return NextResponse.json({ item: media });
 }
 
@@ -59,6 +62,8 @@ export async function DELETE(
       entityType: 'MediaAsset',
       entityId: id,
     });
+
+    revalidatePublicPresentation();
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -2,6 +2,15 @@ import Image from 'next/image';
 import { getPageContent } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
 
+const PUBLIC_PLACEHOLDER_BODIES = new Set([
+  'Verwalten Sie hier Inhaltsbausteine fuer die Speisekarte.',
+  'Verwalten Sie hier Inhalte fuer die Getraenkeseite.',
+  'Medien aus der Galerie koennen vollstaendig in der Admin-Oberflaeche gepflegt werden.',
+  'Kontaktinformationen und Einleitungstexte koennen im Admin bearbeitet werden.',
+  'Reservierungs-Inhalte koennen im Admin angepasst werden.',
+  'Beitraege und Kategorien werden im Admin-Bereich gepflegt.',
+]);
+
 type SectionItem = {
   title?: string;
   text?: string;
@@ -16,9 +25,11 @@ export async function PageManagedContent({ slug }: { slug: string }) {
 
   if (!page) return null;
 
+  const safeBody = page.body && !PUBLIC_PLACEHOLDER_BODIES.has(page.body.trim()) ? page.body : null;
+
   const sections = isSectionArray(page.sections) ? page.sections : [];
   const hasContent = Boolean(
-    page.headline || page.subheadline || page.body || page.heroImage || sections.length > 0
+    page.headline || page.subheadline || safeBody || page.heroImage || sections.length > 0
   );
 
   if (!hasContent) return null;
@@ -42,7 +53,7 @@ export async function PageManagedContent({ slug }: { slug: string }) {
           <div className="space-y-5 p-8 md:p-10">
             {page.headline ? <h2 className="font-serif text-4xl md:text-5xl text-white">{page.headline}</h2> : null}
             {page.subheadline ? <p className="text-lg text-primary-200">{page.subheadline}</p> : null}
-            {page.body ? <p className="text-accent-200 leading-relaxed whitespace-pre-wrap">{page.body}</p> : null}
+            {safeBody ? <p className="text-accent-200 leading-relaxed whitespace-pre-wrap">{safeBody}</p> : null}
 
             {sections.length > 0 ? (
               <div className="grid gap-4 md:grid-cols-2 pt-3">

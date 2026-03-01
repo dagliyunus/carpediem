@@ -12,18 +12,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await ensureMagazinCategories();
 
   const baseRoutes = [
-    '',
-    '/menu',
-    '/drinks',
-    '/reservieren',
-    '/galerie',
-    '/kontakt',
-    '/magazin',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
+    { route: '', priority: 1 },
+    { route: '/menu', priority: 0.92 },
+    { route: '/drinks', priority: 0.9 },
+    { route: '/reservieren', priority: 0.95 },
+    { route: '/galerie', priority: 0.82 },
+    { route: '/kontakt', priority: 0.9 },
+    { route: '/magazin', priority: 0.85 },
+  ].map((item) => ({
+    url: `${baseUrl}${item.route}`,
     lastModified,
     changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
+    priority: item.priority,
   }));
 
   const posts = await db.article.findMany({

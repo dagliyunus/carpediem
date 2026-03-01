@@ -5,6 +5,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
 import { slugify } from '@/lib/cms/content';
+import { revalidatePublicPageContent } from '@/lib/cms/revalidation';
 
 const pageSchema = z.object({
   slug: z.string().max(120).optional(),
@@ -146,6 +147,8 @@ export async function POST(req: NextRequest) {
       entityId: page.id,
       payload: { slug: page.slug },
     });
+
+    revalidatePublicPageContent(page.slug === 'home' ? '/' : `/${page.slug}`);
 
     return NextResponse.json({ item: page }, { status: 201 });
   } catch (error) {

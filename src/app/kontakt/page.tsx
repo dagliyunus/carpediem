@@ -1,30 +1,114 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { Phone, Mail, MapPin, Train, Car, Info } from 'lucide-react';
+import Link from 'next/link';
 import { siteConfig } from '@/config/siteConfig';
 import { GoogleMapEmbed } from '@/components/maps/GoogleMapEmbed';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { buildMetadata } from '@/lib/seo';
 import { PageManagedContent } from '@/components/cms/PageManagedContent';
+import { BreadcrumbTrail } from '@/components/seo/BreadcrumbTrail';
+import { StructuredDataScript } from '@/components/seo/StructuredDataScript';
+import { buildBreadcrumbSchema } from '@/lib/seo/breadcrumbs';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Kontakt & Anfahrt',
+  title: 'Kontakt und Anfahrt Bad Saarow',
   description:
-    'Kontakt und Anfahrt zum Restaurant Carpe Diem bei Ben in Bad Saarow mit Adresse, Telefon, E-Mail und Route aus Berlin.',
+    'Kontakt und Anfahrt zum Restaurant Carpe Diem bei Ben in Bad Saarow mit Adresse, Telefon, E-Mail, Route aus Berlin und Orientierung rund um Kurpark und Scharmützelsee.',
   path: '/kontakt',
 });
+
+const breadcrumbSchema = buildBreadcrumbSchema([
+  { name: 'Startseite', url: siteConfig.seo.domain },
+  { name: 'Kontakt', url: `${siteConfig.seo.domain}/kontakt` },
+]);
 
 export default function ContactPage() {
   return (
     <div className="pt-32 pb-24">
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-6xl mx-auto space-y-24">
+          <StructuredDataScript data={breadcrumbSchema} />
+
           <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <BreadcrumbTrail
+                items={[
+                  { label: 'Startseite', href: '/' },
+                  { label: 'Kontakt' },
+                ]}
+              />
+            </div>
             <h1 className="font-serif text-6xl md:text-8xl font-bold text-white tracking-tight">Kontakt</h1>
             <p className="text-accent-200 text-xl max-w-2xl mx-auto font-light">
               Wir freuen uns auf Ihren Besuch. Haben Sie Fragen oder spezielle Wünsche? Kontaktieren Sie uns gerne.
             </p>
           </div>
+
+          <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+            <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 md:p-10 space-y-6">
+              <div className="space-y-3">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-400">Restaurantlage in Bad Saarow</p>
+                <h2 className="font-serif text-4xl md:text-5xl font-bold text-white">
+                  So erreichen Sie uns am Kurpark
+                </h2>
+              </div>
+              <p className="text-accent-200 leading-relaxed">
+                Unsere Kontaktseite richtet sich an Gäste, die ihren Besuch im Carpe Diem Bad Saarow konkret planen:
+                mit Adresse, Telefon, E-Mail, Karte und Hinweisen zur Anfahrt. Die Lage am Kurpark macht das
+                Restaurant besonders interessant für Besuche nach einem Spaziergang, einem Thermenaufenthalt oder
+                einem Tagesausflug an den Scharmützelsee.
+              </p>
+              <p className="text-accent-200 leading-relaxed">
+                Wenn Sie Ihren Tisch bereits im Blick haben, können Sie direkt über{' '}
+                <Link href="/reservieren" className="text-primary-300 underline decoration-primary-400/40 underline-offset-4">
+                  Reservierung
+                </Link>{' '}
+                anfragen. Wer sich vorab einen Überblick über Gerichte und Getränke verschaffen möchte, findet auf der{' '}
+                <Link href="/menu" className="text-primary-300 underline decoration-primary-400/40 underline-offset-4">
+                  Speisekarte
+                </Link>{' '}
+                und der{' '}
+                <Link href="/drinks" className="text-primary-300 underline decoration-primary-400/40 underline-offset-4">
+                  Getränkekarte
+                </Link>{' '}
+                die passenden Inhalte.
+              </p>
+              <p className="text-accent-200 leading-relaxed">
+                Für Gäste, die das Restaurantambiente zuerst sehen möchten, ergänzt die{' '}
+                <Link href="/galerie" className="text-primary-300 underline decoration-primary-400/40 underline-offset-4">
+                  Galerie
+                </Link>{' '}
+                diese Seite um Bilder aus dem Innen- und Außenbereich. So entsteht rund um Kontakt und Anfahrt eine
+                vollständige Orientierung für den Restaurantbesuch in Bad Saarow.
+              </p>
+            </article>
+
+            <aside className="rounded-[2rem] border border-primary-500/25 bg-primary-500/10 p-8 md:p-10 space-y-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">Schnellzugriff für Ihren Besuch</h2>
+              <ul className="space-y-4 text-accent-100">
+                <li>Direkter Kontakt für Rückfragen, Gruppen und besondere Wünsche</li>
+                <li>Klare Anfahrt aus Berlin per Bahn oder Auto</li>
+                <li>Navigation für Restaurantbesuche rund um Kurpark und Therme</li>
+              </ul>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href="/reservieren"
+                  className="rounded-full bg-primary-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white"
+                >
+                  Tisch reservieren
+                </Link>
+                <Link
+                  href="/galerie"
+                  className="rounded-full border border-white/15 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
+                >
+                  Galerie ansehen
+                </Link>
+              </div>
+            </aside>
+          </section>
 
           <div className="grid lg:grid-cols-2 gap-16">
             {/* Contact Info */}

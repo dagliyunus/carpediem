@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
 
 const updateSchema = z.object({
   platform: z.nativeEnum(SocialPlatform),
@@ -50,6 +51,8 @@ export async function PATCH(
     payload: { platform: item.platform, url: item.url },
   });
 
+  revalidatePublicSiteRuntime();
+
   return NextResponse.json({ item });
 }
 
@@ -70,6 +73,8 @@ export async function DELETE(
     entityType: 'SocialAccount',
     entityId: id,
   });
+
+  revalidatePublicSiteRuntime();
 
   return NextResponse.json({ ok: true });
 }

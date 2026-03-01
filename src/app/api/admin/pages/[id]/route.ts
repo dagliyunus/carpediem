@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicPageContent } from '@/lib/cms/revalidation';
 
 const updateSchema = z.object({
   title: z.string().min(2).max(160),
@@ -155,6 +156,8 @@ export async function PATCH(
       payload: { slug: page.slug },
     });
 
+    revalidatePublicPageContent(page.slug === 'home' ? '/' : `/${page.slug}`);
+
     return NextResponse.json({ item: page });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Page update failed.';
@@ -189,6 +192,8 @@ export async function DELETE(
     entityId: id,
     payload: { slug: page.slug },
   });
+
+  revalidatePublicPageContent(page.slug === 'home' ? '/' : `/${page.slug}`);
 
   return NextResponse.json({ ok: true });
 }

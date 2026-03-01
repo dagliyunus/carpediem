@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
 
 const createSchema = z.object({
   platform: z.nativeEnum(SocialPlatform),
@@ -56,6 +57,8 @@ export async function POST(req: NextRequest) {
     entityId: item.id,
     payload: { platform: item.platform, url: item.url },
   });
+
+  revalidatePublicSiteRuntime();
 
   return NextResponse.json({ item }, { status: 201 });
 }

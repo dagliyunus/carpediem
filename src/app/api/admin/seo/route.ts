@@ -5,6 +5,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { upsertSeoMeta } from '@/lib/cms/content';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
 
 const seoSchema = z.object({
   targetType: z.nativeEnum(SeoTargetType),
@@ -102,6 +103,8 @@ export async function POST(req: NextRequest) {
         targetId: item.targetId,
       },
     });
+
+    revalidatePublicSiteRuntime();
 
     return NextResponse.json({ item });
   } catch (error) {

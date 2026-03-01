@@ -1,8 +1,9 @@
 import { ContentStatus, SeoTargetType } from '@prisma/client';
-import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_cache, unstable_noStore as noStore } from 'next/cache';
 import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
 import { ensureMagazinCategories, MAGAZIN_CATEGORY_DEFINITIONS, MAGAZIN_POSTS_PER_PAGE, sortMagazinCategories } from '@/lib/cms/magazin';
+import { PUBLIC_PAGE_CONTENT_TAG } from '@/lib/cms/revalidation';
 import { publishDueScheduledArticles } from '@/lib/cms/scheduler';
 
 const articleCardInclude = {
@@ -320,39 +321,47 @@ export async function getSiteCmsData() {
   return { site, seo, social };
 }
 
-export async function getPageContent(slug: string) {
-  noStore();
-
-  return db.page.findUnique({
-    where: {
-      slug,
-    },
-    include: {
-      heroImage: {
-        select: {
-          id: true,
-          url: true,
-          altText: true,
-          filename: true,
-        },
+const getCachedPageContent = unstable_cache(
+  async (slug: string) =>
+    db.page.findUnique({
+      where: {
+        slug,
       },
-      mediaLinks: {
-        select: {
-          fieldKey: true,
-          media: {
-            select: {
-              id: true,
-              key: true,
-              url: true,
-              altText: true,
-              filename: true,
-              mediaType: true,
-              width: true,
-              height: true,
+      include: {
+        heroImage: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            filename: true,
+          },
+        },
+        mediaLinks: {
+          select: {
+            fieldKey: true,
+            media: {
+              select: {
+                id: true,
+                key: true,
+                url: true,
+                altText: true,
+                filename: true,
+                mediaType: true,
+                width: true,
+                height: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+  ['public-page-content'],
+  {
+    revalidate: 3600,
+    tags: [PUBLIC_PAGE_CONTENT_TAG],
+  }
+);
+
+export async function getPageContent(slug: string) {
+  return getCachedPageContent(slug);
 }

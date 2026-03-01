@@ -4,6 +4,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
 
 const settingsSchema = z.object({
   siteName: z.string().min(2).max(120),
@@ -87,6 +88,8 @@ export async function PATCH(req: NextRequest) {
     entityType: 'SiteSetting',
     entityId: item.id,
   });
+
+  revalidatePublicSiteRuntime();
 
   return NextResponse.json({ item });
 }
