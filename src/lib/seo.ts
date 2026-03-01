@@ -26,7 +26,7 @@ export function buildMetadata({
     title,
     description,
     alternates: {
-      canonical: normalizedPath,
+      canonical: canonicalUrl,
     },
     robots: {
       index,
