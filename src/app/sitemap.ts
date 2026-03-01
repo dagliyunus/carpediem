@@ -2,10 +2,14 @@ import { MetadataRoute } from 'next';
 import { ContentStatus } from '@prisma/client';
 import { siteConfig } from '@/config/siteConfig';
 import { db } from '@/lib/db';
+import { ensureMagazinCategories, MAGAZIN_CATEGORY_DEFINITIONS } from '@/lib/cms/magazin';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.seo.domain;
   const lastModified = new Date();
+  await ensureMagazinCategories();
 
   const baseRoutes = [
     '',
@@ -47,5 +51,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...baseRoutes, ...postRoutes];
+  const categoryRoutes = MAGAZIN_CATEGORY_DEFINITIONS.map((category) => ({
+    url: `${baseUrl}/magazin/kategorie/${category.slug}`,
+    lastModified,
+    changeFrequency: 'weekly' as const,
+    priority: 0.75,
+  }));
+
+  return [...baseRoutes, ...categoryRoutes, ...postRoutes];
 }

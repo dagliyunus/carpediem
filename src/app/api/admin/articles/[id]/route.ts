@@ -1,4 +1,4 @@
-import { ContentStatus } from '@prisma/client';
+import { ContentStatus, SeoTargetType } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
@@ -16,8 +16,29 @@ const updateSchema = z.object({
   scheduledAt: z.string().datetime().nullable().optional(),
   coverImageId: z.string().cuid().nullable().optional(),
   mediaIds: z.array(z.string().cuid()).optional(),
+  mediaLinks: z
+    .array(
+      z.object({
+        mediaId: z.string().cuid(),
+        fieldKey: z.string().min(1).max(120).optional(),
+      })
+    )
+    .optional(),
+  primaryCategorySlug: z.string().max(120).nullable().optional(),
+  primaryCategoryName: z.string().max(120).nullable().optional(),
   categoryNames: z.array(z.string().min(1).max(80)).optional(),
   tagNames: z.array(z.string().min(1).max(80)).optional(),
+  locationFocus: z.string().max(120).nullable().optional(),
+  eventStartAt: z.string().datetime().nullable().optional(),
+  eventEndAt: z.string().datetime().nullable().optional(),
+  eventVenue: z.string().max(160).nullable().optional(),
+  eventUrl: z.string().url().max(320).nullable().optional(),
+  metaTitle: z.string().max(180).nullable().optional(),
+  metaDescription: z.string().max(320).nullable().optional(),
+  canonicalUrl: z.string().url().max(320).nullable().optional(),
+  ogTitle: z.string().max(180).nullable().optional(),
+  ogDescription: z.string().max(320).nullable().optional(),
+  ogImageId: z.string().cuid().nullable().optional(),
 });
 
 export async function GET(
@@ -58,7 +79,19 @@ export async function GET(
     return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   }
 
-  return NextResponse.json({ item: article });
+  const seo = await db.seoMeta.findUnique({
+    where: {
+      targetType_targetId: {
+        targetType: SeoTargetType.ARTICLE,
+        targetId: article.id,
+      },
+    },
+    include: {
+      ogImage: true,
+    },
+  });
+
+  return NextResponse.json({ item: { ...article, seo } });
 }
 
 export async function PATCH(

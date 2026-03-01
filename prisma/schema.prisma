@@ -110,6 +110,11 @@ model Article {
   publishedAt     DateTime?
   scheduledAt     DateTime?
   readTimeMinutes Int?
+  locationFocus   String?
+  eventStartAt    DateTime?
+  eventEndAt      DateTime?
+  eventVenue      String?
+  eventUrl        String?
   coverImageId    String?
   coverImage      MediaAsset?          @relation("ArticleCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
   authorId        String?
@@ -125,12 +130,21 @@ model Article {
 }
 
 model ArticleCategory {
-  id        String               @id @default(cuid())
-  name      String               @unique
-  slug      String               @unique
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
-  articles  ArticleCategoryMap[]
+  id                    String               @id @default(cuid())
+  name                  String               @unique
+  slug                  String               @unique
+  introHeadline         String?
+  introContent          String?
+  introMediaId          String?
+  introMedia            MediaAsset?          @relation("ArticleCategoryIntroMedia", fields: [introMediaId], references: [id], onDelete: SetNull)
+  introPrimaryCtaLabel  String?
+  introPrimaryCtaHref   String?
+  introSecondaryCtaLabel String?
+  introSecondaryCtaHref String?
+  introIsEnabled        Boolean              @default(false)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  articles              ArticleCategoryMap[]
 }
 
 model ArticleTag {
@@ -180,6 +194,7 @@ model MediaAsset {
   uploadedBy      AdminUser?         @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
   pageHeroFor     Page[]             @relation("PageHeroImage")
   articleCoverFor Article[]          @relation("ArticleCoverImage")
+  articleCategoryIntroFor ArticleCategory[] @relation("ArticleCategoryIntroMedia")
   pageLinks       PageMediaLink[]
   articleLinks    ArticleMediaLink[]
   seoImages       SeoMeta[]          @relation("SeoOgImage")

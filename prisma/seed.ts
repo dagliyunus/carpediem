@@ -6,6 +6,7 @@ import {
   SeoTargetType,
   SocialPlatform,
 } from '@prisma/client';
+import { MAGAZIN_CATEGORY_DEFINITIONS } from '../src/lib/cms/magazin';
 
 const prisma = new PrismaClient();
 
@@ -105,6 +106,26 @@ async function main() {
       where: { slug: page.slug },
       update: page,
       create: page,
+    });
+  }
+
+  for (const category of MAGAZIN_CATEGORY_DEFINITIONS) {
+    await prisma.articleCategory.upsert({
+      where: { slug: category.slug },
+      update: {
+        name: category.name,
+      },
+      create: {
+        name: category.name,
+        slug: category.slug,
+        introHeadline: category.introHeadline,
+        introContent: category.introContent,
+        introPrimaryCtaLabel: category.introPrimaryCtaLabel,
+        introPrimaryCtaHref: category.introPrimaryCtaHref,
+        introSecondaryCtaLabel: category.introSecondaryCtaLabel,
+        introSecondaryCtaHref: category.introSecondaryCtaHref,
+        introIsEnabled: category.introIsEnabled,
+      },
     });
   }
 

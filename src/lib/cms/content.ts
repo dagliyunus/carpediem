@@ -1,9 +1,17 @@
 import { AiChannel, ContentStatus, Prisma, SeoTargetType, SocialPlatform } from '@prisma/client';
 import { db } from '@/lib/db';
+import {
+  ensureMagazinCategories,
+  getDefaultMagazinCategory,
+  getMagazinCategoryDefinitionByName,
+  getMagazinCategoryDefinitionBySlug,
+  inferMagazinCategory,
+  isBadSaarowTippsCategory,
+} from '@/lib/cms/magazin';
 
 const WORDS_PER_MINUTE = 220;
 const TAG_LIMIT = 8;
-const CATEGORY_LIMIT = 3;
+const PUBLISHED_EXCERPT_MIN = 80;
 
 const STOP_WORDS = new Set([
   'a',
@@ -58,33 +66,6 @@ const STOP_WORDS = new Set([
   'zur',
 ]);
 
-const CATEGORY_RULES: Array<{ name: string; keywords: string[] }> = [
-  {
-    name: 'Events',
-    keywords: ['event', 'events', 'live', 'musik', 'dj', 'konzert', 'party', 'abend'],
-  },
-  {
-    name: 'Kulinarik',
-    keywords: ['kulinar', 'gericht', 'speise', 'menu', 'menue', 'taste', 'rezept', 'kueche'],
-  },
-  {
-    name: 'Fisch & Meeresfruechte',
-    keywords: ['fisch', 'meeresfrucht', 'seafood', 'dorade', 'lachs', 'thunfisch'],
-  },
-  {
-    name: 'Grill',
-    keywords: ['grill', 'steak', 'haehnchen', 'fleisch', 'bbq'],
-  },
-  {
-    name: 'Getraenke',
-    keywords: ['cocktail', 'wein', 'getraenk', 'drink', 'aperitivo', 'bar'],
-  },
-  {
-    name: 'Bad Saarow',
-    keywords: ['bad saarow', 'saarow'],
-  },
-];
-
 const PHRASE_TAG_RULES: Array<{ pattern: RegExp; tag: string }> = [
   { pattern: /\bbad\s*saarow\b/, tag: 'bad saarow' },
   { pattern: /\bcarpe\s*diem\b/, tag: 'carpe diem' },
@@ -122,9 +103,26 @@ export type UpsertArticleInput = {
   scheduledAt?: string | null;
   coverImageId?: string | null;
   authorId?: string | null;
+  primaryCategorySlug?: string | null;
+  primaryCategoryName?: string | null;
   categoryNames?: string[];
   tagNames?: string[];
   mediaIds?: string[];
+  mediaLinks?: Array<{
+    mediaId: string;
+    fieldKey?: string;
+  }>;
+  locationFocus?: string | null;
+  eventStartAt?: string | null;
+  eventEndAt?: string | null;
+  eventVenue?: string | null;
+  eventUrl?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  ogImageId?: string | null;
 };
 
 function normalizeUniqueList(values: string[] | undefined) {
@@ -181,13 +179,7 @@ function inferArticleTaxonomy(input: {
   addWeightedTokens(tokenize(input.excerpt || ''), 2);
   addWeightedTokens(tokenize(input.content), 1);
 
-  const inferredCategories = CATEGORY_RULES.filter((rule) =>
-    rule.keywords.some((keyword) => merged.includes(keyword))
-  ).map((rule) => rule.name);
-
-  if (inferredCategories.length === 0) {
-    inferredCategories.push('Magazin');
-  }
+  const inferredCategory = inferMagazinCategory(input);
 
   const phraseTags = PHRASE_TAG_RULES.filter((rule) => rule.pattern.test(merged)).map((rule) => rule.tag);
 
@@ -204,27 +196,73 @@ function inferArticleTaxonomy(input: {
   }
 
   return {
-    categoryNames: inferredCategories.slice(0, CATEGORY_LIMIT),
+    categoryNames: [inferredCategory.name],
     tagNames: uniqueTags,
   };
 }
 
-async function resolveCategories(tx: Prisma.TransactionClient, names: string[]) {
-  const results = await Promise.all(
-    names.map((name) =>
-      tx.articleCategory.upsert({
-        where: { slug: slugify(name) },
-        update: { name },
-        create: {
-          name,
-          slug: slugify(name),
-        },
-        select: { id: true },
-      })
-    )
-  );
+function normalizeArticleMediaLinks(input: {
+  mediaIds?: string[];
+  mediaLinks?: Array<{ mediaId: string; fieldKey?: string }>;
+}) {
+  const links =
+    input.mediaLinks && input.mediaLinks.length > 0
+      ? input.mediaLinks.map((link) => ({
+          mediaId: link.mediaId,
+          fieldKey: (link.fieldKey || 'gallery').trim() || 'gallery',
+        }))
+      : (input.mediaIds || []).map((mediaId) => ({
+          mediaId,
+          fieldKey: 'gallery',
+        }));
 
-  return results.map((item) => item.id);
+  const unique = new Map<string, { mediaId: string; fieldKey: string }>();
+  for (const link of links) {
+    if (!link.mediaId) continue;
+    unique.set(`${link.mediaId}:${link.fieldKey}`, link);
+  }
+
+  return Array.from(unique.values());
+}
+
+async function resolvePrimaryCategory(
+  tx: Prisma.TransactionClient,
+  input: Pick<UpsertArticleInput, 'primaryCategorySlug' | 'primaryCategoryName' | 'categoryNames' | 'title' | 'excerpt' | 'content'>
+) {
+  const explicitValue =
+    input.primaryCategorySlug?.trim() ||
+    input.primaryCategoryName?.trim() ||
+    input.categoryNames?.map((value) => value.trim()).find(Boolean) ||
+    '';
+
+  const definition =
+    getMagazinCategoryDefinitionBySlug(explicitValue) ||
+    getMagazinCategoryDefinitionByName(explicitValue) ||
+    inferMagazinCategory(input) ||
+    getDefaultMagazinCategory();
+
+  return tx.articleCategory.upsert({
+    where: { slug: definition.slug },
+    update: {
+      name: definition.name,
+    },
+    create: {
+      name: definition.name,
+      slug: definition.slug,
+      introHeadline: definition.introHeadline,
+      introContent: definition.introContent,
+      introPrimaryCtaLabel: definition.introPrimaryCtaLabel,
+      introPrimaryCtaHref: definition.introPrimaryCtaHref,
+      introSecondaryCtaLabel: definition.introSecondaryCtaLabel,
+      introSecondaryCtaHref: definition.introSecondaryCtaHref,
+      introIsEnabled: definition.introIsEnabled,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  });
 }
 
 async function resolveTags(tx: Prisma.TransactionClient, names: string[]) {
@@ -245,9 +283,56 @@ async function resolveTags(tx: Prisma.TransactionClient, names: string[]) {
   return results.map((item) => item.id);
 }
 
+async function syncArticleSeoMeta(
+  tx: Prisma.TransactionClient,
+  articleId: string,
+  input: Pick<
+    UpsertArticleInput,
+    'metaTitle' | 'metaDescription' | 'canonicalUrl' | 'ogTitle' | 'ogDescription' | 'ogImageId'
+  >
+) {
+  const seoPayload = {
+    title: input.metaTitle?.trim() || null,
+    description: input.metaDescription?.trim() || null,
+    canonicalUrl: input.canonicalUrl?.trim() || null,
+    openGraphTitle: input.ogTitle?.trim() || null,
+    openGraphDescription: input.ogDescription?.trim() || null,
+    ogImageId: input.ogImageId || null,
+  };
+
+  const hasManualSeo = Object.values(seoPayload).some(Boolean);
+
+  if (!hasManualSeo) {
+    await tx.seoMeta.deleteMany({
+      where: {
+        targetType: SeoTargetType.ARTICLE,
+        targetId: articleId,
+      },
+    });
+    return;
+  }
+
+  await tx.seoMeta.upsert({
+    where: {
+      targetType_targetId: {
+        targetType: SeoTargetType.ARTICLE,
+        targetId: articleId,
+      },
+    },
+    update: seoPayload,
+    create: {
+      targetType: SeoTargetType.ARTICLE,
+      targetId: articleId,
+      twitterCard: 'summary_large_image',
+      ...seoPayload,
+    },
+  });
+}
+
 export async function upsertArticle(input: UpsertArticleInput) {
   const safeTitle = input.title.trim();
   const safeContent = input.content.trim();
+  const safeExcerpt = input.excerpt?.trim() || null;
 
   if (!safeTitle) {
     throw new Error('Title is required.');
@@ -263,18 +348,21 @@ export async function upsertArticle(input: UpsertArticleInput) {
     throw new Error('A valid slug could not be generated.');
   }
 
-  const manualCategories = normalizeUniqueList(input.categoryNames);
   const manualTags = normalizeUniqueList(input.tagNames);
   const inferredTaxonomy = inferArticleTaxonomy({
     title: safeTitle,
-    excerpt: input.excerpt?.trim() || '',
+    excerpt: safeExcerpt || '',
     content: safeContent,
   });
-  const categories = manualCategories.length > 0 ? manualCategories : inferredTaxonomy.categoryNames;
   const tags = manualTags.length > 0 ? manualTags : inferredTaxonomy.tagNames;
-  const mediaIds = Array.from(new Set((input.mediaIds || []).filter(Boolean)));
+  const mediaLinks = normalizeArticleMediaLinks({
+    mediaIds: input.mediaIds,
+    mediaLinks: input.mediaLinks,
+  });
   const parsedPublishedAt = input.publishedAt ? new Date(input.publishedAt) : null;
   const parsedScheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
+  const parsedEventStartAt = input.eventStartAt ? new Date(input.eventStartAt) : null;
+  const parsedEventEndAt = input.eventEndAt ? new Date(input.eventEndAt) : null;
   const scheduleReferenceAt = parsedScheduledAt || parsedPublishedAt;
 
   if (input.status === ContentStatus.SCHEDULED && !scheduleReferenceAt) {
@@ -288,6 +376,43 @@ export async function upsertArticle(input: UpsertArticleInput) {
   const resolvedScheduledAt = input.status === ContentStatus.SCHEDULED ? scheduleReferenceAt : parsedScheduledAt;
 
   return db.$transaction(async (tx) => {
+    await ensureMagazinCategories(tx);
+
+    const primaryCategory = await resolvePrimaryCategory(tx, {
+      title: safeTitle,
+      excerpt: safeExcerpt || undefined,
+      content: safeContent,
+      primaryCategorySlug: input.primaryCategorySlug,
+      primaryCategoryName: input.primaryCategoryName,
+      categoryNames: input.categoryNames && input.categoryNames.length > 0 ? input.categoryNames : inferredTaxonomy.categoryNames,
+    });
+    const safeLocationFocus = isBadSaarowTippsCategory(primaryCategory.name, primaryCategory.slug)
+      ? input.locationFocus?.trim() || null
+      : null;
+
+    if (input.status === ContentStatus.PUBLISHED) {
+      if (!safeExcerpt || safeExcerpt.length < PUBLISHED_EXCERPT_MIN) {
+        throw new Error(`Published posts require an excerpt with at least ${PUBLISHED_EXCERPT_MIN} characters.`);
+      }
+
+      if (!input.coverImageId) {
+        throw new Error('Published posts require a cover image.');
+      }
+
+      const coverImage = await tx.mediaAsset.findUnique({
+        where: { id: input.coverImageId },
+        select: { id: true, altText: true },
+      });
+
+      if (!coverImage) {
+        throw new Error('Selected cover image was not found.');
+      }
+
+      if (!coverImage.altText?.trim()) {
+        throw new Error('Published posts require cover media alt text in the media library.');
+      }
+    }
+
     if (input.id) {
       const duplicate = await tx.article.findFirst({
         where: {
@@ -306,7 +431,7 @@ export async function upsertArticle(input: UpsertArticleInput) {
         data: {
           title: safeTitle,
           slug,
-          excerpt: input.excerpt?.trim() || null,
+          excerpt: safeExcerpt,
           content: safeContent,
           status: input.status,
           readTimeMinutes: estimateReadTimeMinutes(safeContent),
@@ -314,6 +439,11 @@ export async function upsertArticle(input: UpsertArticleInput) {
           authorId: input.authorId || null,
           publishedAt: resolvedPublishedAt,
           scheduledAt: resolvedScheduledAt,
+          locationFocus: safeLocationFocus,
+          eventStartAt: parsedEventStartAt,
+          eventEndAt: parsedEventEndAt,
+          eventVenue: input.eventVenue?.trim() || null,
+          eventUrl: input.eventUrl?.trim() || null,
         },
       });
 
@@ -321,17 +451,14 @@ export async function upsertArticle(input: UpsertArticleInput) {
       await tx.articleTagMap.deleteMany({ where: { articleId: updated.id } });
       await tx.articleMediaLink.deleteMany({ where: { articleId: updated.id } });
 
-      const categoryIds = await resolveCategories(tx, categories);
       const tagIds = await resolveTags(tx, tags);
 
-      if (categoryIds.length > 0) {
-        await tx.articleCategoryMap.createMany({
-          data: categoryIds.map((categoryId) => ({
-            articleId: updated.id,
-            categoryId,
-          })),
-        });
-      }
+      await tx.articleCategoryMap.create({
+        data: {
+          articleId: updated.id,
+          categoryId: primaryCategory.id,
+        },
+      });
 
       if (tagIds.length > 0) {
         await tx.articleTagMap.createMany({
@@ -342,16 +469,18 @@ export async function upsertArticle(input: UpsertArticleInput) {
         });
       }
 
-      if (mediaIds.length > 0) {
+      if (mediaLinks.length > 0) {
         await tx.articleMediaLink.createMany({
-          data: mediaIds.map((mediaId) => ({
+          data: mediaLinks.map((link) => ({
             articleId: updated.id,
-            mediaId,
-            fieldKey: 'content',
+            mediaId: link.mediaId,
+            fieldKey: link.fieldKey,
           })),
           skipDuplicates: true,
         });
       }
+
+      await syncArticleSeoMeta(tx, updated.id, input);
 
       return updated;
     }
@@ -369,7 +498,7 @@ export async function upsertArticle(input: UpsertArticleInput) {
       data: {
         title: safeTitle,
         slug,
-        excerpt: input.excerpt?.trim() || null,
+        excerpt: safeExcerpt,
         content: safeContent,
         status: input.status,
         readTimeMinutes: estimateReadTimeMinutes(safeContent),
@@ -377,20 +506,22 @@ export async function upsertArticle(input: UpsertArticleInput) {
         authorId: input.authorId || null,
         publishedAt: resolvedPublishedAt,
         scheduledAt: resolvedScheduledAt,
+        locationFocus: safeLocationFocus,
+        eventStartAt: parsedEventStartAt,
+        eventEndAt: parsedEventEndAt,
+        eventVenue: input.eventVenue?.trim() || null,
+        eventUrl: input.eventUrl?.trim() || null,
       },
     });
 
-    const categoryIds = await resolveCategories(tx, categories);
     const tagIds = await resolveTags(tx, tags);
 
-    if (categoryIds.length > 0) {
-      await tx.articleCategoryMap.createMany({
-        data: categoryIds.map((categoryId) => ({
-          articleId: created.id,
-          categoryId,
-        })),
-      });
-    }
+    await tx.articleCategoryMap.create({
+      data: {
+        articleId: created.id,
+        categoryId: primaryCategory.id,
+      },
+    });
 
     if (tagIds.length > 0) {
       await tx.articleTagMap.createMany({
@@ -401,16 +532,18 @@ export async function upsertArticle(input: UpsertArticleInput) {
       });
     }
 
-    if (mediaIds.length > 0) {
+    if (mediaLinks.length > 0) {
       await tx.articleMediaLink.createMany({
-        data: mediaIds.map((mediaId) => ({
+        data: mediaLinks.map((link) => ({
           articleId: created.id,
-          mediaId,
-          fieldKey: 'content',
+          mediaId: link.mediaId,
+          fieldKey: link.fieldKey,
         })),
         skipDuplicates: true,
       });
     }
+
+    await syncArticleSeoMeta(tx, created.id, input);
 
     return created;
   });
