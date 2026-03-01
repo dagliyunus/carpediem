@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
 import { getMagazinCategories, getPaginatedMagazinPosts } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
+import { CategoryIntroBlock } from '@/components/magazin/CategoryIntroBlock';
 import { MagazinPostCard } from '@/components/magazin/PostCard';
 import { MagazinPagination } from '@/components/magazin/Pagination';
 
@@ -54,6 +55,7 @@ export default async function MagazinPage({
     }),
   ]);
 
+  const activeCategory = categories.find((category) => category.slug === categorySlug) || null;
   const isDefaultListing = !search && !categorySlug && page === 1;
   const featuredPost = isDefaultListing ? posts.items[0] || null : null;
   const regularPosts = featuredPost ? posts.items.slice(1) : posts.items;
@@ -136,6 +138,18 @@ export default async function MagazinPage({
               ))}
             </div>
           </section>
+
+          {activeCategory?.introIsEnabled ? (
+            <CategoryIntroBlock
+              headline={activeCategory.introHeadline}
+              content={activeCategory.introContent}
+              media={activeCategory.introMedia}
+              primaryLabel={activeCategory.introPrimaryCtaLabel}
+              primaryHref={activeCategory.introPrimaryCtaHref}
+              secondaryLabel={activeCategory.introSecondaryCtaLabel}
+              secondaryHref={activeCategory.introSecondaryCtaHref}
+            />
+          ) : null}
 
           {posts.total === 0 ? (
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-center text-accent-200">

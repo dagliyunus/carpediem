@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ContentStatus, MediaType, type ContentStatus as ContentStatusValue } from '@/lib/client/prisma-enums';
@@ -151,6 +152,66 @@ function fromDatetimeLocal(value: string) {
   return new Date(value).toISOString();
 }
 
+function slugifyPreview(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 180);
+}
+
+function createSeoExcerpt(content: string, fallback?: string, maxLength = 180) {
+  const source = (fallback || content)
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/[*_`>#]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!source) return '';
+  if (source.length <= maxLength) return source;
+  return `${source.slice(0, maxLength).trimEnd()}...`;
+}
+
+function buildSeoPreview(input: {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  locationFocus: string;
+  isBadSaarowTipps: boolean;
+  manualTitle: string;
+  manualDescription: string;
+  manualCanonical: string;
+  manualOgTitle: string;
+  manualOgDescription: string;
+}) {
+  const fallbackSlug = slugifyPreview(input.slug || input.title) || 'beitrag';
+  const defaultTitle =
+    input.isBadSaarowTipps && input.locationFocus.trim()
+      ? `${input.title || 'Magazinbeitrag'} - ${input.locationFocus.trim()} | Carpe Diem Bad Saarow`
+      : `${input.title || 'Magazinbeitrag'} | Carpe Diem Bad Saarow`;
+  const defaultDescription =
+    input.isBadSaarowTipps && input.locationFocus.trim()
+      ? `${input.title || 'Magazinbeitrag'} mit Fokus auf ${input.locationFocus.trim()} in Bad Saarow: Tipps fuer Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
+      : createSeoExcerpt(input.content, input.excerpt) ||
+        'Magazinbeitrag aus dem Carpe Diem Bad Saarow mit lokalem Restaurantbezug.';
+  const canonical = input.manualCanonical.trim() || `https://www.carpediem-badsaarow.de/magazin/${fallbackSlug}`;
+  const title = input.manualTitle.trim() || defaultTitle;
+  const description = input.manualDescription.trim() || defaultDescription;
+
+  return {
+    title,
+    description,
+    canonical,
+    ogTitle: input.manualOgTitle.trim() || title,
+    ogDescription: input.manualOgDescription.trim() || description,
+  };
+}
+
 export function MagazinManager() {
   const [items, setItems] = useState<ArticleItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
@@ -163,6 +224,8 @@ export function MagazinManager() {
   const [savingArticle, setSavingArticle] = useState(false);
   const [savingCategory, setSavingCategory] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [showCategoryEditor, setShowCategoryEditor] = useState(false);
+  const [showSeoOverrides, setShowSeoOverrides] = useState(false);
 
   async function loadData() {
     setLoading(true);
@@ -263,6 +326,37 @@ export function MagazinManager() {
   );
 
   const isBadSaarowTipps = articleForm.primaryCategorySlug === BAD_SAAROW_TIPPS_CATEGORY_SLUG;
+  const selectedArticleCategory = useMemo(
+    () => categories.find((item) => item.slug === articleForm.primaryCategorySlug) || null,
+    [articleForm.primaryCategorySlug, categories]
+  );
+  const seoPreview = useMemo(
+    () =>
+      buildSeoPreview({
+        title: articleForm.title,
+        slug: articleForm.slug,
+        excerpt: articleForm.excerpt,
+        content: articleForm.content,
+        locationFocus: articleForm.locationFocus,
+        isBadSaarowTipps,
+        manualTitle: articleForm.metaTitle,
+        manualDescription: articleForm.metaDescription,
+        manualCanonical: articleForm.canonicalUrl,
+        manualOgTitle: articleForm.ogTitle,
+        manualOgDescription: articleForm.ogDescription,
+      }),
+    [articleForm, isBadSaarowTipps]
+  );
+
+  function startCreatePost() {
+    setSelectedArticleId(null);
+    setArticleForm({
+      ...emptyArticleForm,
+      primaryCategorySlug: categories[0]?.slug || emptyArticleForm.primaryCategorySlug,
+    });
+    setShowSeoOverrides(false);
+    setMessage(null);
+  }
 
   async function saveArticle() {
     setSavingArticle(true);
@@ -365,10 +459,16 @@ export function MagazinManager() {
   }
 
   async function deleteArticle() {
-    if (!selectedArticleId) return;
+    const articleId = selectedArticleId;
+    if (!articleId) return;
+
+    await deleteArticleById(articleId);
+  }
+
+  async function deleteArticleById(articleId: string) {
     if (!window.confirm('Beitrag wirklich loeschen?')) return;
 
-    const response = await fetch(`/api/admin/articles/${selectedArticleId}`, {
+    const response = await fetch(`/api/admin/articles/${articleId}`, {
       method: 'DELETE',
     });
 
@@ -378,200 +478,258 @@ export function MagazinManager() {
       return;
     }
 
-    setSelectedArticleId(null);
-    setArticleForm(emptyArticleForm);
+    if (selectedArticleId === articleId) {
+      setSelectedArticleId(null);
+      setArticleForm({
+        ...emptyArticleForm,
+        primaryCategorySlug: categories[0]?.slug || emptyArticleForm.primaryCategorySlug,
+      });
+    }
     await loadData();
     setMessage('Beitrag geloescht.');
   }
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[280px_280px_1fr]">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold text-white">Kategorien</h3>
-          </div>
-          <div className="space-y-2">
-            {loading ? (
-              <p className="text-sm text-accent-300">Lade Kategorien ...</p>
-            ) : (
-              categories.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setSelectedCategoryId(item.id)}
-                  className={`w-full rounded-2xl border px-3 py-3 text-left transition ${
-                    selectedCategoryId === item.id
-                      ? 'border-primary-400/50 bg-primary-500/15 text-primary-100'
-                      : 'border-white/10 bg-black/20 text-white/80 hover:border-white/20'
-                  }`}
-                >
-                  <p className="text-sm font-semibold">{item.name}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-300">{item.slug}</p>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold text-white">Beitraege</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedArticleId(null);
-                setArticleForm(emptyArticleForm);
-              }}
-              className="rounded-full border border-primary-500/40 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary-300"
-            >
-              Neu
-            </button>
-          </div>
-          <div className="space-y-2">
-            {loading ? (
-              <p className="text-sm text-accent-300">Lade Beitraege ...</p>
-            ) : (
-              items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setSelectedArticleId(item.id)}
-                  className={`w-full rounded-2xl border px-3 py-3 text-left transition ${
-                    selectedArticleId === item.id
-                      ? 'border-primary-400/50 bg-primary-500/15 text-primary-100'
-                      : 'border-white/10 bg-black/20 text-white/80 hover:border-white/20'
-                  }`}
-                >
-                  <p className="line-clamp-1 text-sm font-semibold">{item.title}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-accent-300">
-                    {item.categories[0]?.category.name || 'Ohne Kategorie'} · {item.status}
-                  </p>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
-          <section className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
+        <aside className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-white">Category Intro Block</h3>
-                <p className="text-sm text-accent-300">
-                  SEO-Landingpage-Inhalt fuer {selectedCategory?.name || 'die Kategorie'}.
-                </p>
+                <h3 className="font-semibold text-white">Magazin-Beitraege</h3>
+                <p className="text-sm text-accent-300">Posts erstellen, bearbeiten oder loeschen.</p>
               </div>
-              <label className="flex items-center gap-2 text-sm text-white/90">
-                <input
-                  type="checkbox"
-                  checked={categoryForm.introIsEnabled}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introIsEnabled: event.target.checked }))
-                  }
-                />
-                Aktiv
-              </label>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block space-y-1 sm:col-span-2">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Intro Headline</span>
-                <input
-                  value={categoryForm.introHeadline}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introHeadline: event.target.value }))
-                  }
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-
-              <label className="block space-y-1 sm:col-span-2">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Intro Content</span>
-                <textarea
-                  value={categoryForm.introContent}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introContent: event.target.value }))
-                  }
-                  className="h-32 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-
-              <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA</span>
-                <input
-                  value={categoryForm.introPrimaryCtaLabel}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introPrimaryCtaLabel: event.target.value }))
-                  }
-                  placeholder="Jetzt reservieren"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA URL</span>
-                <input
-                  value={categoryForm.introPrimaryCtaHref}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introPrimaryCtaHref: event.target.value }))
-                  }
-                  placeholder="/reservieren"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-
-              <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA</span>
-                <input
-                  value={categoryForm.introSecondaryCtaLabel}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introSecondaryCtaLabel: event.target.value }))
-                  }
-                  placeholder="Kontakt"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA URL</span>
-                <input
-                  value={categoryForm.introSecondaryCtaHref}
-                  onChange={(event) =>
-                    setCategoryForm((prev) => ({ ...prev, introSecondaryCtaHref: event.target.value }))
-                  }
-                  placeholder="/kontakt"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                />
-              </label>
-            </div>
-
-            <AdminSingleMediaPicker
-              label="Intro Medium"
-              hint="Optionales Bild oder Video aus der bestehenden Media Library."
-              items={mediaItems}
-              selectedId={categoryForm.introMediaId}
-              onSelect={(id) => setCategoryForm((prev) => ({ ...prev, introMediaId: id }))}
-              acceptedTypes={[MediaType.IMAGE, MediaType.VIDEO]}
-            />
-
-            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => void saveCategory()}
-                disabled={savingCategory || !selectedCategoryId}
-                className="rounded-full bg-primary-600 px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white disabled:opacity-60"
+                onClick={startCreatePost}
+                className="rounded-full bg-primary-600 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white"
               >
-                {savingCategory ? 'Speichere ...' : 'Kategorie speichern'}
+                Create Post
               </button>
             </div>
-          </section>
 
-          <section className="space-y-4">
+            <div className="space-y-3">
+              {loading ? (
+                <p className="text-sm text-accent-300">Lade Beitraege ...</p>
+              ) : items.length === 0 ? (
+                <p className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-accent-300">
+                  Noch keine Magazin-Beitraege vorhanden.
+                </p>
+              ) : (
+                items.map((item) => (
+                  <article
+                    key={item.id}
+                    className={`rounded-2xl border px-4 py-4 transition ${
+                      selectedArticleId === item.id
+                        ? 'border-primary-400/50 bg-primary-500/15'
+                        : 'border-white/10 bg-black/20'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <p className="line-clamp-2 text-sm font-semibold text-white">{item.title}</p>
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-accent-300">
+                        <span>{item.categories[0]?.category.name || 'Ohne Kategorie'}</span>
+                        <span>•</span>
+                        <span>{item.status}</span>
+                        <span>•</span>
+                        <span>
+                          {item.publishedAt
+                            ? new Date(item.publishedAt).toLocaleDateString('de-DE')
+                            : 'Entwurf'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedArticleId(item.id);
+                          setShowSeoOverrides(false);
+                          setMessage(null);
+                        }}
+                        className="rounded-full border border-white/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deleteArticleById(item.id)}
+                        className="rounded-full border border-red-500/35 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-red-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+            <button
+              type="button"
+              onClick={() => setShowCategoryEditor((prev) => !prev)}
+              className="flex w-full items-center justify-between gap-4 text-left"
+            >
+              <div>
+                <h3 className="font-semibold text-white">Kategorie-Landingpages</h3>
+                <p className="text-sm text-accent-300">
+                  Intro-Block fuer {selectedCategory?.name || 'die ausgewaehlte Kategorie'} verwalten.
+                </p>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary-300">
+                {showCategoryEditor ? 'Schliessen' : 'Bearbeiten'}
+              </span>
+            </button>
+
+            {showCategoryEditor ? (
+              <div className="mt-5 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block space-y-1 sm:col-span-2">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Kategorie</span>
+                    <select
+                      value={selectedCategoryId || ''}
+                      onChange={(event) => setSelectedCategoryId(event.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    >
+                      {categories.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white/90 sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={categoryForm.introIsEnabled}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introIsEnabled: event.target.checked }))
+                      }
+                    />
+                    Landingpage-Intro aktivieren
+                  </label>
+
+                  <label className="block space-y-1 sm:col-span-2">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Headline</span>
+                    <input
+                      value={categoryForm.introHeadline}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introHeadline: event.target.value }))
+                      }
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+
+                  <label className="block space-y-1 sm:col-span-2">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Content</span>
+                    <textarea
+                      value={categoryForm.introContent}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introContent: event.target.value }))
+                      }
+                      className="h-32 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+
+                  <label className="block space-y-1">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA</span>
+                    <input
+                      value={categoryForm.introPrimaryCtaLabel}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introPrimaryCtaLabel: event.target.value }))
+                      }
+                      placeholder="Jetzt reservieren"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA URL</span>
+                    <input
+                      value={categoryForm.introPrimaryCtaHref}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introPrimaryCtaHref: event.target.value }))
+                      }
+                      placeholder="/reservieren"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+
+                  <label className="block space-y-1">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA</span>
+                    <input
+                      value={categoryForm.introSecondaryCtaLabel}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introSecondaryCtaLabel: event.target.value }))
+                      }
+                      placeholder="Kontakt"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA URL</span>
+                    <input
+                      value={categoryForm.introSecondaryCtaHref}
+                      onChange={(event) =>
+                        setCategoryForm((prev) => ({ ...prev, introSecondaryCtaHref: event.target.value }))
+                      }
+                      placeholder="/kontakt"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                    />
+                  </label>
+                </div>
+
+                <AdminSingleMediaPicker
+                  label="Intro Medium"
+                  hint="Optionales Bild oder Video aus der bestehenden Media Library."
+                  items={mediaItems}
+                  selectedId={categoryForm.introMediaId}
+                  onSelect={(id) => setCategoryForm((prev) => ({ ...prev, introMediaId: id }))}
+                  acceptedTypes={[MediaType.IMAGE, MediaType.VIDEO]}
+                />
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void saveCategory()}
+                    disabled={savingCategory || !selectedCategoryId}
+                    className="rounded-full bg-primary-600 px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white disabled:opacity-60"
+                  >
+                    {savingCategory ? 'Speichere ...' : 'Landingpage speichern'}
+                  </button>
+                  {selectedCategory ? (
+                    <Link
+                      href={`/magazin/kategorie/${selectedCategory.slug}`}
+                      target="_blank"
+                      className="rounded-full border border-white/15 px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
+                    >
+                      Kategorie ansehen
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </aside>
+
+        <div className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">Beitrag bearbeiten</h3>
+              <h3 className="text-lg font-semibold text-white">
+                {selectedArticleId ? 'Post bearbeiten' : 'Neuen Post erstellen'}
+              </h3>
               <p className="text-sm text-accent-300">
-                Ein Beitrag hat genau eine Hauptkategorie. SEO-Overrides bleiben optional.
+                SEO wird automatisch aus Titel, Kategorie, Inhalt und Location Focus erzeugt.
               </p>
             </div>
+            {selectedArticleCategory ? (
+              <span className="rounded-full border border-primary-500/35 bg-primary-500/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary-100">
+                {selectedArticleCategory.name}
+              </span>
+            ) : null}
+          </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-1">
@@ -788,73 +946,108 @@ export function MagazinManager() {
 
             <section className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
               <div>
-                <h4 className="text-base font-semibold text-white">SEO Overrides</h4>
+                <h4 className="text-base font-semibold text-white">Automatische SEO-Vorschau</h4>
                 <p className="text-sm text-accent-300">
-                  Leer lassen, damit die Magazin-Defaults und Local-SEO-Regeln greifen.
+                  Diese Werte nutzt das System automatisch, solange keine manuellen Overrides gesetzt sind.
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block space-y-1">
-                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Meta Title</span>
-                  <input
-                    value={articleForm.metaTitle}
-                    onChange={(event) => setArticleForm((prev) => ({ ...prev, metaTitle: event.target.value }))}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Canonical URL</span>
-                  <input
-                    value={articleForm.canonicalUrl}
-                    onChange={(event) => setArticleForm((prev) => ({ ...prev, canonicalUrl: event.target.value }))}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-                <label className="block space-y-1 sm:col-span-2">
-                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Meta Description</span>
-                  <textarea
-                    value={articleForm.metaDescription}
-                    onChange={(event) =>
-                      setArticleForm((prev) => ({ ...prev, metaDescription: event.target.value }))
-                    }
-                    className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">OG Title</span>
-                  <input
-                    value={articleForm.ogTitle}
-                    onChange={(event) => setArticleForm((prev) => ({ ...prev, ogTitle: event.target.value }))}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">OG Description</span>
-                  <textarea
-                    value={articleForm.ogDescription}
-                    onChange={(event) =>
-                      setArticleForm((prev) => ({ ...prev, ogDescription: event.target.value }))
-                    }
-                    className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
-                  />
-                </label>
-              </div>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-2">
+                  <dt className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Meta Title</dt>
+                  <dd className="text-sm text-white">{seoPreview.title}</dd>
+                </div>
+                <div className="space-y-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-2">
+                  <dt className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Meta Description</dt>
+                  <dd className="text-sm leading-relaxed text-white">{seoPreview.description}</dd>
+                </div>
+                <div className="space-y-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-2">
+                  <dt className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Canonical</dt>
+                  <dd className="break-all text-sm text-white">{seoPreview.canonical}</dd>
+                </div>
+                <div className="space-y-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <dt className="text-[11px] uppercase tracking-[0.16em] text-accent-300">OG Title</dt>
+                  <dd className="text-sm text-white">{seoPreview.ogTitle}</dd>
+                </div>
+                <div className="space-y-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <dt className="text-[11px] uppercase tracking-[0.16em] text-accent-300">OG Description</dt>
+                  <dd className="text-sm text-white">{seoPreview.ogDescription}</dd>
+                </div>
+              </dl>
 
-              {selectedOgImage ? (
-                <p className="text-xs text-accent-300">
-                  OG Bild: <span className="font-semibold text-white">{selectedOgImage.filename}</span>
-                </p>
+              <button
+                type="button"
+                onClick={() => setShowSeoOverrides((prev) => !prev)}
+                className="text-xs font-bold uppercase tracking-[0.16em] text-primary-300"
+              >
+                {showSeoOverrides ? 'Manuelle SEO-Overrides ausblenden' : 'Manuelle SEO-Overrides anzeigen'}
+              </button>
+
+              {showSeoOverrides ? (
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block space-y-1">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Meta Title</span>
+                      <input
+                        value={articleForm.metaTitle}
+                        onChange={(event) => setArticleForm((prev) => ({ ...prev, metaTitle: event.target.value }))}
+                        className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                    <label className="block space-y-1">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Canonical URL</span>
+                      <input
+                        value={articleForm.canonicalUrl}
+                        onChange={(event) => setArticleForm((prev) => ({ ...prev, canonicalUrl: event.target.value }))}
+                        className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                    <label className="block space-y-1 sm:col-span-2">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Meta Description</span>
+                      <textarea
+                        value={articleForm.metaDescription}
+                        onChange={(event) =>
+                          setArticleForm((prev) => ({ ...prev, metaDescription: event.target.value }))
+                        }
+                        className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                    <label className="block space-y-1">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">OG Title</span>
+                      <input
+                        value={articleForm.ogTitle}
+                        onChange={(event) => setArticleForm((prev) => ({ ...prev, ogTitle: event.target.value }))}
+                        className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                    <label className="block space-y-1">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">OG Description</span>
+                      <textarea
+                        value={articleForm.ogDescription}
+                        onChange={(event) =>
+                          setArticleForm((prev) => ({ ...prev, ogDescription: event.target.value }))
+                        }
+                        className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                  </div>
+
+                  {selectedOgImage ? (
+                    <p className="text-xs text-accent-300">
+                      OG Bild: <span className="font-semibold text-white">{selectedOgImage.filename}</span>
+                    </p>
+                  ) : null}
+
+                  <AdminSingleMediaPicker
+                    label="OG Bild"
+                    hint="Optionales Open-Graph-Bild."
+                    items={mediaItems}
+                    selectedId={articleForm.ogImageId}
+                    onSelect={(id) => setArticleForm((prev) => ({ ...prev, ogImageId: id }))}
+                    acceptedTypes={[MediaType.IMAGE]}
+                  />
+                </div>
               ) : null}
-
-              <AdminSingleMediaPicker
-                label="OG Bild"
-                hint="Optionales Open-Graph-Bild."
-                items={mediaItems}
-                selectedId={articleForm.ogImageId}
-                onSelect={(id) => setArticleForm((prev) => ({ ...prev, ogImageId: id }))}
-                acceptedTypes={[MediaType.IMAGE]}
-              />
             </section>
 
             {message ? (
@@ -880,9 +1073,8 @@ export function MagazinManager() {
                 </button>
               ) : null}
             </div>
-          </section>
+          </div>
         </div>
-      </div>
     </div>
   );
 }
