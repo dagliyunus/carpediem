@@ -4,7 +4,7 @@ import { SeoManager } from '@/components/admin/SeoManager';
 export default function AdminSeoPage() {
   return (
     <AdminCard
-      title="SEO Management"
+      title="Google Speed Test"
       subtitle="PageSpeed-Test direkt ueber die offizielle Google-Seite starten"
     >
       <SeoManager />

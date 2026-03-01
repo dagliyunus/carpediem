@@ -7,10 +7,9 @@ const navItems = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/content', label: 'Seiteninhalte' },
   { href: '/admin/magazin', label: 'Magazin-Beitraege' },
-  { href: '/admin/seo', label: 'SEO' },
+  { href: '/admin/seo', label: 'Google Speed Test' },
   { href: '/admin/social', label: 'Social Accounts' },
   { href: '/admin/ai-agent', label: 'AI Agenten' },
-  { href: '/admin/inbox', label: 'Nachrichten' },
   { href: '/admin/settings', label: 'Systemeinstellungen' },
 ];
 
