@@ -597,7 +597,7 @@ export function MagazinManager() {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
-        <aside className="space-y-6">
+        <aside className="order-2 space-y-6 lg:order-1">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -872,7 +872,10 @@ export function MagazinManager() {
           </div>
         </aside>
 
-        <div ref={editorRef} className="scroll-mt-28 space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+        <div
+          ref={editorRef}
+          className="order-1 scroll-mt-28 space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5 lg:order-2"
+        >
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-white">
