@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Crown } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { CookieSettingsButton } from '@/components/layout/CookieSettingsButton';
 import { getPublicSiteRuntime } from '@/lib/cms/runtime';
@@ -115,9 +116,10 @@ export const Footer = async () => {
               href="https://yunusemredagli.de"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-vip-premium text-xs uppercase text-primary-300 transition-colors hover:text-primary-200"
+              className="font-vip-premium inline-flex items-center gap-2 text-sm text-primary-300 transition-colors hover:text-primary-200"
             >
-              Developed by yunusemredagli.de
+              <Crown className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>developed by yunusemredagli.de</span>
             </a>
           </div>
           <div className="flex space-x-10">

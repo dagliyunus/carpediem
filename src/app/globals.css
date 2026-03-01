@@ -62,8 +62,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .font-vip-premium {
-  font-family: "VIP-Premium", var(--font-serif), serif;
-  letter-spacing: 0.04em;
+  font-family: var(--font-bodoni-moda), var(--font-serif), serif;
+  letter-spacing: 0.02em;
 }
 
 @keyframes fadeUp {

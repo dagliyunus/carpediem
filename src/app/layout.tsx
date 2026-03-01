@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond, Manrope } from "next/font/google";
+import { Inter, Cormorant_Garamond, Manrope, Bodoni_Moda } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/siteConfig";
 import { Header } from "@/components/layout/Header";
@@ -30,6 +30,13 @@ const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700"],
+});
+
+const bodoniModa = Bodoni_Moda({
+  variable: "--font-bodoni-moda",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -117,7 +124,7 @@ export default async function RootLayout({
   return (
     <html lang="de" className="scroll-smooth" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${cormorant.variable} ${manrope.variable} antialiased selection:bg-primary-500 selection:text-white`}
+        className={`${inter.variable} ${cormorant.variable} ${manrope.variable} ${bodoniModa.variable} antialiased selection:bg-primary-500 selection:text-white`}
         suppressHydrationWarning
       >
         <GoogleAnalytics ga4Id={ga4Id} />
