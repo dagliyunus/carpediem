@@ -1,12 +1,12 @@
 'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { SocialPlatform } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
+import { SocialPlatform, type SocialPlatform as SocialPlatformValue } from '@/lib/client/prisma-enums';
 
 type SocialItem = {
   id: string;
-  platform: SocialPlatform;
+  platform: SocialPlatformValue;
   displayName: string | null;
   handle: string | null;
   url: string;
@@ -15,7 +15,7 @@ type SocialItem = {
 };
 
 type FormState = {
-  platform: SocialPlatform;
+  platform: SocialPlatformValue;
   displayName: string;
   handle: string;
   url: string;

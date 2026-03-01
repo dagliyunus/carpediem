@@ -1,9 +1,14 @@
 'use client';
 
-import { ContentStatus, MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import {
+  ContentStatus,
+  MediaType,
+  type ContentStatus as ContentStatusValue,
+  type MediaType as MediaTypeValue,
+} from '@/lib/client/prisma-enums';
 
 type PageItem = {
   id: string;
@@ -13,7 +18,7 @@ type PageItem = {
   subheadline: string | null;
   body: string | null;
   template: string;
-  status: ContentStatus;
+  status: ContentStatusValue;
   publishedAt: string | null;
   heroImageId: string | null;
   sections: unknown;
@@ -28,7 +33,7 @@ type MediaItem = {
   url: string;
   filename: string;
   key?: string | null;
-  mediaType: MediaType;
+  mediaType: MediaTypeValue;
   altText?: string | null;
 };
 
@@ -42,7 +47,7 @@ type FormState = {
   headline: string;
   subheadline: string;
   body: string;
-  status: ContentStatus;
+  status: ContentStatusValue;
   publishedAt: string;
   heroImageId: string;
   mediaLinks: FormMediaLink[];
@@ -57,10 +62,10 @@ type UploadTargetOption = {
 type DisplayMediaItem = {
   id: string;
   fieldKey: string;
-  mediaType: MediaType;
+  mediaType: MediaTypeValue;
   title: string;
   previewSrc: string;
-  previewType: MediaType;
+  previewType: MediaTypeValue;
   altText?: string | null;
 };
 

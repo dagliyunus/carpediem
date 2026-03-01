@@ -1,14 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { MediaType } from '@prisma/client';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { MediaType, type MediaType as MediaTypeValue } from '@/lib/client/prisma-enums';
 
 type MediaItem = {
   id: string;
   url: string;
   filename: string;
-  mediaType: MediaType;
+  mediaType: MediaTypeValue;
   mimeType: string;
   sizeBytes: number;
   altText: string | null;

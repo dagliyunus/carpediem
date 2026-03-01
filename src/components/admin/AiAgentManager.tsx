@@ -1,12 +1,12 @@
 'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { AiChannel } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
+import { AiChannel, type AiChannel as AiChannelValue } from '@/lib/client/prisma-enums';
 
 type AgentItem = {
   id: string;
-  channel: AiChannel;
+  channel: AiChannelValue;
   isEnabled: boolean;
   promptTemplate: string;
   contentTone: string | null;
@@ -20,7 +20,7 @@ type AgentItem = {
 };
 
 type FormState = {
-  channel: AiChannel;
+  channel: AiChannelValue;
   isEnabled: boolean;
   promptTemplate: string;
   contentTone: string;

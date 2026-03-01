@@ -1,8 +1,8 @@
 'use client';
 
-import { ContentStatus, MediaType } from '@prisma/client';
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import { ContentStatus, MediaType, type ContentStatus as ContentStatusValue } from '@/lib/client/prisma-enums';
 import {
   AdminMultiMediaPicker,
   AdminSingleMediaPicker,
@@ -12,7 +12,7 @@ import {
   BAD_SAAROW_TIPPS_CATEGORY_SLUG,
   LOCATION_FOCUS_SUGGESTIONS,
   MAGAZIN_CATEGORY_DEFINITIONS,
-} from '@/lib/cms/magazin';
+} from '@/lib/magazin/shared';
 
 type MediaItem = PickerMediaItem;
 
@@ -47,7 +47,7 @@ type ArticleItem = {
   slug: string;
   excerpt: string | null;
   content: string;
-  status: ContentStatus;
+  status: ContentStatusValue;
   publishedAt: string | null;
   scheduledAt: string | null;
   locationFocus: string | null;
@@ -83,7 +83,7 @@ type ArticleFormState = {
   slug: string;
   excerpt: string;
   content: string;
-  status: ContentStatus;
+  status: ContentStatusValue;
   publishedAt: string;
   scheduledAt: string;
   primaryCategorySlug: string;

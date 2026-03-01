@@ -1,13 +1,13 @@
 'use client';
 
-import { MediaType } from '@prisma/client';
 import Image from 'next/image';
+import { MediaType, type MediaType as MediaTypeValue } from '@/lib/client/prisma-enums';
 
 export type PickerMediaItem = {
   id: string;
   url: string;
   filename: string;
-  mediaType: MediaType;
+  mediaType: MediaTypeValue;
   altText?: string | null;
 };
 
@@ -15,10 +15,10 @@ type BaseProps = {
   label: string;
   hint?: string;
   items: PickerMediaItem[];
-  acceptedTypes?: MediaType[];
+  acceptedTypes?: MediaTypeValue[];
 };
 
-function filterItems(items: PickerMediaItem[], acceptedTypes?: MediaType[]) {
+function filterItems(items: PickerMediaItem[], acceptedTypes?: MediaTypeValue[]) {
   if (!acceptedTypes || acceptedTypes.length === 0) return items;
   return items.filter((item) => acceptedTypes.includes(item.mediaType));
 }
