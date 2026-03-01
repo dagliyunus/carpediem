@@ -134,11 +134,7 @@ export default async function MagazinCategoryPage({
             />
           ) : null}
 
-          {posts.total === 0 ? (
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-center text-accent-200">
-              In dieser Kategorie sind aktuell noch keine Beitraege veroeffentlicht.
-            </div>
-          ) : (
+          {posts.total > 0 ? (
             <div className="space-y-8">
               <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
                 {posts.items.map((post) => (
@@ -152,7 +148,7 @@ export default async function MagazinCategoryPage({
                 buildHref={(targetPage) => buildCategoryHref(category.slug, targetPage)}
               />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

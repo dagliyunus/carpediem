@@ -9,6 +9,18 @@ import {
   type ContentStatus as ContentStatusValue,
   type MediaType as MediaTypeValue,
 } from '@/lib/client/prisma-enums';
+import {
+  buildGalleryMediaLinks,
+  cloneGalleryPageSections,
+  DEFAULT_GALLERY_PAGE_BODY,
+  DEFAULT_GALLERY_PAGE_HEADLINE,
+  DEFAULT_GALLERY_PAGE_SUBHEADLINE,
+  GALLERY_SECTION_KEYS,
+  isGallerySectionKey,
+  normalizeGalleryPageSections,
+  type GalleryPageSections,
+  type GallerySectionKey,
+} from '@/lib/cms/gallery-page';
 
 type PageItem = {
   id: string;
@@ -51,6 +63,19 @@ type FormState = {
   publishedAt: string;
   heroImageId: string;
   mediaLinks: FormMediaLink[];
+};
+
+type GalleryDisplayMediaItem = {
+  id: string;
+  mediaId?: string;
+  url?: string;
+  fieldKey: GallerySectionKey;
+  previewSrc: string;
+  title: string;
+  altText: string;
+  caption: string;
+  mediaType: MediaTypeValue;
+  isStatic: boolean;
 };
 
 type UploadTargetOption = {
@@ -96,6 +121,9 @@ const SECTION_LABELS: Record<string, string> = {
   content: 'Seiteninhalt',
   fish_showcase: 'Fish Showcase',
   video_showcase: 'Video Showcase',
+  gallery_ambiente: 'Ambiente am Kurpark',
+  gallery_food: 'Gerichte und mediterrane Kueche',
+  gallery_events: 'Events, Drinks und besondere Momente',
 };
 
 const HOME_UPLOAD_TARGETS: UploadTargetOption[] = [
@@ -108,6 +136,24 @@ const HOME_UPLOAD_TARGETS: UploadTargetOption[] = [
     key: 'video_showcase',
     label: 'Video Showcase',
     helper: 'Nur Videos fuer den Video-Showcase Bereich.',
+  },
+];
+
+const GALLERY_UPLOAD_TARGETS: UploadTargetOption[] = [
+  {
+    key: 'gallery_ambiente',
+    label: 'Ambiente am Kurpark',
+    helper: 'Bilder fuer den Ambiente-Bereich der Galerie.',
+  },
+  {
+    key: 'gallery_food',
+    label: 'Gerichte und mediterrane Kueche',
+    helper: 'Bilder fuer den Food-Bereich der Galerie.',
+  },
+  {
+    key: 'gallery_events',
+    label: 'Events, Drinks und besondere Momente',
+    helper: 'Bilder fuer den Event- und Drinks-Bereich der Galerie.',
   },
 ];
 
@@ -182,6 +228,9 @@ function getUploadTargetOptions(pageSlug?: string): UploadTargetOption[] {
   if (pageSlug === 'home') {
     return HOME_UPLOAD_TARGETS;
   }
+  if (pageSlug === 'galerie') {
+    return GALLERY_UPLOAD_TARGETS;
+  }
   return [DEFAULT_UPLOAD_TARGET];
 }
 
@@ -192,6 +241,7 @@ function getSectionLabel(fieldKey: string) {
 function canUploadForTarget(targetKey: string, file: File) {
   if (targetKey === 'fish_showcase') return file.type.startsWith('image/');
   if (targetKey === 'video_showcase') return file.type.startsWith('video/');
+  if (isGallerySectionKey(targetKey)) return file.type.startsWith('image/');
   return file.type.startsWith('image/') || file.type.startsWith('video/');
 }
 
@@ -207,6 +257,13 @@ function getTargetFieldLabels(targetKey: string) {
     return {
       altText: 'Alt-Text fuer Video (optional)',
       helper: 'Dieses Video wird ohne eingeblendeten Titel oder Untertitel dargestellt.',
+    };
+  }
+
+  if (isGallerySectionKey(targetKey)) {
+    return {
+      altText: 'Alt-Text fuer Bild (optional)',
+      helper: 'Bild wird dem ausgewaehlten Galerie-Bereich zugeordnet. Titel, Beschreibung und Caption koennen Sie darunter bearbeiten.',
     };
   }
 
@@ -252,6 +309,10 @@ function findRelatedPoster(media: MediaItem, mediaItems: MediaItem[]) {
   );
 }
 
+function createGalleryImageId(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function ContentManager() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -263,6 +324,9 @@ export function ContentManager() {
   const [deletingMediaId, setDeletingMediaId] = useState<string | null>(null);
   const [uploadTargetKey, setUploadTargetKey] = useState<string>('content');
   const [message, setMessage] = useState<string | null>(null);
+  const [galleryContent, setGalleryContent] = useState<GalleryPageSections>(
+    cloneGalleryPageSections()
+  );
 
   async function loadData() {
     setLoading(true);
@@ -344,30 +408,59 @@ export function ContentManager() {
   useEffect(() => {
     if (!selectedPage) {
       setForm(emptyForm);
+      setGalleryContent(cloneGalleryPageSections());
       return;
     }
 
+    const isGalleryPage = selectedPage.slug === 'galerie';
+    const normalizedGalleryContent = isGalleryPage
+      ? normalizeGalleryPageSections(selectedPage.sections)
+      : cloneGalleryPageSections();
+
+    setGalleryContent(normalizedGalleryContent);
+
     setForm({
       title: selectedPage.title,
-      headline: selectedPage.headline || '',
-      subheadline: selectedPage.subheadline || '',
-      body: selectedPage.body || '',
+      headline:
+        selectedPage.headline ||
+        (isGalleryPage ? DEFAULT_GALLERY_PAGE_HEADLINE : ''),
+      subheadline:
+        selectedPage.subheadline ||
+        (isGalleryPage ? DEFAULT_GALLERY_PAGE_SUBHEADLINE : ''),
+      body:
+        selectedPage.body ||
+        (isGalleryPage ? DEFAULT_GALLERY_PAGE_BODY : ''),
       status: selectedPage.status,
       publishedAt: toDatetimeLocal(selectedPage.publishedAt),
       heroImageId: selectedPage.heroImageId || '',
-      mediaLinks: normalizeMediaLinks(
-        (selectedPage.mediaLinks || []).map((link) => ({
-          mediaId: link.mediaId,
-          fieldKey: link.fieldKey || 'content',
-        }))
-      ),
+      mediaLinks: isGalleryPage
+        ? normalizeMediaLinks(buildGalleryMediaLinks(normalizedGalleryContent))
+        : normalizeMediaLinks(
+            (selectedPage.mediaLinks || []).map((link) => ({
+              mediaId: link.mediaId,
+              fieldKey: link.fieldKey || 'content',
+            }))
+          ),
     });
   }, [selectedPage]);
 
-  function buildPagePayload(next: { mediaLinks?: FormMediaLink[]; heroImageId?: string | null } = {}) {
-    const normalizedMediaLinks = normalizeMediaLinks(next.mediaLinks ?? form.mediaLinks).filter((link) =>
-      nonSystemMedia.some((item) => item.id === link.mediaId)
-    );
+  function buildPagePayload(next: {
+    mediaLinks?: FormMediaLink[];
+    heroImageId?: string | null;
+    sections?: unknown;
+  } = {}) {
+    const isGalleryPage = selectedPage?.slug === 'galerie';
+    const nextSections =
+      next.sections !== undefined
+        ? next.sections
+        : isGalleryPage
+          ? galleryContent
+          : selectedPage?.sections;
+    const normalizedMediaLinks = (
+      isGalleryPage
+        ? buildGalleryMediaLinks(normalizeGalleryPageSections(nextSections))
+        : normalizeMediaLinks(next.mediaLinks ?? form.mediaLinks)
+    ).filter((link) => nonSystemMedia.some((item) => item.id === link.mediaId));
 
     const rawHeroImageId = next.heroImageId === undefined ? form.heroImageId : next.heroImageId || '';
     const safeHeroImageId =
@@ -381,6 +474,7 @@ export function ContentManager() {
       status: form.status,
       publishedAt: fromDatetimeLocal(form.publishedAt),
       heroImageId: safeHeroImageId,
+      sections: nextSections,
       mediaLinks: normalizedMediaLinks,
     };
   }
@@ -418,7 +512,11 @@ export function ContentManager() {
     }
   }
 
-  async function persistMediaLinks(nextLinks: FormMediaLink[], nextHeroImageId?: string | null) {
+  async function persistPageState(next: {
+    mediaLinks?: FormMediaLink[];
+    heroImageId?: string | null;
+    sections?: unknown;
+  }) {
     if (!selectedPage) return false;
 
     const response = await fetch(`/api/admin/pages/${selectedPage.id}`, {
@@ -426,12 +524,7 @@ export function ContentManager() {
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify(
-        buildPagePayload({
-          mediaLinks: nextLinks,
-          heroImageId: nextHeroImageId,
-        })
-      ),
+      body: JSON.stringify(buildPagePayload(next)),
     });
 
     const result = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -441,6 +534,18 @@ export function ContentManager() {
     }
 
     return true;
+  }
+
+  function updateGallerySection(
+    sectionKey: GallerySectionKey,
+    updater: (section: GalleryPageSections['sections'][number]) => GalleryPageSections['sections'][number]
+  ) {
+    setGalleryContent((prev) => ({
+      ...prev,
+      sections: prev.sections.map((section) =>
+        section.key === sectionKey ? updater(section) : section
+      ),
+    }));
   }
 
   async function uploadAndAttachMedia(event: FormEvent<HTMLFormElement>) {
@@ -493,17 +598,59 @@ export function ContentManager() {
         return;
       }
 
-      const uploadedItem = result.item;
-      const nextLinks = upsertMediaLink(form.mediaLinks, {
-        mediaId: uploadedItem.id,
-        fieldKey: target.key,
-      });
+	      const uploadedItem = result.item;
+	      if (selectedPage.slug === 'galerie' && isGallerySectionKey(target.key)) {
+	        const nextGalleryContent = {
+	          ...galleryContent,
+	          sections: galleryContent.sections.map((section) =>
+	            section.key === target.key
+	              ? {
+	                  ...section,
+	                  images: [
+	                    ...section.images,
+	                    {
+	                      id: createGalleryImageId(target.key),
+	                      mediaId: uploadedItem.id,
+	                      altText: uploadedItem.altText || '',
+	                      caption: '',
+	                    },
+	                  ],
+	                }
+	              : section
+	          ),
+	        };
+	        const linked = await persistPageState({
+	          sections: nextGalleryContent,
+	        });
+	        if (!linked) {
+	          setMessage('Datei hochgeladen, aber Verknuepfung zur Galerie fehlgeschlagen. Bitte erneut speichern.');
+	          return;
+	        }
 
-      const linked = await persistMediaLinks(nextLinks);
-      if (!linked) {
-        setMessage('Datei hochgeladen, aber Verknuepfung zur Seite fehlgeschlagen. Bitte erneut speichern.');
-        return;
-      }
+	        setGalleryContent(nextGalleryContent);
+	        setMedia((prev) => [uploadedItem, ...prev]);
+	        setForm((prev) => ({
+	          ...prev,
+	          mediaLinks: normalizeMediaLinks(buildGalleryMediaLinks(nextGalleryContent)),
+	        }));
+	        event.currentTarget.reset();
+	        await loadData();
+	        setMessage(`Datei hochgeladen und zu "${target.label}" hinzugefuegt.`);
+	        return;
+	      }
+
+	      const nextLinks = upsertMediaLink(form.mediaLinks, {
+	        mediaId: uploadedItem.id,
+	        fieldKey: target.key,
+	      });
+
+	      const linked = await persistPageState({
+	        mediaLinks: nextLinks,
+	      });
+	      if (!linked) {
+	        setMessage('Datei hochgeladen, aber Verknuepfung zur Seite fehlgeschlagen. Bitte erneut speichern.');
+	        return;
+	      }
 
       setMedia((prev) => [uploadedItem, ...prev]);
       setForm((prev) => ({
@@ -544,8 +691,22 @@ export function ContentManager() {
 
       const nextLinks = form.mediaLinks.filter((link) => !idsToRemove.has(link.mediaId));
       const nextHeroImageId = form.heroImageId === mediaId ? '' : form.heroImageId;
+      const nextSections =
+        selectedPage.slug === 'galerie'
+          ? {
+              ...galleryContent,
+              sections: galleryContent.sections.map((section) => ({
+                ...section,
+                images: section.images.filter((image) => !image.mediaId || !idsToRemove.has(image.mediaId)),
+              })),
+            }
+          : undefined;
 
-      const unlinked = await persistMediaLinks(nextLinks, nextHeroImageId);
+      const unlinked = await persistPageState({
+        mediaLinks: nextLinks,
+        heroImageId: nextHeroImageId,
+        sections: nextSections,
+      });
       if (!unlinked) {
         return;
       }
@@ -569,11 +730,219 @@ export function ContentManager() {
         mediaLinks: prev.mediaLinks.filter((link) => !idsToRemove.has(link.mediaId)),
         heroImageId: prev.heroImageId === mediaId ? '' : prev.heroImageId,
       }));
+      if (nextSections) {
+        setGalleryContent(nextSections);
+      }
       await loadData();
       setMessage('Medium erfolgreich aus Seite, Blob und Datenbank entfernt.');
     } finally {
       setDeletingMediaId(null);
     }
+  }
+
+  async function deleteGalleryImage(sectionKey: GallerySectionKey, imageId: string, mediaId?: string) {
+    if (mediaId) {
+      await deleteLinkedMedia(mediaId);
+      return;
+    }
+
+    const nextGalleryContent = {
+      ...galleryContent,
+      sections: galleryContent.sections.map((section) =>
+        section.key === sectionKey
+          ? {
+              ...section,
+              images: section.images.filter((image) => image.id !== imageId),
+            }
+          : section
+      ),
+    };
+
+    const saved = await persistPageState({
+      sections: nextGalleryContent,
+    });
+
+    if (!saved) return;
+
+    setGalleryContent(nextGalleryContent);
+    setForm((prev) => ({
+      ...prev,
+      mediaLinks: normalizeMediaLinks(buildGalleryMediaLinks(nextGalleryContent)),
+    }));
+    await loadData();
+    setMessage('Bild aus dem Galerie-Bereich entfernt.');
+  }
+
+  function renderGallerySectionEditor(sectionKey: GallerySectionKey) {
+    const section = galleryContent.sections.find((item) => item.key === sectionKey);
+    if (!section) return null;
+
+    const items: GalleryDisplayMediaItem[] = section.images
+      .map((image) => {
+        const mediaItem = image.mediaId ? mediaById.get(image.mediaId) || null : null;
+        const previewSrc = mediaItem ? `/api/admin/media/${mediaItem.id}/preview` : image.url || '';
+
+        if (!previewSrc) return null;
+
+        return {
+          id: image.id,
+          mediaId: image.mediaId,
+          url: image.url,
+          fieldKey: section.key,
+          previewSrc,
+          title: mediaItem?.filename || image.url || image.id,
+          altText: image.altText || mediaItem?.altText || '',
+          caption: image.caption,
+          mediaType: mediaItem?.mediaType || MediaType.IMAGE,
+          isStatic: !image.mediaId,
+        };
+      })
+      .filter(Boolean) as GalleryDisplayMediaItem[];
+
+    return (
+      <section key={section.key} className="space-y-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Bereichstitel</span>
+            <input
+              value={section.title}
+              onChange={(event) =>
+                updateGallerySection(section.key, (current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">CTA Text</span>
+            <input
+              value={section.ctaLabel}
+              onChange={(event) =>
+                updateGallerySection(section.key, (current) => ({
+                  ...current,
+                  ctaLabel: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Beschreibung</span>
+            <textarea
+              value={section.description}
+              onChange={(event) =>
+                updateGallerySection(section.key, (current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+              className="h-28 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">CTA URL</span>
+            <input
+              value={section.ctaHref}
+              onChange={(event) =>
+                updateGallerySection(section.key, (current) => ({
+                  ...current,
+                  ctaHref: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+        </div>
+
+        {items.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-white/15 bg-black/30 px-3 py-4 text-sm text-accent-300">
+            Noch keine Bilder in diesem Bereich.
+          </p>
+        ) : (
+          <div className="grid gap-4 xl:grid-cols-2">
+            {items.map((item) => {
+              const isDeleting = deletingMediaId === item.mediaId;
+
+              return (
+                <article key={item.id} className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
+                  <div className="relative aspect-video overflow-hidden bg-black/60">
+                    <Image
+                      src={item.previewSrc}
+                      alt={item.altText || item.title}
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 40vw"
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void deleteGalleryImage(section.key, item.id, item.mediaId)}
+                      disabled={Boolean(item.mediaId) && isDeleting}
+                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-400/50 bg-red-500/90 text-white transition hover:bg-red-500 disabled:opacity-70"
+                      aria-label={`Bild ${item.title} loeschen`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 px-3 py-3">
+                    <div className="space-y-1">
+                      <p className="line-clamp-1 text-sm font-semibold text-white">{item.title}</p>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-accent-300">
+                        {getSectionLabel(section.key)} {item.isStatic ? '• Statisch' : '• Media Library'}
+                      </p>
+                    </div>
+
+                    <label className="block space-y-1">
+                      <span className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Caption</span>
+                      <textarea
+                        value={item.caption}
+                        onChange={(event) =>
+                          updateGallerySection(section.key, (current) => ({
+                            ...current,
+                            images: current.images.map((image) =>
+                              image.id === item.id
+                                ? {
+                                    ...image,
+                                    caption: event.target.value,
+                                  }
+                                : image
+                            ),
+                          }))
+                        }
+                        className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+
+                    <label className="block space-y-1">
+                      <span className="text-[11px] uppercase tracking-[0.16em] text-accent-300">Alt-Text</span>
+                      <input
+                        value={item.altText}
+                        onChange={(event) =>
+                          updateGallerySection(section.key, (current) => ({
+                            ...current,
+                            images: current.images.map((image) =>
+                              image.id === item.id
+                                ? {
+                                    ...image,
+                                    altText: event.target.value,
+                                  }
+                                : image
+                            ),
+                          }))
+                        }
+                        className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    );
   }
 
   function renderMediaSection(fieldKey: string, title: string, hint: string) {
@@ -669,6 +1038,9 @@ export function ContentManager() {
     );
   }
 
+  const isGalleryPage = selectedPage?.slug === 'galerie';
+  const isHomePage = selectedPage?.slug === 'home';
+
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
@@ -735,7 +1107,9 @@ export function ContentManager() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Headline</span>
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">
+              {isGalleryPage ? 'Seitenheadline' : 'Headline'}
+            </span>
             <input
               value={form.headline}
               onChange={(event) => setForm((prev) => ({ ...prev, headline: event.target.value }))}
@@ -743,7 +1117,9 @@ export function ContentManager() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Subheadline</span>
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">
+              {isGalleryPage ? 'Einleitung unter der Headline' : 'Subheadline'}
+            </span>
             <input
               value={form.subheadline}
               onChange={(event) => setForm((prev) => ({ ...prev, subheadline: event.target.value }))}
@@ -753,13 +1129,126 @@ export function ContentManager() {
         </div>
 
         <label className="block space-y-1">
-          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Textinhalt</span>
+          <span className="text-xs uppercase tracking-[0.16em] text-accent-300">
+            {isGalleryPage ? 'Einleitungstext der Galerie' : 'Textinhalt'}
+          </span>
           <textarea
             value={form.body}
             onChange={(event) => setForm((prev) => ({ ...prev, body: event.target.value }))}
             className="h-40 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
           />
+          {isGalleryPage ? (
+            <p className="text-xs text-accent-400">
+              Abschnitte mit Leerzeile trennen. Dieser Text erscheint im linken Einleitungsblock der Galerie.
+            </p>
+          ) : null}
         </label>
+
+        {isGalleryPage ? (
+          <>
+            <section className="space-y-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Galerie Einleitungsblock</p>
+                <p className="mt-1 text-xs text-accent-400">
+                  Inhalte fuer die obere Infobox rechts neben dem Einleitungstext.
+                </p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Eyebrow</span>
+                  <input
+                    value={galleryContent.introEyebrow}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, introEyebrow: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Box Titel</span>
+                  <input
+                    value={galleryContent.introTitle}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, introTitle: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1 md:col-span-2">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Audience Titel</span>
+                  <input
+                    value={galleryContent.audienceTitle}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, audienceTitle: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1 md:col-span-2">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Audience Punkte</span>
+                  <textarea
+                    value={galleryContent.audienceItems.join('\n')}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({
+                        ...prev,
+                        audienceItems: event.target.value
+                          .split('\n')
+                          .map((item) => item.trim())
+                          .filter(Boolean),
+                      }))
+                    }
+                    className="h-28 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA</span>
+                  <input
+                    value={galleryContent.primaryCtaLabel}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, primaryCtaLabel: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Primaere CTA URL</span>
+                  <input
+                    value={galleryContent.primaryCtaHref}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, primaryCtaHref: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA</span>
+                  <input
+                    value={galleryContent.secondaryCtaLabel}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, secondaryCtaLabel: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sekundaere CTA URL</span>
+                  <input
+                    value={galleryContent.secondaryCtaHref}
+                    onChange={(event) =>
+                      setGalleryContent((prev) => ({ ...prev, secondaryCtaHref: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+              </div>
+            </section>
+
+            <div className="space-y-4">
+              {GALLERY_SECTION_KEYS.map((sectionKey) => renderGallerySectionEditor(sectionKey))}
+            </div>
+          </>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1">
@@ -824,10 +1313,16 @@ export function ContentManager() {
           </button>
         </form>
 
-        {selectedPage?.slug === 'home' ? (
+        {isHomePage ? (
           <div className="space-y-4">
             {renderMediaSection('fish_showcase', 'Fish Showcase', 'Nur Bilder fuer diesen Homepage-Bereich.')}
             {renderMediaSection('video_showcase', 'Video Showcase', 'Nur Videos fuer diesen Homepage-Bereich.')}
+          </div>
+        ) : isGalleryPage ? (
+          <div className="space-y-4">
+            <p className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-accent-300">
+              Galerie-Bilder sind oben pro Bereich zugeordnet. Caption und Alt-Text lassen sich direkt an jedem Bild bearbeiten.
+            </p>
           </div>
         ) : (
           renderMediaSection('content', 'Seitenmedien', 'Nur Medien dieser Seite.')

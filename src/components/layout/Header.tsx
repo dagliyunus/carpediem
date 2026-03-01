@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -22,6 +22,8 @@ export const Header = () => {
   });
   const pathname = usePathname();
   const isMobileMenuOpen = mobileMenu.open && mobileMenu.path === pathname;
+  const skipScrollRestoreRef = useRef(false);
+  const mobileNavigationPendingRef = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,9 +56,28 @@ export const Header = () => {
       document.body.style.position = prevBodyPosition;
       document.body.style.top = prevBodyTop;
       document.body.style.width = prevBodyWidth;
-      window.scrollTo(0, scrollY);
+      window.scrollTo(0, skipScrollRestoreRef.current ? 0 : scrollY);
     };
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileNavigationPendingRef.current) return;
+
+    mobileNavigationPendingRef.current = false;
+    skipScrollRestoreRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
+    }
+  }, [pathname]);
+
+  function handleMobileNavigation() {
+    skipScrollRestoreRef.current = true;
+    mobileNavigationPendingRef.current = true;
+    setMobileMenu({ open: false, path: pathname });
+  }
 
   const headerClassName = (() => {
     if (isMobileMenuOpen) return 'bg-[#050505] py-3 shadow-2xl';
@@ -148,7 +169,7 @@ export const Header = () => {
         <div className="relative z-10 h-full flex flex-col">
           {/* Close Button Header Area */}
           <div className="sticky top-0 z-20 flex items-center justify-between p-6 bg-transparent backdrop-blur-xl border-b border-white/10">
-            <Link href="/" onClick={() => setMobileMenu({ open: false, path: pathname })}>
+            <Link href="/" onClick={handleMobileNavigation}>
               <span className="inline-flex items-center justify-center rounded-[1rem] bg-white/95 px-2 py-0.5 ring-1 ring-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
                 <Image
                   src="/images/logo.webp"
@@ -187,7 +208,7 @@ export const Header = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={() => setMobileMenu({ open: false, path: pathname })}
+                    onClick={handleMobileNavigation}
                     className="text-2xl sm:text-3xl font-sans font-semibold text-white/85 tracking-[0.14em] uppercase hover:text-primary-400 transition-colors"
                   >
                     {item.name}
@@ -195,7 +216,7 @@ export const Header = () => {
                 ))}
                 <Link
                   href="/reservieren"
-                  onClick={() => setMobileMenu({ open: false, path: pathname })}
+                  onClick={handleMobileNavigation}
                   className="inline-flex h-16 items-center justify-center rounded-full bg-primary-600 px-12 text-lg font-bold text-white shadow-2xl ring-1 ring-white/10"
                 >
                   Tisch reservieren

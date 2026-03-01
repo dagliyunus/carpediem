@@ -7,6 +7,7 @@ import { getPublicMediaUrl } from '@/lib/cms/public-media';
 import { CategoryIntroBlock } from '@/components/magazin/CategoryIntroBlock';
 import { MagazinPostCard } from '@/components/magazin/PostCard';
 import { MagazinPagination } from '@/components/magazin/Pagination';
+import { MAGAZIN_CATEGORY_DEFINITIONS } from '@/lib/magazin/shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,8 +44,10 @@ export default async function MagazinPage({
 }) {
   const params = await searchParams;
   const search = params.q?.trim() || '';
-  const categorySlug = params.kategorie?.trim() || '';
+  const requestedCategorySlug = params.kategorie?.trim() || '';
   const page = Math.max(1, Number(params.seite || '1') || 1);
+  const defaultCategorySlug = MAGAZIN_CATEGORY_DEFINITIONS[0].slug;
+  const categorySlug = requestedCategorySlug || (!search ? defaultCategorySlug : '');
 
   const [categories, posts] = await Promise.all([
     getMagazinCategories(),
@@ -151,11 +154,7 @@ export default async function MagazinPage({
             />
           ) : null}
 
-          {posts.total === 0 ? (
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-center text-accent-200">
-              Fuer diese Auswahl sind aktuell keine Magazin-Beitraege veroeffentlicht.
-            </div>
-          ) : (
+          {posts.total > 0 ? (
             <div className="space-y-8">
               {featuredPost ? (
                 <article className="group overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.03] backdrop-blur">
@@ -231,7 +230,7 @@ export default async function MagazinPage({
                 }
               />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

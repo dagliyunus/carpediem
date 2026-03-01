@@ -107,9 +107,19 @@ export const Footer = async () => {
         </div>
 
         <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-          <p className="text-[10px] text-accent-500 uppercase tracking-widest font-bold">
-            &copy; {currentYear} {siteName} &middot; Alle Rechte vorbehalten.
-          </p>
+          <div className="flex flex-col items-center gap-3 md:items-start">
+            <p className="text-[10px] text-accent-500 uppercase tracking-widest font-bold">
+              &copy; {currentYear} {siteName} &middot; Alle Rechte vorbehalten.
+            </p>
+            <a
+              href="https://yunusemredagli.de"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-vip-premium text-xs uppercase text-primary-300 transition-colors hover:text-primary-200"
+            >
+              Developed by yunusemredagli.de
+            </a>
+          </div>
           <div className="flex space-x-10">
             {socialLinks
               .filter((item) => String(item.platform).toLowerCase() !== 'facebook')

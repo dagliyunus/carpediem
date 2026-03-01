@@ -61,6 +61,11 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.008em;
 }
 
+.font-vip-premium {
+  font-family: "VIP-Premium", var(--font-serif), serif;
+  letter-spacing: 0.04em;
+}
+
 @keyframes fadeUp {
   0% {
     opacity: 0;
