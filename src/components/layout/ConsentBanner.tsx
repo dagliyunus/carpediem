@@ -46,15 +46,15 @@ function PreferenceToggle({
           disabled={disabled}
           onClick={onToggle}
           className={[
-            'relative h-7 w-12 shrink-0 rounded-full border transition-all duration-200',
+            'relative h-7 w-12 shrink-0 overflow-hidden rounded-full border transition-all duration-200',
             checked ? 'border-primary-300 bg-primary-500/80' : 'border-white/20 bg-white/10',
             disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-[1.02]',
           ].join(' ')}
         >
           <span
             className={[
-              'absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-white shadow-md transition-transform duration-200',
-              checked ? 'translate-x-6' : 'translate-x-1',
+              'absolute left-1 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-white shadow-md transition-transform duration-200',
+              checked ? 'translate-x-5' : 'translate-x-0',
             ].join(' ')}
           />
         </button>
