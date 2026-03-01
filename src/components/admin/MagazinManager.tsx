@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ContentStatus, MediaType, type ContentStatus as ContentStatusValue } from '@/lib/client/prisma-enums';
 import {
-  AdminMultiMediaPicker,
   AdminSingleMediaPicker,
   type PickerMediaItem,
 } from '@/components/admin/MediaPicker';
@@ -365,6 +364,7 @@ export function MagazinManager() {
       ...emptyArticleForm,
       primaryCategorySlug: categories[0]?.slug || emptyArticleForm.primaryCategorySlug,
     });
+    setShowCategoryEditor(false);
     setShowSeoOverrides(false);
     setMessage(null);
   }
@@ -650,6 +650,7 @@ export function MagazinManager() {
                         type="button"
                         onClick={() => {
                           setSelectedArticleId(item.id);
+                          setShowCategoryEditor(false);
                           setShowSeoOverrides(false);
                           setMessage(null);
                         }}
@@ -871,7 +872,7 @@ export function MagazinManager() {
           </div>
         </aside>
 
-        <div ref={editorRef} className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+        <div ref={editorRef} className="scroll-mt-28 space-y-6 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-white">
@@ -1108,22 +1109,6 @@ export function MagazinManager() {
                 </button>
               ) : null}
             </div>
-
-            <AdminMultiMediaPicker
-              label="Galerie / Video"
-              hint="Optionale Zusatzmedien fuer den Beitrag."
-              items={mediaItems}
-              selectedIds={articleForm.galleryMediaIds}
-              onToggle={(id) =>
-                setArticleForm((prev) => ({
-                  ...prev,
-                  galleryMediaIds: prev.galleryMediaIds.includes(id)
-                    ? prev.galleryMediaIds.filter((item) => item !== id)
-                    : [...prev.galleryMediaIds, id],
-                }))
-              }
-              acceptedTypes={[MediaType.IMAGE, MediaType.VIDEO]}
-            />
 
             <section className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
               <div>
