@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { LanguageSwitcher } from '@/components/translation/LanguageSwitcher';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -21,6 +22,7 @@ export const Header = () => {
     path: '',
   });
   const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith('/admin');
   const isMobileMenuOpen = mobileMenu.open && mobileMenu.path === pathname;
   const skipScrollRestoreRef = useRef(false);
   const mobileNavigationPendingRef = useRef(false);
@@ -105,7 +107,7 @@ export const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center space-x-10 lg:flex">
+          <nav className="hidden items-center space-x-6 lg:flex">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -119,6 +121,7 @@ export const Header = () => {
                 {item.name}
               </Link>
             ))}
+            {!isAdminRoute ? <LanguageSwitcher /> : null}
             <Link
               href="/reservieren"
               className="inline-flex h-11 items-center justify-center rounded-full bg-primary-600 px-8 text-[13px] font-bold uppercase tracking-[0.15em] text-white shadow-xl transition-all hover:bg-primary-700 hover:scale-105 active:scale-95 ring-1 ring-white/10"
@@ -214,6 +217,7 @@ export const Header = () => {
                     {item.name}
                   </Link>
                 ))}
+                {!isAdminRoute ? <LanguageSwitcher mobile /> : null}
                 <Link
                   href="/reservieren"
                   onClick={handleMobileNavigation}

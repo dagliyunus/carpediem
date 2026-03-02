@@ -8,6 +8,7 @@ import { ConsentBanner } from "@/components/layout/ConsentBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { VercelAnalytics } from "@/components/analytics/VercelAnalytics";
+import { TranslationProvider } from "@/components/translation/TranslationProvider";
 import { getPublicSiteRuntime } from "@/lib/cms/runtime";
 
 const inter = Inter({
@@ -127,17 +128,19 @@ export default async function RootLayout({
         className={`${inter.variable} ${cormorant.variable} ${manrope.variable} ${bodoniModa.variable} antialiased selection:bg-primary-500 selection:text-white`}
         suppressHydrationWarning
       >
-        <GoogleAnalytics ga4Id={ga4Id} />
-        <JsonLd />
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-        </div>
-        <ConsentBanner />
-        <VercelAnalytics />
+        <TranslationProvider enabled={Boolean(process.env.DEEPL_API_KEY)}>
+          <GoogleAnalytics ga4Id={ga4Id} />
+          <JsonLd />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+          </div>
+          <ConsentBanner />
+          <VercelAnalytics />
+        </TranslationProvider>
       </body>
     </html>
   );
