@@ -84,12 +84,16 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
         <div className={`grid gap-6 ${hasSecondary ? 'xl:grid-cols-[1.2fr_0.8fr]' : ''}`}>
           <article className="group relative overflow-hidden rounded-[1.9rem] border border-primary-500/25 bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
             <div className="pointer-events-none absolute inset-3 rounded-[1.45rem] border border-white/10" />
-            <div className="pointer-events-none absolute inset-x-0 top-16 h-px bg-gradient-to-r from-transparent via-primary-500/35 to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-16 h-px bg-gradient-to-r from-transparent via-primary-500/25 to-transparent" />
-            <div className={`grid h-full gap-0 ${featured.media && !isImageOnlyFeatured ? 'lg:grid-cols-[1.05fr_0.95fr]' : 'grid-cols-1'}`}>
+            <div
+              className={`grid h-full gap-0 ${
+                featured.media && !isImageOnlyFeatured
+                  ? 'lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]'
+                  : 'grid-cols-1'
+              }`}
+            >
               {featured.media ? (
                 <div
-                  className={`relative overflow-hidden bg-black/55 ${isImageOnlyFeatured ? 'min-h-[360px] sm:min-h-[480px] md:min-h-[620px]' : 'min-h-[300px] lg:min-h-[420px]'}`}
+                  className={`relative overflow-hidden bg-black/55 ${isImageOnlyFeatured ? 'min-h-[360px] sm:min-h-[480px] md:min-h-[620px]' : 'min-h-[320px] lg:min-h-full'}`}
                   style={isImageOnlyFeatured && featuredAspectRatio ? { aspectRatio: featuredAspectRatio } : undefined}
                 >
                   <Image
@@ -97,28 +101,28 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                     alt={featured.altText || featured.media.altText || featured.title || featured.media.filename}
                     fill
                     sizes={isImageOnlyFeatured ? '100vw' : '(max-width: 1024px) 100vw, 50vw'}
-                    className={isImageOnlyFeatured ? 'object-cover object-center' : 'object-contain object-center p-3 md:p-5'}
+                    className={isImageOnlyFeatured ? 'object-cover object-center' : 'object-contain object-center'}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/35" />
-                  <div className="pointer-events-none absolute inset-0 m-5 border border-white/20" />
+                  <div className="pointer-events-none absolute inset-0 m-3 border border-white/20 md:m-4" />
                 </div>
               ) : null}
 
               {hasFeaturedText || !featured.media ? (
-                <div className="relative flex h-full flex-col justify-between space-y-6 p-7 md:p-10">
+                <div className="relative flex min-w-0 h-full flex-col justify-between space-y-6 p-7 md:p-10">
                   <div className="pointer-events-none absolute inset-y-8 left-0 hidden w-px bg-gradient-to-b from-transparent via-primary-500/20 to-transparent lg:block" />
                   <div className="space-y-5">
                     {featured.label ? (
-                      <span className="inline-flex self-start border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
+                      <span className="inline-flex max-w-full self-start break-words border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
                         {featured.label}
                       </span>
                     ) : null}
                     <div className="space-y-3">
-                      <h3 className="font-serif text-3xl font-bold leading-tight text-white md:text-[3.35rem]">
+                      <h3 className="break-words font-serif text-3xl font-bold leading-tight text-white md:text-[3.35rem]">
                         {featured.title}
                       </h3>
                       {featured.body ? (
-                        <p className="max-w-2xl text-base leading-relaxed text-accent-200 md:text-lg">
+                        <p className="max-w-2xl break-words text-base leading-relaxed text-accent-200 md:text-lg">
                           {featured.body}
                         </p>
                       ) : null}
