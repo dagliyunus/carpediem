@@ -5,6 +5,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
 import { revalidatePublicPageContent } from '@/lib/cms/revalidation';
+import { isHomePageSlug } from '@/lib/cms/page-slugs';
 
 const updateSchema = z.object({
   title: z.string().min(2).max(160),
@@ -156,7 +157,7 @@ export async function PATCH(
       payload: { slug: page.slug },
     });
 
-    revalidatePublicPageContent(page.slug === 'home' ? '/' : `/${page.slug}`);
+    revalidatePublicPageContent(isHomePageSlug(page.slug) ? '/' : `/${page.slug}`);
 
     return NextResponse.json({ item: page });
   } catch (error) {
@@ -193,7 +194,7 @@ export async function DELETE(
     payload: { slug: page.slug },
   });
 
-  revalidatePublicPageContent(page.slug === 'home' ? '/' : `/${page.slug}`);
+  revalidatePublicPageContent(isHomePageSlug(page.slug) ? '/' : `/${page.slug}`);
 
   return NextResponse.json({ ok: true });
 }

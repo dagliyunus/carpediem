@@ -12,7 +12,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { buildMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { PageManagedContent } from "@/components/cms/PageManagedContent";
-import { getPageContent } from "@/lib/cms/queries";
+import { getHomePageContent } from "@/lib/cms/queries";
 import { MediaType } from "@prisma/client";
 import { getPublicMediaUrl } from "@/lib/cms/public-media";
 import { db } from "@/lib/db";
@@ -25,7 +25,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function Home() {
-  const homePage = await getPageContent("home");
+  const homePage = await getHomePageContent();
   const homeMediaLinks = homePage?.mediaLinks || [];
   const homeVideoLinks = homeMediaLinks.filter(
     (link) => link.fieldKey === "video_showcase" && link.media.mediaType === MediaType.VIDEO

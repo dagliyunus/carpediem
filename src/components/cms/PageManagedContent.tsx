@@ -1,7 +1,8 @@
 import Image from 'next/image';
-import { getPageContent } from '@/lib/cms/queries';
+import { getHomePageContent, getPageContent } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
 import { normalizeHomePageSections } from '@/lib/cms/home-announcements';
+import { isHomePageSlug } from '@/lib/cms/page-slugs';
 
 const PUBLIC_PLACEHOLDER_BODIES = new Set([
   'Verwalten Sie hier Inhaltsbausteine für die Speisekarte.',
@@ -22,7 +23,7 @@ function isSectionArray(value: unknown): value is SectionItem[] {
 }
 
 export async function PageManagedContent({ slug }: { slug: string }) {
-  const page = await getPageContent(slug);
+  const page = isHomePageSlug(slug) ? await getHomePageContent() : await getPageContent(slug);
 
   if (!page) return null;
 

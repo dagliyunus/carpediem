@@ -5,6 +5,7 @@ import { getOrCreateSiteSetting } from '@/lib/cms/content';
 import { ensureMagazinCategories, MAGAZIN_CATEGORY_DEFINITIONS, MAGAZIN_POSTS_PER_PAGE, sortMagazinCategories } from '@/lib/cms/magazin';
 import { PUBLIC_PAGE_CONTENT_TAG } from '@/lib/cms/revalidation';
 import { publishDueScheduledArticles } from '@/lib/cms/scheduler';
+import { HOME_PAGE_SLUGS } from '@/lib/cms/page-slugs';
 
 const articleCardInclude = {
   coverImage: {
@@ -364,4 +365,13 @@ const getCachedPageContent = unstable_cache(
 
 export async function getPageContent(slug: string) {
   return getCachedPageContent(slug);
+}
+
+export async function getHomePageContent() {
+  for (const slug of HOME_PAGE_SLUGS) {
+    const page = await getCachedPageContent(slug);
+    if (page) return page;
+  }
+
+  return null;
 }

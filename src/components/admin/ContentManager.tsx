@@ -21,6 +21,7 @@ import {
   type GalleryPageSections,
   type GallerySectionKey,
 } from '@/lib/cms/gallery-page';
+import { isHomePageSlug } from '@/lib/cms/page-slugs';
 import {
   buildHomeAnnouncementMediaLinks,
   cloneHomePageSections,
@@ -118,15 +119,17 @@ const emptyForm: FormState = {
   mediaLinks: [],
 };
 
-const MANAGED_PAGE_SLUGS = ['home', 'galerie'] as const;
+const MANAGED_PAGE_SLUGS = ['home', 'startseite', 'galerie'] as const;
 
 const MANAGED_PAGE_ORDER: Record<(typeof MANAGED_PAGE_SLUGS)[number], number> = {
   home: 0,
+  startseite: 0,
   galerie: 1,
 };
 
 const MANAGED_PAGE_LABELS: Record<(typeof MANAGED_PAGE_SLUGS)[number], string> = {
   home: 'Startseite',
+  startseite: 'Startseite',
   galerie: 'Galerie',
 };
 
@@ -431,7 +434,7 @@ export function ContentManager() {
     }
 
     const isGalleryPage = selectedPage.slug === 'galerie';
-    const isHomePage = selectedPage.slug === 'home';
+    const isHomePage = isHomePageSlug(selectedPage.slug);
     const normalizedGalleryContent = isGalleryPage
       ? normalizeGalleryPageSections(selectedPage.sections)
       : cloneGalleryPageSections();
@@ -482,7 +485,7 @@ export function ContentManager() {
     sections?: unknown;
   } = {}) {
     const isGalleryPage = selectedPage?.slug === 'galerie';
-    const isHomePage = selectedPage?.slug === 'home';
+    const isHomePage = isHomePageSlug(selectedPage?.slug);
     const nextSections =
       next.sections !== undefined
         ? next.sections
@@ -1545,7 +1548,7 @@ export function ContentManager() {
   }
 
   const isGalleryPage = selectedPage?.slug === 'galerie';
-  const isHomePage = selectedPage?.slug === 'home';
+  const isHomePage = isHomePageSlug(selectedPage?.slug);
 
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
