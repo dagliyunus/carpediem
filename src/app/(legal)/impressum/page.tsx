@@ -83,15 +83,15 @@ export default function ImpressumPage() {
               <p>
                 Die fruehere EU-Online-Streitbeilegungsplattform (ODR/OS-Plattform) wurde unionsrechtlich
                 eingestellt (Aufhebung der Verordnung (EU) Nr. 524/2013 mit Wirkung zum 20. Juli 2025).
-                Eine Beschwerdeeinreichung ueber diese Plattform ist daher nicht mehr moeglich.
+                Eine Beschwerdeeinreichung über diese Plattform ist daher nicht mehr möglich.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white">7. Haftung fuer Inhalte und Links</h2>
+              <h2 className="text-2xl font-bold text-white">7. Haftung für Inhalte und Links</h2>
               <p>
-                Wir sind fuer eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
-                Fuer Inhalte externer Links uebernehmen wir keine Gewaehr; fuer diese Inhalte sind ausschliesslich
+                Wir sind für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
+                Für Inhalte externer Links übernehmen wir keine Gewähr; für diese Inhalte sind ausschließlich
                 deren Betreiber verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende
                 Inhalte oder Links unverzueglich.
               </p>

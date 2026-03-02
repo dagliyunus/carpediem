@@ -62,7 +62,7 @@ export const SignatureDishes = () => {
           <div className="rounded-[2.25rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 md:p-8 lg:p-10 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.65)]">
             <div className="mb-8 text-center space-y-3">
               <p className="text-sm md:text-base font-bold uppercase tracking-[0.45em] text-primary-400">
-                Wochen-Spezialitaeten
+                Wochen-Spezialitäten
               </p>
               <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-primary-500/60 to-transparent" />
             </div>

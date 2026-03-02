@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
     <>
       <AdminCard
         title="Dashboard"
-        subtitle="Zentrale Steuerung fuer Inhalte, Medien, SEO, Social und AI-Agenten"
+        subtitle="Zentrale Steuerung für Inhalte, Medien, SEO, Social und AI-Agenten"
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Magazin-Beitraege" value={articles} />

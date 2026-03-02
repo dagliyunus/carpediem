@@ -65,7 +65,7 @@ export function buildMagazinPostSeo(post: PostLike) {
       : `${post.title} | Carpe Diem Bad Saarow`;
   const defaultDescription =
     primaryCategory?.slug === 'bad-saarow-tipps' && post.locationFocus
-      ? `${post.title} mit Fokus auf ${post.locationFocus} in Bad Saarow: Tipps fuer Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
+      ? `${post.title} mit Fokus auf ${post.locationFocus} in Bad Saarow: Tipps für Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
       : createMagazinExcerpt(post.content, post.excerpt) ||
         'Magazinbeitrag aus dem Carpe Diem Bad Saarow mit lokalem Restaurantbezug.';
   const canonical = post.seo?.canonicalUrl?.trim() || `${siteConfig.seo.domain}/magazin/${post.slug}`;

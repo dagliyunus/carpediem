@@ -5,7 +5,7 @@ export default function AdminSeoPage() {
   return (
     <AdminCard
       title="Google Speed Test"
-      subtitle="PageSpeed-Test direkt ueber die offizielle Google-Seite starten"
+      subtitle="PageSpeed-Test direkt über die offizielle Google-Seite starten"
     >
       <SeoManager />
     </AdminCard>

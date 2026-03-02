@@ -106,7 +106,7 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
           {eventSchema ? <StructuredDataScript data={eventSchema} /> : null}
 
           <Link href="/magazin" className="font-blog inline-flex items-center gap-2 text-sm font-medium text-primary-300">
-            <span aria-hidden>←</span> Zurueck zum Magazin
+            <span aria-hidden>←</span> Zurück zum Magazin
           </Link>
 
           {post.coverImage?.url ? (
@@ -198,7 +198,7 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary-400">Besuchen Sie uns in Bad Saarow</p>
                   <h2 className="font-blog text-3xl font-semibold text-white">Reservierung oder direkte Anfrage</h2>
                   <p className="font-blog max-w-3xl text-accent-200">
-                    Verbinden Sie Ihren Aufenthalt in Bad Saarow mit mediterraner Kueche im Carpe Diem. Reservieren Sie direkt oder schreiben Sie uns fuer Rueckfragen.
+                    Verbinden Sie Ihren Aufenthalt in Bad Saarow mit mediterraner Küche im Carpe Diem. Reservieren Sie direkt oder schreiben Sie uns für Rückfragen.
                   </p>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-3">

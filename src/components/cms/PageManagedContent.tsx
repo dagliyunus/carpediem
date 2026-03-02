@@ -3,8 +3,8 @@ import { getPageContent } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
 
 const PUBLIC_PLACEHOLDER_BODIES = new Set([
-  'Verwalten Sie hier Inhaltsbausteine fuer die Speisekarte.',
-  'Verwalten Sie hier Inhalte fuer die Getraenkeseite.',
+  'Verwalten Sie hier Inhaltsbausteine für die Speisekarte.',
+  'Verwalten Sie hier Inhalte für die Getränkeseite.',
   'Medien aus der Galerie koennen vollstaendig in der Admin-Oberflaeche gepflegt werden.',
   'Kontaktinformationen und Einleitungstexte koennen im Admin bearbeitet werden.',
   'Reservierungs-Inhalte koennen im Admin angepasst werden.',

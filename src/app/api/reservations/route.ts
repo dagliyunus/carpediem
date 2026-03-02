@@ -134,7 +134,7 @@ export async function POST(req: Request) {
   }
   if (toMinutes(time) > toMinutes(siteConfig.reservations.lastReservationTime)) {
     return NextResponse.json(
-      { error: `Die letzte Reservierung ist nur bis ${siteConfig.reservations.lastReservationTime} Uhr moeglich.` },
+      { error: `Die letzte Reservierung ist nur bis ${siteConfig.reservations.lastReservationTime} Uhr möglich.` },
       { status: 400 }
     );
   }

@@ -6,7 +6,7 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
     slug: 'gerichte-zutaten',
     introHeadline: 'Gerichte und Zutaten aus dem Carpe Diem in Bad Saarow',
     introContent:
-      'Hier zeigen wir mediterrane Teller, saisonale Zutaten und kulinarische Ideen aus unserer Kueche in Bad Saarow. Wer nach Restaurant-Inspiration, frischem Fisch, Grillgerichten oder besonderen Aromen sucht, findet hier regelmaessig neue Einblicke.',
+      'Hier zeigen wir mediterrane Teller, saisonale Zutaten und kulinarische Ideen aus unserer Küche in Bad Saarow. Wer nach Restaurant-Inspiration, frischem Fisch, Grillgerichten oder besonderen Aromen sucht, findet hier regelmäßig neue Einblicke.',
     introPrimaryCtaLabel: 'Jetzt reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Speisekarte ansehen',
@@ -19,7 +19,7 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
     slug: 'events-live-musik',
     introHeadline: 'Events und Live-Musik in Bad Saarow',
     introContent:
-      'Diese Kategorie sammelt Hinweise zu Live-Musik, Eventabenden und besonderen Restaurant-Momenten im Carpe Diem Bad Saarow. Ideal fuer alle, die Essen, Drinks und lokale Abendstimmung am Kurpark verbinden moechten.',
+      'Diese Kategorie sammelt Hinweise zu Live-Musik, Eventabenden und besonderen Restaurant-Momenten im Carpe Diem Bad Saarow. Ideal für alle, die Essen, Drinks und lokale Abendstimmung am Kurpark verbinden möchten.',
     introPrimaryCtaLabel: 'Tisch reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Kontakt aufnehmen',
@@ -43,9 +43,9 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
   {
     name: 'Bad Saarow Tipps',
     slug: 'bad-saarow-tipps',
-    introHeadline: 'Bad Saarow Tipps fuer Genuss, Ausflug und lokale Entdeckungen',
+    introHeadline: 'Bad Saarow Tipps für Genuss, Ausflug und lokale Entdeckungen',
     introContent:
-      'Diese SEO-Landingpage verbindet lokale Tipps in Bad Saarow mit Restaurant-Intent. Ob Saarow Therme, Kurpark, Scharmuetzelsee oder Tagesausflug: Hier finden Gaeste Ideen, was sich vor oder nach dem Essen im Carpe Diem entdecken laesst.',
+      'Diese SEO-Landingpage verbindet lokale Tipps in Bad Saarow mit Restaurant-Intent. Ob Saarow Therme, Kurpark, Scharmützelsee oder Tagesausflug: Hier finden Gäste Ideen, was sich vor oder nach dem Essen im Carpe Diem entdecken lässt.',
     introPrimaryCtaLabel: 'Jetzt reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Kontakt aufnehmen',
@@ -61,7 +61,7 @@ export const BAD_SAAROW_TIPPS_CATEGORY_NAME = 'Bad Saarow Tipps';
 export const LOCATION_FOCUS_SUGGESTIONS = [
   'Saarow Therme',
   'Kurpark Bad Saarow',
-  'Scharmuetzelsee',
+  'Scharmützelsee',
   'Theater am See',
   'Bahnhof Bad Saarow',
   'Seestrasse Bad Saarow',

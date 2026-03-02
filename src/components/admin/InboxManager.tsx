@@ -85,7 +85,7 @@ export function InboxManager() {
                 <th className="px-3 py-2">Name</th>
                 <th className="px-3 py-2">Kontakt</th>
                 <th className="px-3 py-2">Termin</th>
-                <th className="px-3 py-2">Gaeste</th>
+                <th className="px-3 py-2">Gäste</th>
                 <th className="px-3 py-2">Notiz</th>
               </tr>
             </thead>

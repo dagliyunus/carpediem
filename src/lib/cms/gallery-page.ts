@@ -41,14 +41,14 @@ export const DEFAULT_GALLERY_PAGE_SUBHEADLINE =
   'Bilder aus dem Carpe Diem Bad Saarow: Restaurantambiente, mediterrane Gerichte und Eindruecke von Abenden am Kurpark.';
 
 export const DEFAULT_GALLERY_PAGE_BODY =
-  'Die Galerie hilft vor allem Gaesten, die das Carpe Diem zum ersten Mal entdecken und sich ein Bild von Atmosphaere, Kueche und Rahmen machen moechten.\n\nStatt nur eine Bildsammlung zu zeigen, moechten wir einen realistischen Eindruck davon vermitteln, wie sich ein Restaurantbesuch am Kurpark in Bad Saarow bei uns anfuehlt.\n\nWer nach einem Abendessen, einem Besuch nach der Therme oder einer Location fuer einen entspannten Abend sucht, sieht hier sowohl das Ambiente als auch die Kueche.';
+  'Die Galerie hilft vor allem Gästen, die das Carpe Diem zum ersten Mal entdecken und sich ein Bild von Atmosphäre, Küche und Rahmen machen möchten.\n\nStatt nur eine Bildsammlung zu zeigen, möchten wir einen realistischen Eindruck davon vermitteln, wie sich ein Restaurantbesuch am Kurpark in Bad Saarow bei uns anfühlt.\n\nWer nach einem Abendessen, einem Besuch nach der Therme oder einer Location für einen entspannten Abend sucht, sieht hier sowohl das Ambiente als auch die Küche.';
 
 export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
   introEyebrow: 'Lokale Orientierung vor dem Besuch',
   introTitle: 'So sieht ein Restaurantbesuch in Bad Saarow bei uns aus',
-  audienceTitle: 'Die Galerie ist besonders hilfreich fuer',
+  audienceTitle: 'Die Galerie ist besonders hilfreich für',
   audienceItems: [
-    'Gaeste, die vorab das Restaurantambiente in Bad Saarow sehen moechten',
+    'Gäste, die vorab das Restaurantambiente in Bad Saarow sehen möchten',
     'Besucher, die Gerichte und Event-Stimmung vergleichen wollen',
     'Gruppen und Wochenendgaeste mit klarem Reservierungsinteresse',
   ],
@@ -61,7 +61,7 @@ export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
       key: 'gallery_ambiente',
       title: 'Ambiente am Kurpark',
       description:
-        'Diese Eindruecke zeigen, wie sich ein Besuch im Carpe Diem Bad Saarow anfuehlt: aussen am Kurpark, im Restaurant selbst und in den Abendstunden. Fuer viele Gaeste ist genau diese Kombination aus Lage, Licht und Atmosphaere ein Grund, ihren Restaurantbesuch in Bad Saarow fruehzeitig zu planen.',
+        'Diese Eindrücke zeigen, wie sich ein Besuch im Carpe Diem Bad Saarow anfühlt: außen am Kurpark, im Restaurant selbst und in den Abendstunden. Für viele Gäste ist genau diese Kombination aus Lage, Licht und Atmosphäre ein Grund, ihren Restaurantbesuch in Bad Saarow frühzeitig zu planen.',
       ctaLabel: 'Kontakt & Anfahrt',
       ctaHref: '/kontakt',
       images: [
@@ -74,41 +74,41 @@ export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
         {
           id: 'ambiente-outside1',
           url: '/images/Galerie_page/outside1.webp',
-          altText: 'Aussenansicht des Restaurants',
-          caption: 'Aussenansicht des Carpe Diem in Bad Saarow.',
+          altText: 'Außenansicht des Restaurants',
+          caption: 'Außenansicht des Carpe Diem in Bad Saarow.',
         },
         {
           id: 'ambiente-outside2',
           url: '/images/Galerie_page/outside2.webp',
-          altText: 'Aussenbereich bei Abendstimmung',
-          caption: 'Aussenbereich am Abend rund um den Kurpark.',
+          altText: 'Außenbereich bei Abendstimmung',
+          caption: 'Außenbereich am Abend rund um den Kurpark.',
         },
         {
           id: 'ambiente-prosecco',
           url: '/images/Galerie_page/OutsideProsecco.webp',
-          altText: 'Prosecco im Aussenbereich serviert',
-          caption: 'Aussenbereich mit Getraenkeservice und entspannter Stimmung.',
+          altText: 'Prosecco im Außenbereich serviert',
+          caption: 'Außenbereich mit Getränkeservice und entspannter Stimmung.',
         },
         {
           id: 'ambiente-visitors1',
           url: '/images/Galerie_page/Visitors1.webp',
-          altText: 'Gaeste geniessen die Atmosphaere im Carpe Diem',
-          caption: 'Gaeste geniessen ihren Aufenthalt im Restaurant.',
+          altText: 'Gäste genießen die Atmosphäre im Carpe Diem',
+          caption: 'Gäste genießen ihren Aufenthalt im Restaurant.',
         },
       ],
     },
     {
       key: 'gallery_food',
-      title: 'Gerichte und mediterrane Kueche',
+      title: 'Gerichte und mediterrane Küche',
       description:
-        'Die Galerie macht sichtbar, wofuer Gaeste unsere Speisekarte nutzen: Fisch, kreative Hauptgerichte, vegetarische Optionen und klassische Teller mit mediterraner Handschrift. Wer vor der Reservierung sehen moechte, welche Richtung die Kueche einschlaegt, bekommt hier einen konkreten Eindruck und kann danach direkt in die Speisekarte wechseln.',
+        'Die Galerie macht sichtbar, wofür Gäste unsere Speisekarte nutzen: Fisch, kreative Hauptgerichte, vegetarische Optionen und klassische Teller mit mediterraner Handschrift. Wer vor der Reservierung sehen möchte, welche Richtung die Küche einschlägt, bekommt hier einen konkreten Eindruck und kann danach direkt in die Speisekarte wechseln.',
       ctaLabel: 'Zur Speisekarte',
       ctaHref: '/menu',
       images: [
         {
           id: 'food-fish2',
           url: '/images/Galerie_page/fish2.webp',
-          altText: 'Fischgericht als Spezialitaet des Hauses',
+          altText: 'Fischgericht als Spezialität des Hauses',
           caption: 'Fischgericht mit mediterraner Praesentation.',
         },
         {
@@ -126,14 +126,14 @@ export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
         {
           id: 'food-meal2',
           url: '/images/Galerie_page/meal2.webp',
-          altText: 'Kulinarische Kreation aus der Kueche',
-          caption: 'Weitere kulinarische Kreation aus unserer Kueche.',
+          altText: 'Kulinarische Kreation aus der Küche',
+          caption: 'Weitere kulinarische Kreation aus unserer Küche.',
         },
         {
           id: 'food-veggie',
           url: '/images/Galerie_page/veggie.webp',
           altText: 'Frisches vegetarisches Gericht',
-          caption: 'Vegetarische Option fuer leichte und frische Restaurantbesuche.',
+          caption: 'Vegetarische Option für leichte und frische Restaurantbesuche.',
         },
       ],
     },
@@ -141,7 +141,7 @@ export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
       key: 'gallery_events',
       title: 'Events, Drinks und besondere Momente',
       description:
-        'Bad Saarow ist nicht nur ein Ort fuer Essen, sondern auch fuer gemeinsame Abende. In diesem Teil der Galerie stehen Event-Momente, Drinks und Details, die haeufig rund um Reservierungen, Gruppenbesuche und Wochenendabende gefragt sind. Wenn Sie dazu passende Beitraege lesen moechten, finden Sie mehr im Magazin oder buchen direkt Ihren Tisch.',
+        'Bad Saarow ist nicht nur ein Ort für Essen, sondern auch für gemeinsame Abende. In diesem Teil der Galerie stehen Event-Momente, Drinks und Details, die häufig rund um Reservierungen, Gruppenbesuche und Wochenendabende gefragt sind. Wenn Sie dazu passende Beiträge lesen möchten, finden Sie mehr im Magazin oder buchen direkt Ihren Tisch.',
       ctaLabel: 'Magazin ansehen',
       ctaHref: '/magazin',
       images: [
@@ -155,13 +155,13 @@ export const DEFAULT_GALLERY_PAGE_SECTIONS: GalleryPageSections = {
           id: 'events-champagne',
           url: '/images/Galerie_page/BlacckChampagne.webp',
           altText: 'Champagner-Moment im Ambiente',
-          caption: 'Drink- und Champagner-Moment fuer besondere Anlaesse.',
+          caption: 'Drink- und Champagner-Moment für besondere Anlässe.',
         },
         {
           id: 'events-meatball',
           url: '/images/Galerie_page/meatball.webp',
-          altText: 'Hausgemachte Fleischspezialitaet aus der Kueche',
-          caption: 'Herzhafte Spezialitaet fuer den Abend.',
+          altText: 'Hausgemachte Fleischspezialität aus der Küche',
+          caption: 'Herzhafte Spezialität für den Abend.',
         },
         {
           id: 'events-suppe',
@@ -356,4 +356,3 @@ export function buildGalleryMediaLinks(value: GalleryPageSections) {
 
   return Array.from(unique.values());
 }
-

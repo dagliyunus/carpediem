@@ -195,7 +195,7 @@ function buildSeoPreview(input: {
       : `${input.title || 'Magazinbeitrag'} | Carpe Diem Bad Saarow`;
   const defaultDescription =
     input.isBadSaarowTipps && input.locationFocus.trim()
-      ? `${input.title || 'Magazinbeitrag'} mit Fokus auf ${input.locationFocus.trim()} in Bad Saarow: Tipps fuer Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
+      ? `${input.title || 'Magazinbeitrag'} mit Fokus auf ${input.locationFocus.trim()} in Bad Saarow: Tipps für Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
       : createSeoExcerpt(input.content, input.excerpt) ||
         'Magazinbeitrag aus dem Carpe Diem Bad Saarow mit lokalem Restaurantbezug.';
   const canonical = input.manualCanonical.trim() || `https://www.carpediem-badsaarow.de/magazin/${fallbackSlug}`;
@@ -392,7 +392,7 @@ export function MagazinManager() {
       isImage ? MediaType.IMAGE : isVideo ? MediaType.VIDEO : null;
 
     if (!mediaType || !allowed.includes(mediaType)) {
-      throw new Error('Dateityp fuer diesen Bereich nicht erlaubt.');
+      throw new Error('Dateityp für diesen Bereich nicht erlaubt.');
     }
 
     const formData = new FormData();
@@ -681,7 +681,7 @@ export function MagazinManager() {
               <div>
                 <h3 className="font-semibold text-white">Kategorie-Landingpages</h3>
                 <p className="text-sm text-accent-300">
-                  Intro-Block fuer {selectedCategory?.name || 'die ausgewaehlte Kategorie'} verwalten.
+                  Intro-Block für {selectedCategory?.name || 'die ausgewählte Kategorie'} verwalten.
                 </p>
               </div>
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary-300">
@@ -791,7 +791,7 @@ export function MagazinManager() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Intro Medium</p>
                     <p className="mt-1 text-xs text-accent-400">
-                      Einfach Bild oder Video fuer diese Kategorie hochladen. Die gesamte Media Library wird hier nicht angezeigt.
+                      Einfach Bild oder Video für diese Kategorie hochladen. Die gesamte Media Library wird hier nicht angezeigt.
                     </p>
                   </div>
 
@@ -834,7 +834,7 @@ export function MagazinManager() {
                   <input
                     value={introUploadAltText}
                     onChange={(event) => setIntroUploadAltText(event.target.value)}
-                    placeholder="Alt-Text fuer Intro Medium"
+                    placeholder="Alt-Text für Intro Medium"
                     className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
                   />
                   {categoryForm.introMediaId ? (
@@ -968,7 +968,7 @@ export function MagazinManager() {
               </label>
 
               <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Veroeffentlichen am</span>
+                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Veröffentlichen am</span>
                 <input
                   type="datetime-local"
                   value={articleForm.publishedAt}
@@ -978,7 +978,7 @@ export function MagazinManager() {
               </label>
 
               <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Planen fuer</span>
+                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Planen für</span>
                 <input
                   type="datetime-local"
                   value={articleForm.scheduledAt}
@@ -1016,7 +1016,7 @@ export function MagazinManager() {
                   ))}
                 </datalist>
                 <p className="text-[11px] text-accent-400">
-                  Wird nur fuer Bad Saarow Tipps angezeigt und in SEO-Defaults genutzt, solange keine manuellen Werte gesetzt sind.
+                  Wird nur für Bad Saarow Tipps angezeigt und in SEO-Defaults genutzt, solange keine manuellen Werte gesetzt sind.
                 </p>
               </label>
             ) : null}
@@ -1084,7 +1084,7 @@ export function MagazinManager() {
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Cover Medium</p>
                 <p className="mt-1 text-xs text-accent-400">
-                  Laden Sie direkt das Coverbild fuer diesen Beitrag hoch. Die gesamte Media Library wird hier nicht angezeigt.
+                  Laden Sie direkt das Coverbild für diesen Beitrag hoch. Die gesamte Media Library wird hier nicht angezeigt.
                 </p>
               </div>
 
@@ -1099,7 +1099,7 @@ export function MagazinManager() {
               <input
                 value={coverUploadAltText}
                 onChange={(event) => setCoverUploadAltText(event.target.value)}
-                placeholder="Alt-Text fuer Coverbild"
+                placeholder="Alt-Text für Coverbild"
                 className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
               />
               {articleForm.coverImageId ? (

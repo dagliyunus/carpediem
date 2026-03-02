@@ -13,7 +13,7 @@ export function SeoManager() {
       <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
         <p className="text-xs uppercase tracking-[0.16em] text-accent-300">PageSpeed Test</p>
         <p className="mt-1 text-xs text-accent-400">
-          Oeffnet den offiziellen Test auf pagespeed.web.dev fuer die Canonical-URL oder die Website-Startseite.
+          Öffnet den offiziellen Test auf pagespeed.web.dev für die Canonical-URL oder die Website-Startseite.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button

@@ -38,15 +38,15 @@ async function main() {
       id: 'global',
       siteName: 'Carpe Diem bei Ben',
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.carpediem-badsaarow.de',
-      brandTagline: 'Mediterrane Kueche in Bad Saarow',
+      brandTagline: 'Mediterrane Küche in Bad Saarow',
       defaultLocale: 'de-DE',
       businessEmail: process.env.BUSINESS_EMAIL || 'viktoriia@carpediem-badsaarow.de',
       businessPhone: process.env.BUSINESS_PHONE || '0175 6729130',
       address: 'Am Kurpark 6, 15526 Bad Saarow',
       timezone: 'Europe/Berlin',
-      defaultSeoTitle: 'Carpe Diem bei Ben - Mediterrane Kueche in Bad Saarow',
+      defaultSeoTitle: 'Carpe Diem bei Ben - Mediterrane Küche in Bad Saarow',
       defaultSeoDescription:
-        'Carpe Diem bei Ben ist Ihr Restaurant in Bad Saarow: mediterrane Spezialitaeten, Galerie, Reservierung und Magazin.',
+        'Carpe Diem bei Ben ist Ihr Restaurant in Bad Saarow: mediterrane Spezialitäten, Galerie, Reservierung und Magazin.',
     },
   });
 
@@ -69,7 +69,7 @@ async function main() {
     },
     {
       slug: 'drinks',
-      title: 'Getraenke',
+      title: 'Getränke',
       body: null,
       status: ContentStatus.PUBLISHED,
       publishedAt: new Date(),
@@ -145,7 +145,7 @@ async function main() {
       targetId: 'global',
       title: 'Carpe Diem bei Ben - Restaurant Bad Saarow',
       description:
-        'Carpe Diem bei Ben in Bad Saarow: mediterrane Spezialitaeten, Events, Reservierung und aktuelle Magazin-Inhalte.',
+        'Carpe Diem bei Ben in Bad Saarow: mediterrane Spezialitäten, Events, Reservierung und aktuelle Magazin-Inhalte.',
       keywords: 'carpe diem, bad saarow, restaurant, mediterran, magazin',
       canonicalUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.carpediem-badsaarow.de',
       twitterCard: 'summary_large_image',
@@ -197,22 +197,22 @@ async function main() {
     {
       channel: AiChannel.MAGAZIN,
       promptTemplate:
-        'Erzeuge taeglich einen SEO-optimierten Magazinbeitrag auf Deutsch inklusive Titel, Excerpt und Content mit lokalem Bezug zu Bad Saarow.',
+        'Erzeuge täglich einen SEO-optimierten Magazinbeitrag auf Deutsch inklusive Titel, Excerpt und Content mit lokalem Bezug zu Bad Saarow.',
     },
     {
       channel: AiChannel.INSTAGRAM,
       promptTemplate:
-        'Erzeuge taeglich einen Instagram-Post mit Hook, Caption, Hashtags und CTA im Tonfall von Carpe Diem bei Ben.',
+        'Erzeuge täglich einen Instagram-Post mit Hook, Caption, Hashtags und CTA im Tonfall von Carpe Diem bei Ben.',
     },
     {
       channel: AiChannel.PINTEREST,
       promptTemplate:
-        'Erzeuge taeglich einen Pinterest-Pin-Text mit SEO-Titel, Beschreibung und relevanten Keywords fuer Carpe Diem bei Ben.',
+        'Erzeuge täglich einen Pinterest-Pin-Text mit SEO-Titel, Beschreibung und relevanten Keywords für Carpe Diem bei Ben.',
     },
     {
       channel: AiChannel.TIKTOK,
       promptTemplate:
-        'Erzeuge taeglich ein TikTok-Content-Briefing mit Skriptidee, Hook, Shotlist und Caption fuer Carpe Diem bei Ben.',
+        'Erzeuge täglich ein TikTok-Content-Briefing mit Skriptidee, Hook, Shotlist und Caption für Carpe Diem bei Ben.',
     },
   ];
 

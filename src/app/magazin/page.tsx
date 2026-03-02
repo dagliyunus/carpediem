@@ -71,7 +71,7 @@ export default async function MagazinPage({
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-400">Carpe Diem Journal</p>
             <h1 className="font-serif text-6xl font-bold tracking-tight text-white md:text-8xl">Magazin</h1>
             <p className="mx-auto max-w-3xl text-lg font-light text-accent-200">
-              Lokale Geschichten, Restaurant-News, Eventtipps und Bad Saarow Inspirationen fuer Menschen mit Genuss- und Ausflugsabsicht.
+              Lokale Geschichten, Restaurant-News, Eventtipps und Bad Saarow Inspirationen für Menschen mit Genuss- und Ausflugsabsicht.
             </p>
           </header>
 

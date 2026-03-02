@@ -67,7 +67,7 @@ export function MediaManager() {
     const file = formData.get('file');
 
     if (!(file instanceof File)) {
-      setMessage('Bitte Datei waehlen.');
+      setMessage('Bitte Datei wählen.');
       return;
     }
 
@@ -206,7 +206,7 @@ export function MediaManager() {
                 <video src={selectedPreviewUrl} controls className="w-full rounded-xl border border-white/10" />
               ) : (
                 <a href={selectedPreviewUrl} target="_blank" rel="noreferrer" className="text-primary-300 underline">
-                  Datei in neuem Tab oeffnen
+                  Datei in neuem Tab öffnen
                 </a>
               )}
             </div>

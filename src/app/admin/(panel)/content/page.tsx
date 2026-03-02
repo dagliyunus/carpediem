@@ -5,7 +5,7 @@ export default function AdminContentPage() {
   return (
     <AdminCard
       title="Seiteninhalte"
-      subtitle="Inhalte und Medien fuer Startseite, Galerie und Magazin"
+      subtitle="Inhalte und Medien für Startseite, Galerie und Magazin"
     >
       <ContentManager />
     </AdminCard>

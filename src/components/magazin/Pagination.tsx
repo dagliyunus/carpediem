@@ -26,7 +26,7 @@ export function MagazinPagination({ page, pageCount, buildHref }: PaginationProp
             : 'border-white/15 text-white/90 hover:border-primary-400/40'
         }`}
       >
-        Zurueck
+        Zurück
       </Link>
 
       {visiblePages.map((item) => (

@@ -122,7 +122,7 @@ const SECTION_LABELS: Record<string, string> = {
   fish_showcase: 'Fish Showcase',
   video_showcase: 'Video Showcase',
   gallery_ambiente: 'Ambiente am Kurpark',
-  gallery_food: 'Gerichte und mediterrane Kueche',
+  gallery_food: 'Gerichte und mediterrane Küche',
   gallery_events: 'Events, Drinks und besondere Momente',
 };
 
@@ -130,12 +130,12 @@ const HOME_UPLOAD_TARGETS: UploadTargetOption[] = [
   {
     key: 'fish_showcase',
     label: 'Fish Showcase',
-    helper: 'Nur Bilder fuer den Fish-Showcase Bereich.',
+    helper: 'Nur Bilder für den Fish-Showcase Bereich.',
   },
   {
     key: 'video_showcase',
     label: 'Video Showcase',
-    helper: 'Nur Videos fuer den Video-Showcase Bereich.',
+    helper: 'Nur Videos für den Video-Showcase Bereich.',
   },
 ];
 
@@ -143,24 +143,24 @@ const GALLERY_UPLOAD_TARGETS: UploadTargetOption[] = [
   {
     key: 'gallery_ambiente',
     label: 'Ambiente am Kurpark',
-    helper: 'Bilder fuer den Ambiente-Bereich der Galerie.',
+    helper: 'Bilder für den Ambiente-Bereich der Galerie.',
   },
   {
     key: 'gallery_food',
-    label: 'Gerichte und mediterrane Kueche',
-    helper: 'Bilder fuer den Food-Bereich der Galerie.',
+    label: 'Gerichte und mediterrane Küche',
+    helper: 'Bilder für den Food-Bereich der Galerie.',
   },
   {
     key: 'gallery_events',
     label: 'Events, Drinks und besondere Momente',
-    helper: 'Bilder fuer den Event- und Drinks-Bereich der Galerie.',
+    helper: 'Bilder für den Event- und Drinks-Bereich der Galerie.',
   },
 ];
 
 const DEFAULT_UPLOAD_TARGET: UploadTargetOption = {
   key: 'content',
   label: 'Seiteninhalt',
-  helper: 'Medien fuer diese Seite.',
+  helper: 'Medien für diese Seite.',
 };
 
 function toDatetimeLocal(value: string | null) {
@@ -248,28 +248,28 @@ function canUploadForTarget(targetKey: string, file: File) {
 function getTargetFieldLabels(targetKey: string) {
   if (targetKey === 'fish_showcase') {
     return {
-      altText: 'Alt-Text fuer Bild (optional)',
+      altText: 'Alt-Text für Bild (optional)',
       helper: 'Dieses Bild wird ohne eingeblendeten Titel oder Untertitel dargestellt.',
     };
   }
 
   if (targetKey === 'video_showcase') {
     return {
-      altText: 'Alt-Text fuer Video (optional)',
+      altText: 'Alt-Text für Video (optional)',
       helper: 'Dieses Video wird ohne eingeblendeten Titel oder Untertitel dargestellt.',
     };
   }
 
   if (isGallerySectionKey(targetKey)) {
     return {
-      altText: 'Alt-Text fuer Bild (optional)',
-      helper: 'Bild wird dem ausgewaehlten Galerie-Bereich zugeordnet. Titel, Beschreibung und Caption koennen Sie darunter bearbeiten.',
+      altText: 'Alt-Text für Bild (optional)',
+      helper: 'Bild wird dem ausgewählten Galerie-Bereich zugeordnet. Titel, Beschreibung und Caption können Sie darunter bearbeiten.',
     };
   }
 
   return {
     altText: 'Alt-Text (optional)',
-    helper: 'Alt-Text wird fuer die Darstellung und Barrierefreiheit verwendet.',
+    helper: 'Alt-Text wird für die Darstellung und Barrierefreiheit verwendet.',
   };
 }
 
@@ -483,7 +483,7 @@ export function ContentManager() {
     setMessage(null);
 
     if (!selectedId) {
-      setMessage('Bitte zuerst eine Seite waehlen.');
+      setMessage('Bitte zuerst eine Seite wählen.');
       return;
     }
 
@@ -553,13 +553,13 @@ export function ContentManager() {
     setMessage(null);
 
     if (!selectedPage) {
-      setMessage('Bitte zuerst eine Seite waehlen.');
+      setMessage('Bitte zuerst eine Seite wählen.');
       return;
     }
 
     const target = uploadTargets.find((item) => item.key === uploadTargetKey);
     if (!target) {
-      setMessage('Bitte Bereich fuer den Upload auswaehlen.');
+      setMessage('Bitte Bereich für den Upload auswählen.');
       return;
     }
 
@@ -567,7 +567,7 @@ export function ContentManager() {
     const file = formData.get('file');
 
     if (!(file instanceof File)) {
-      setMessage('Bitte Datei auswaehlen.');
+      setMessage('Bitte Datei auswählen.');
       return;
     }
 
@@ -577,7 +577,7 @@ export function ContentManager() {
           ? 'Fuer Video Showcase sind nur Videos erlaubt.'
           : target.key === 'fish_showcase'
             ? 'Fuer Fish Showcase sind nur Bilder erlaubt.'
-            : 'Dateityp fuer diesen Bereich nicht erlaubt.'
+            : 'Dateityp für diesen Bereich nicht erlaubt.'
       );
       return;
     }
@@ -1150,7 +1150,7 @@ export function ContentManager() {
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Galerie Einleitungsblock</p>
                 <p className="mt-1 text-xs text-accent-400">
-                  Inhalte fuer die obere Infobox rechts neben dem Einleitungstext.
+                  Inhalte für die obere Infobox rechts neben dem Einleitungstext.
                 </p>
               </div>
 
@@ -1315,8 +1315,8 @@ export function ContentManager() {
 
         {isHomePage ? (
           <div className="space-y-4">
-            {renderMediaSection('fish_showcase', 'Fish Showcase', 'Nur Bilder fuer diesen Homepage-Bereich.')}
-            {renderMediaSection('video_showcase', 'Video Showcase', 'Nur Videos fuer diesen Homepage-Bereich.')}
+            {renderMediaSection('fish_showcase', 'Fish Showcase', 'Nur Bilder für diesen Homepage-Bereich.')}
+            {renderMediaSection('video_showcase', 'Video Showcase', 'Nur Videos für diesen Homepage-Bereich.')}
           </div>
         ) : isGalleryPage ? (
           <div className="space-y-4">

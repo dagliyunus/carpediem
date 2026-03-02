@@ -561,7 +561,7 @@ export async function getOrCreateSiteSetting() {
       defaultLocale: 'de-DE',
       timezone: 'Europe/Berlin',
       defaultSeoTitle: 'Carpe Diem bei Ben',
-      defaultSeoDescription: 'Carpe Diem bei Ben in Bad Saarow - mediterrane Kueche, Ambiente und Reservierung.',
+      defaultSeoDescription: 'Carpe Diem bei Ben in Bad Saarow - mediterrane Küche, Ambiente und Reservierung.',
     },
   });
 }
@@ -579,7 +579,7 @@ export async function ensureDefaultAiAgents() {
           promptTemplate:
             channel === AiChannel.MAGAZIN
               ? 'Erzeuge einen SEO-optimierten Magazinbeitrag auf Deutsch mit lokalem Bezug zu Bad Saarow.'
-              : `Erzeuge einen tagesaktuellen Beitrag fuer ${channel} auf Deutsch mit klarer Handlungsaufforderung.`,
+              : `Erzeuge einen tagesaktuellen Beitrag für ${channel} auf Deutsch mit klarer Handlungsaufforderung.`,
           isEnabled: false,
           runWindowStart: '08:00',
           runWindowEnd: '10:00',
