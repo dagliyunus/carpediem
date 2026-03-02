@@ -21,6 +21,15 @@ import {
   type GalleryPageSections,
   type GallerySectionKey,
 } from '@/lib/cms/gallery-page';
+import {
+  buildHomeAnnouncementMediaLinks,
+  cloneHomePageSections,
+  createHomeAnnouncementId,
+  isHomeAnnouncementFieldKey,
+  normalizeHomePageSections,
+  type HomeAnnouncementItem,
+  type HomePageSections,
+} from '@/lib/cms/home-announcements';
 
 type PageItem = {
   id: string;
@@ -94,6 +103,10 @@ type DisplayMediaItem = {
   altText?: string | null;
 };
 
+type HomeAnnouncementDisplayItem = HomeAnnouncementItem & {
+  media: MediaItem | null;
+};
+
 const emptyForm: FormState = {
   title: '',
   headline: '',
@@ -121,6 +134,7 @@ const SECTION_LABELS: Record<string, string> = {
   content: 'Seiteninhalt',
   fish_showcase: 'Fish Showcase',
   video_showcase: 'Video Showcase',
+  home_announcements: 'Ankündigungen',
   gallery_ambiente: 'Ambiente am Kurpark',
   gallery_food: 'Gerichte und mediterrane Küche',
   gallery_events: 'Events, Drinks und besondere Momente',
@@ -327,6 +341,9 @@ export function ContentManager() {
   const [galleryContent, setGalleryContent] = useState<GalleryPageSections>(
     cloneGalleryPageSections()
   );
+  const [homeSections, setHomeSections] = useState<HomePageSections>(
+    cloneHomePageSections()
+  );
 
   async function loadData() {
     setLoading(true);
@@ -409,15 +426,21 @@ export function ContentManager() {
     if (!selectedPage) {
       setForm(emptyForm);
       setGalleryContent(cloneGalleryPageSections());
+      setHomeSections(cloneHomePageSections());
       return;
     }
 
     const isGalleryPage = selectedPage.slug === 'galerie';
+    const isHomePage = selectedPage.slug === 'home';
     const normalizedGalleryContent = isGalleryPage
       ? normalizeGalleryPageSections(selectedPage.sections)
       : cloneGalleryPageSections();
+    const normalizedHomeSections = isHomePage
+      ? normalizeHomePageSections(selectedPage.sections)
+      : cloneHomePageSections();
 
     setGalleryContent(normalizedGalleryContent);
+    setHomeSections(normalizedHomeSections);
 
     setForm({
       title: selectedPage.title,
@@ -435,6 +458,15 @@ export function ContentManager() {
       heroImageId: selectedPage.heroImageId || '',
       mediaLinks: isGalleryPage
         ? normalizeMediaLinks(buildGalleryMediaLinks(normalizedGalleryContent))
+        : isHomePage
+          ? normalizeMediaLinks(
+              (selectedPage.mediaLinks || [])
+                .filter((link) => !isHomeAnnouncementFieldKey(link.fieldKey || ''))
+                .map((link) => ({
+                  mediaId: link.mediaId,
+                  fieldKey: link.fieldKey || 'content',
+                }))
+            )
         : normalizeMediaLinks(
             (selectedPage.mediaLinks || []).map((link) => ({
               mediaId: link.mediaId,
@@ -450,15 +482,23 @@ export function ContentManager() {
     sections?: unknown;
   } = {}) {
     const isGalleryPage = selectedPage?.slug === 'galerie';
+    const isHomePage = selectedPage?.slug === 'home';
     const nextSections =
       next.sections !== undefined
         ? next.sections
         : isGalleryPage
           ? galleryContent
+          : isHomePage
+            ? homeSections
           : selectedPage?.sections;
     const normalizedMediaLinks = (
       isGalleryPage
         ? buildGalleryMediaLinks(normalizeGalleryPageSections(nextSections))
+        : isHomePage
+          ? [
+              ...normalizeMediaLinks(next.mediaLinks ?? form.mediaLinks),
+              ...buildHomeAnnouncementMediaLinks(normalizeHomePageSections(nextSections)),
+            ]
         : normalizeMediaLinks(next.mediaLinks ?? form.mediaLinks)
     ).filter((link) => nonSystemMedia.some((item) => item.id === link.mediaId));
 
@@ -546,6 +586,197 @@ export function ContentManager() {
         section.key === sectionKey ? updater(section) : section
       ),
     }));
+  }
+
+  function updateHomeAnnouncementSection(
+    updater: (section: HomePageSections['announcementSection']) => HomePageSections['announcementSection']
+  ) {
+    setHomeSections((prev) => ({
+      ...prev,
+      announcementSection: updater(prev.announcementSection),
+    }));
+  }
+
+  function updateHomeAnnouncementItem(
+    itemId: string,
+    updater: (item: HomeAnnouncementItem) => HomeAnnouncementItem
+  ) {
+    updateHomeAnnouncementSection((section) => ({
+      ...section,
+      items: section.items.map((item) => (item.id === itemId ? updater(item) : item)),
+    }));
+  }
+
+  async function removeMediaAssetById(mediaId: string) {
+    const response = await fetch(`/api/admin/media/${mediaId}`, {
+      method: 'DELETE',
+    });
+    const result = (await response.json().catch(() => null)) as { error?: string } | null;
+
+    if (!response.ok) {
+      throw new Error(result?.error || 'Datei konnte nicht gelöscht werden.');
+    }
+  }
+
+  async function uploadHomeAnnouncementMedia(itemId: string, file: File) {
+    if (!selectedPage || selectedPage.slug !== 'home') return;
+
+    const item = homeSections.announcementSection.items.find((entry) => entry.id === itemId);
+    if (!item) {
+      setMessage('Ankündigung nicht gefunden.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Für Ankündigungen sind nur Bilder erlaubt.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set('file', file);
+    if (item.altText.trim()) {
+      formData.set('altText', item.altText.trim());
+    }
+
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { item?: MediaItem; error?: string }
+        | null;
+
+      if (!response.ok || !result?.item) {
+        setMessage(result?.error || 'Upload fehlgeschlagen.');
+        return;
+      }
+
+      const uploadedItem = result.item;
+      const previousMediaId = item.mediaId || null;
+      const nextHomeSections = {
+        ...homeSections,
+        announcementSection: {
+          ...homeSections.announcementSection,
+          items: homeSections.announcementSection.items.map((entry) =>
+            entry.id === itemId
+              ? {
+                  ...entry,
+                  mediaId: uploadedItem.id,
+                  altText: entry.altText || uploadedItem.altText || '',
+                }
+              : entry
+          ),
+        },
+      };
+
+      const saved = await persistPageState({
+        sections: nextHomeSections,
+      });
+
+      if (!saved) return;
+
+      if (previousMediaId && previousMediaId !== uploadedItem.id) {
+        await removeMediaAssetById(previousMediaId).catch((error) => {
+          console.error(error);
+        });
+      }
+
+      setHomeSections(nextHomeSections);
+      setMedia((prev) => [uploadedItem, ...prev.filter((entry) => entry.id !== uploadedItem.id && entry.id !== previousMediaId)]);
+      await loadData();
+      setMessage('Ankündigungsbild erfolgreich aktualisiert.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function removeHomeAnnouncementMedia(itemId: string) {
+    if (!selectedPage || selectedPage.slug !== 'home') return;
+
+    const item = homeSections.announcementSection.items.find((entry) => entry.id === itemId);
+    if (!item?.mediaId) return;
+
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      const nextHomeSections = {
+        ...homeSections,
+        announcementSection: {
+          ...homeSections.announcementSection,
+          items: homeSections.announcementSection.items.map((entry) =>
+            entry.id === itemId
+              ? {
+                  ...entry,
+                  mediaId: null,
+                }
+              : entry
+          ),
+        },
+      };
+
+      const saved = await persistPageState({
+        sections: nextHomeSections,
+      });
+
+      if (!saved) return;
+
+      await removeMediaAssetById(item.mediaId);
+      setHomeSections(nextHomeSections);
+      setMedia((prev) => prev.filter((entry) => entry.id !== item.mediaId));
+      await loadData();
+      setMessage('Ankündigungsbild entfernt.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ankündigungsbild konnte nicht entfernt werden.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function deleteHomeAnnouncementItem(itemId: string) {
+    if (!selectedPage || selectedPage.slug !== 'home') return;
+
+    const item = homeSections.announcementSection.items.find((entry) => entry.id === itemId);
+    if (!item) return;
+
+    const nextHomeSections = {
+      ...homeSections,
+      announcementSection: {
+        ...homeSections.announcementSection,
+        items: homeSections.announcementSection.items.filter((entry) => entry.id !== itemId),
+      },
+    };
+
+    setUploading(true);
+    setMessage(null);
+
+    try {
+      const saved = await persistPageState({
+        sections: nextHomeSections,
+      });
+
+      if (!saved) return;
+
+      if (item.mediaId) {
+        await removeMediaAssetById(item.mediaId);
+      }
+
+      setHomeSections(nextHomeSections);
+      if (item.mediaId) {
+        setMedia((prev) => prev.filter((entry) => entry.id !== item.mediaId));
+      }
+      await loadData();
+      setMessage('Ankündigung entfernt.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ankündigung konnte nicht entfernt werden.');
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function uploadAndAttachMedia(event: FormEvent<HTMLFormElement>) {
@@ -1038,6 +1269,281 @@ export function ContentManager() {
     );
   }
 
+  function renderHomeAnnouncementEditor() {
+    const items: HomeAnnouncementDisplayItem[] = homeSections.announcementSection.items.map((item) => ({
+      ...item,
+      media: item.mediaId ? mediaById.get(item.mediaId) || null : null,
+    }));
+
+    return (
+      <section className="space-y-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Premium Ankündigungen</p>
+            <p className="mt-1 text-xs text-accent-400">
+              Dieser Bereich erscheint auf der Startseite zwischen Hero und Kulinarische Highlights.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              updateHomeAnnouncementSection((section) => ({
+                ...section,
+                items: [
+                  ...section.items,
+                  {
+                    id: createHomeAnnouncementId(),
+                    label: '',
+                    title: '',
+                    body: '',
+                    ctaLabel: '',
+                    ctaHref: '',
+                    isEnabled: true,
+                    mediaId: null,
+                    altText: '',
+                  },
+                ],
+              }))
+            }
+            className="rounded-full border border-primary-400/40 bg-primary-500/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary-100"
+          >
+            Ankündigung hinzufügen
+          </button>
+        </div>
+
+        <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white">
+          <input
+            type="checkbox"
+            checked={homeSections.announcementSection.isEnabled}
+            onChange={(event) =>
+              updateHomeAnnouncementSection((section) => ({
+                ...section,
+                isEnabled: event.target.checked,
+              }))
+            }
+            className="h-4 w-4 rounded border-white/20 bg-black/40"
+          />
+          <span>Ankündigungsbereich auf der Startseite anzeigen</span>
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Eyebrow</span>
+            <input
+              value={homeSections.announcementSection.eyebrow}
+              onChange={(event) =>
+                updateHomeAnnouncementSection((section) => ({
+                  ...section,
+                  eyebrow: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Sektionstitel</span>
+            <input
+              value={homeSections.announcementSection.title}
+              onChange={(event) =>
+                updateHomeAnnouncementSection((section) => ({
+                  ...section,
+                  title: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Einleitung</span>
+            <textarea
+              value={homeSections.announcementSection.description}
+              onChange={(event) =>
+                updateHomeAnnouncementSection((section) => ({
+                  ...section,
+                  description: event.target.value,
+                }))
+              }
+              className="h-24 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+            />
+          </label>
+        </div>
+
+        {items.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-white/15 bg-black/30 px-3 py-4 text-sm text-accent-300">
+            Noch keine Ankündigungen angelegt.
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {items.map((item, index) => (
+              <article key={item.id} className="rounded-[1.8rem] border border-white/10 bg-black/30 p-4">
+                <div className="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.16em] text-accent-300">Ankündigung {index + 1}</p>
+                    <p className="mt-1 text-sm text-accent-400">
+                      Premium-Card mit Bild, Text und optionalem CTA.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void deleteHomeAnnouncementItem(item.id)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-400/40 bg-red-500/15 text-red-100"
+                    aria-label={`Ankündigung ${index + 1} löschen`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                <div className="grid gap-5 xl:grid-cols-[1fr_1.2fr]">
+                  <div className="space-y-3">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-[1.6rem] border border-white/10 bg-black/50">
+                      {item.media ? (
+                        <Image
+                          src={`/api/admin/media/${item.media.id}/preview`}
+                          alt={item.altText || item.media.altText || item.title || item.media.filename}
+                          fill
+                          sizes="(max-width: 1280px) 100vw, 30vw"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-accent-400">
+                          Noch kein Ankündigungsbild hochgeladen.
+                        </div>
+                      )}
+                    </div>
+
+                    <label className="block space-y-1">
+                      <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Bild ersetzen</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          void uploadHomeAnnouncementMedia(item.id, file);
+                          event.currentTarget.value = '';
+                        }}
+                        className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                      />
+                    </label>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => void removeHomeAnnouncementMedia(item.id)}
+                        disabled={!item.mediaId}
+                        className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Bild entfernen
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white">
+                      <input
+                        type="checkbox"
+                        checked={item.isEnabled}
+                        onChange={(event) =>
+                          updateHomeAnnouncementItem(item.id, (current) => ({
+                            ...current,
+                            isEnabled: event.target.checked,
+                          }))
+                        }
+                        className="h-4 w-4 rounded border-white/20 bg-black/40"
+                      />
+                      <span>Diese Ankündigung anzeigen</span>
+                    </label>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label className="block space-y-1">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Label</span>
+                        <input
+                          value={item.label}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              label: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                      <label className="block space-y-1">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Alt-Text</span>
+                        <input
+                          value={item.altText}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              altText: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                      <label className="block space-y-1 md:col-span-2">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Titel</span>
+                        <input
+                          value={item.title}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              title: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                      <label className="block space-y-1 md:col-span-2">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Text</span>
+                        <textarea
+                          value={item.body}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              body: event.target.value,
+                            }))
+                          }
+                          className="h-28 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                      <label className="block space-y-1">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">CTA Text</span>
+                        <input
+                          value={item.ctaLabel}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              ctaLabel: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                      <label className="block space-y-1">
+                        <span className="text-xs uppercase tracking-[0.16em] text-accent-300">CTA URL</span>
+                        <input
+                          value={item.ctaHref}
+                          onChange={(event) =>
+                            updateHomeAnnouncementItem(item.id, (current) => ({
+                              ...current,
+                              ctaHref: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
   const isGalleryPage = selectedPage?.slug === 'galerie';
   const isHomePage = selectedPage?.slug === 'home';
 
@@ -1249,6 +1755,8 @@ export function ContentManager() {
             </div>
           </>
         ) : null}
+
+        {isHomePage ? renderHomeAnnouncementEditor() : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1">

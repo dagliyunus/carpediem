@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { Hero } from "@/components/sections/Hero";
+import { AnnouncementShowcase } from "@/components/sections/AnnouncementShowcase";
 import { SignatureDishes } from "@/components/sections/SignatureDishes";
 import { FishShowcase } from "@/components/sections/FishShowcase";
 import { SocialMedia } from "@/components/sections/SocialMedia";
@@ -91,6 +92,9 @@ export default async function Home() {
   return (
     <div className="flex flex-col w-full">
       <Hero />
+      <Reveal delayMs={40}>
+        <AnnouncementShowcase page={homePage} />
+      </Reveal>
       <Reveal>
         <SignatureDishes />
       </Reveal>

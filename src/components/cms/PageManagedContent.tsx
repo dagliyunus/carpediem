@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { getPageContent } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
+import { normalizeHomePageSections } from '@/lib/cms/home-announcements';
 
 const PUBLIC_PLACEHOLDER_BODIES = new Set([
   'Verwalten Sie hier Inhaltsbausteine für die Speisekarte.',
@@ -27,7 +28,12 @@ export async function PageManagedContent({ slug }: { slug: string }) {
 
   const safeBody = page.body && !PUBLIC_PLACEHOLDER_BODIES.has(page.body.trim()) ? page.body : null;
 
-  const sections = isSectionArray(page.sections) ? page.sections : [];
+  const sections =
+    slug === 'home'
+      ? normalizeHomePageSections(page.sections).contentSections
+      : isSectionArray(page.sections)
+        ? page.sections
+        : [];
   const hasContent = Boolean(
     page.headline || page.subheadline || safeBody || page.heroImage || sections.length > 0
   );
