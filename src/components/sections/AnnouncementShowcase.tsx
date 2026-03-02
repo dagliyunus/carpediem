@@ -49,6 +49,10 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
       (featured.ctaLabel && featured.ctaHref)
   );
   const isImageOnlyFeatured = Boolean(featured.media) && !hasFeaturedText;
+  const featuredAspectRatio =
+    featured.media?.width && featured.media?.height
+      ? `${featured.media.width} / ${featured.media.height}`
+      : undefined;
 
   return (
     <section className="relative overflow-hidden bg-black py-14 md:py-20">
@@ -84,15 +88,18 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
             <div className="pointer-events-none absolute inset-x-0 bottom-16 h-px bg-gradient-to-r from-transparent via-primary-500/25 to-transparent" />
             <div className={`grid h-full gap-0 ${featured.media && !isImageOnlyFeatured ? 'lg:grid-cols-[1.05fr_0.95fr]' : 'grid-cols-1'}`}>
               {featured.media ? (
-                <div className={`relative overflow-hidden bg-black/40 ${isImageOnlyFeatured ? 'min-h-[440px] md:min-h-[560px]' : 'min-h-[320px] lg:min-h-[420px]'}`}>
+                <div
+                  className={`relative overflow-hidden bg-black/55 ${isImageOnlyFeatured ? 'min-h-[360px] sm:min-h-[480px] md:min-h-[620px]' : 'min-h-[300px] lg:min-h-[420px]'}`}
+                  style={isImageOnlyFeatured && featuredAspectRatio ? { aspectRatio: featuredAspectRatio } : undefined}
+                >
                   <Image
                     src={getPublicMediaUrl(featured.media.id, featured.media.url)}
                     alt={featured.altText || featured.media.altText || featured.title || featured.media.filename}
                     fill
                     sizes={isImageOnlyFeatured ? '100vw' : '(max-width: 1024px) 100vw, 50vw'}
-                    className={`object-cover object-center transition-transform duration-700 group-hover:scale-[1.02] ${isImageOnlyFeatured ? 'md:object-[center_42%]' : ''}`}
+                    className="object-contain object-center p-3 md:p-5"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-black/50" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/35" />
                   <div className="pointer-events-none absolute inset-0 m-5 border border-white/20" />
                 </div>
               ) : null}
@@ -143,13 +150,20 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                 >
                   <div className="pointer-events-none absolute inset-3 rounded-[1.2rem] border border-white/10" />
                   {item.media ? (
-                    <div className="relative aspect-[16/10] overflow-hidden border-b border-primary-500/20 bg-black/40">
+                    <div
+                      className="relative overflow-hidden border-b border-primary-500/20 bg-black/55"
+                      style={
+                        item.media?.width && item.media?.height
+                          ? { aspectRatio: `${item.media.width} / ${item.media.height}` }
+                          : { aspectRatio: '16 / 10' }
+                      }
+                    >
                       <Image
                         src={getPublicMediaUrl(item.media.id, item.media.url)}
                         alt={item.altText || item.media.altText || item.title || item.media.filename}
                         fill
                         sizes="(max-width: 1280px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                        className="object-contain object-center p-3 md:p-4"
                       />
                       <div className="pointer-events-none absolute inset-0 m-4 border border-white/15" />
                     </div>
