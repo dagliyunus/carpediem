@@ -52,18 +52,14 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
 
   return (
     <section className="relative overflow-hidden bg-black py-14 md:py-20">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-16">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/70 to-transparent" />
-        <div className="absolute left-1/2 top-0 h-10 w-[78%] -translate-x-1/2 bg-gradient-to-b from-primary-500/20 to-transparent blur-[2px]" />
-        <div className="absolute inset-x-0 top-0 h-16 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_82%)] bg-[linear-gradient(90deg,transparent,rgba(255,227,184,0.28),transparent)]" />
-      </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16">
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary-400/55 to-transparent" />
-        <div className="absolute left-1/2 bottom-0 h-10 w-[78%] -translate-x-1/2 bg-gradient-to-t from-primary-500/18 to-transparent blur-[2px]" />
-        <div className="absolute inset-x-0 bottom-0 h-16 [mask-image:radial-gradient(ellipse_at_bottom,black_30%,transparent_82%)] bg-[linear-gradient(90deg,transparent,rgba(255,227,184,0.24),transparent)]" />
-      </div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,133,58,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_32%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_28%,rgba(201,133,58,0.08),transparent_72%)] opacity-90" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black via-black/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 [mask-image:radial-gradient(ellipse_at_top,black_28%,transparent_80%)] bg-[radial-gradient(ellipse_at_top,rgba(201,133,58,0.18),transparent_68%)] opacity-40" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black via-black/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 [mask-image:radial-gradient(ellipse_at_bottom,black_28%,transparent_80%)] bg-[radial-gradient(ellipse_at_bottom,rgba(201,133,58,0.16),transparent_68%)] opacity-35" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,133,58,0.10),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.03),transparent_38%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.02),transparent_30%,rgba(201,133,58,0.04),transparent_74%)] opacity-85" />
+      <div className="pointer-events-none absolute inset-x-[8%] top-8 h-14 bg-gradient-to-b from-black/65 to-transparent blur-xl" />
+      <div className="pointer-events-none absolute inset-x-[8%] bottom-8 h-14 bg-gradient-to-t from-black/65 to-transparent blur-xl" />
 
       <div className="container relative mx-auto space-y-10 px-4 md:px-6">
         <div className="mx-auto max-w-4xl py-6 text-center">
