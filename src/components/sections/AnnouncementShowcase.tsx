@@ -84,23 +84,17 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
         <div className={`grid gap-6 ${hasSecondary ? 'xl:grid-cols-[1.2fr_0.8fr]' : ''}`}>
           <article className="group relative overflow-hidden rounded-[1.9rem] border border-primary-500/25 bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
             <div className="pointer-events-none absolute inset-3 rounded-[1.45rem] border border-white/10" />
-            <div
-              className={`grid h-full gap-0 ${
-                featured.media && !isImageOnlyFeatured
-                  ? 'lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]'
-                  : 'grid-cols-1'
-              }`}
-            >
+            <div className="grid h-full grid-cols-1 gap-0">
               {featured.media ? (
                 <div
-                  className={`relative overflow-hidden bg-black/55 ${isImageOnlyFeatured ? 'min-h-[360px] sm:min-h-[480px] md:min-h-[620px]' : 'min-h-[320px] lg:min-h-full'}`}
-                  style={isImageOnlyFeatured && featuredAspectRatio ? { aspectRatio: featuredAspectRatio } : undefined}
+                  className={`relative overflow-hidden bg-black/55 ${isImageOnlyFeatured ? 'min-h-[360px] sm:min-h-[480px] md:min-h-[620px]' : 'min-h-[360px] sm:min-h-[460px] md:min-h-[560px]'}`}
+                  style={featuredAspectRatio ? { aspectRatio: featuredAspectRatio } : undefined}
                 >
                   <Image
                     src={getPublicMediaUrl(featured.media.id, featured.media.url)}
                     alt={featured.altText || featured.media.altText || featured.title || featured.media.filename}
                     fill
-                    sizes={isImageOnlyFeatured ? '100vw' : '(max-width: 1024px) 100vw, 50vw'}
+                    sizes={hasSecondary ? '(max-width: 1280px) 100vw, 66vw' : '100vw'}
                     className={isImageOnlyFeatured ? 'object-cover object-center' : 'object-contain object-center'}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/35" />
@@ -109,8 +103,7 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
               ) : null}
 
               {hasFeaturedText || !featured.media ? (
-                <div className="relative flex min-w-0 h-full flex-col justify-between space-y-6 p-7 md:p-10">
-                  <div className="pointer-events-none absolute inset-y-8 left-0 hidden w-px bg-gradient-to-b from-transparent via-primary-500/20 to-transparent lg:block" />
+                <div className="relative flex min-w-0 h-full flex-col justify-between space-y-6 border-t border-primary-500/20 p-7 md:p-10">
                   <div className="space-y-5">
                     {featured.label ? (
                       <span className="inline-flex max-w-full self-start break-words border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
