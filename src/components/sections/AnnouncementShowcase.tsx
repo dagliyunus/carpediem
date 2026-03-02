@@ -41,14 +41,32 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
   }
 
   const [featured, ...secondary] = activeItems;
+  const hasSecondary = secondary.length > 0;
+  const hasFeaturedText = Boolean(
+    featured.label.trim() ||
+      featured.title.trim() ||
+      featured.body.trim() ||
+      (featured.ctaLabel && featured.ctaHref)
+  );
+  const isImageOnlyFeatured = Boolean(featured.media) && !hasFeaturedText;
 
   return (
-    <section className="relative overflow-hidden border-y border-white/5 bg-black py-14 md:py-20">
+    <section className="relative overflow-hidden bg-black py-14 md:py-20">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-16">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/70 to-transparent" />
+        <div className="absolute left-1/2 top-0 h-10 w-[78%] -translate-x-1/2 bg-gradient-to-b from-primary-500/20 to-transparent blur-[2px]" />
+        <div className="absolute inset-x-0 top-0 h-16 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_82%)] bg-[linear-gradient(90deg,transparent,rgba(255,227,184,0.28),transparent)]" />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary-400/55 to-transparent" />
+        <div className="absolute left-1/2 bottom-0 h-10 w-[78%] -translate-x-1/2 bg-gradient-to-t from-primary-500/18 to-transparent blur-[2px]" />
+        <div className="absolute inset-x-0 bottom-0 h-16 [mask-image:radial-gradient(ellipse_at_bottom,black_30%,transparent_82%)] bg-[linear-gradient(90deg,transparent,rgba(255,227,184,0.24),transparent)]" />
+      </div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,133,58,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_32%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_28%,rgba(201,133,58,0.08),transparent_72%)] opacity-90" />
 
       <div className="container relative mx-auto space-y-10 px-4 md:px-6">
-        <div className="mx-auto max-w-4xl border-y border-primary-500/20 py-6 text-center">
+        <div className="mx-auto max-w-4xl py-6 text-center">
           <div className="inline-flex items-center gap-2 border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.28em] text-primary-300">
             <Sparkles className="h-4 w-4" />
             <span>{homeSections.announcementSection.eyebrow}</span>
@@ -63,58 +81,60 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
           ) : null}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className={`grid gap-6 ${hasSecondary ? 'xl:grid-cols-[1.2fr_0.8fr]' : ''}`}>
           <article className="group relative overflow-hidden rounded-[1.9rem] border border-primary-500/25 bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
             <div className="pointer-events-none absolute inset-3 rounded-[1.45rem] border border-white/10" />
             <div className="pointer-events-none absolute inset-x-0 top-16 h-px bg-gradient-to-r from-transparent via-primary-500/35 to-transparent" />
             <div className="pointer-events-none absolute inset-x-0 bottom-16 h-px bg-gradient-to-r from-transparent via-primary-500/25 to-transparent" />
-            <div className={`grid h-full gap-0 ${featured.media ? 'lg:grid-cols-[1.05fr_0.95fr]' : ''}`}>
+            <div className={`grid h-full gap-0 ${featured.media && !isImageOnlyFeatured ? 'lg:grid-cols-[1.05fr_0.95fr]' : 'grid-cols-1'}`}>
               {featured.media ? (
-                <div className="relative min-h-[280px] overflow-hidden bg-black/40">
+                <div className={`relative overflow-hidden bg-black/40 ${isImageOnlyFeatured ? 'min-h-[440px] md:min-h-[560px]' : 'min-h-[320px] lg:min-h-[420px]'}`}>
                   <Image
                     src={getPublicMediaUrl(featured.media.id, featured.media.url)}
                     alt={featured.altText || featured.media.altText || featured.title || featured.media.filename}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                    sizes={isImageOnlyFeatured ? '100vw' : '(max-width: 1024px) 100vw, 50vw'}
+                    className={`object-cover object-center transition-transform duration-700 group-hover:scale-[1.02] ${isImageOnlyFeatured ? 'md:object-[center_42%]' : ''}`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-black/50" />
                   <div className="pointer-events-none absolute inset-0 m-5 border border-white/20" />
                 </div>
               ) : null}
 
-              <div className="relative flex h-full flex-col justify-between space-y-6 p-7 md:p-10">
-                <div className="pointer-events-none absolute inset-y-8 left-0 w-px bg-gradient-to-b from-transparent via-primary-500/20 to-transparent lg:block hidden" />
-                <div className="space-y-5">
-                  {featured.label ? (
-                    <span className="inline-flex self-start border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
-                      {featured.label}
-                    </span>
-                  ) : null}
-                  <div className="space-y-3">
-                    <h3 className="font-serif text-3xl font-bold leading-tight text-white md:text-[3.35rem]">
-                      {featured.title}
-                    </h3>
-                    {featured.body ? (
-                      <p className="max-w-2xl text-base leading-relaxed text-accent-200 md:text-lg">
-                        {featured.body}
-                      </p>
+              {hasFeaturedText || !featured.media ? (
+                <div className="relative flex h-full flex-col justify-between space-y-6 p-7 md:p-10">
+                  <div className="pointer-events-none absolute inset-y-8 left-0 hidden w-px bg-gradient-to-b from-transparent via-primary-500/20 to-transparent lg:block" />
+                  <div className="space-y-5">
+                    {featured.label ? (
+                      <span className="inline-flex self-start border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
+                        {featured.label}
+                      </span>
                     ) : null}
+                    <div className="space-y-3">
+                      <h3 className="font-serif text-3xl font-bold leading-tight text-white md:text-[3.35rem]">
+                        {featured.title}
+                      </h3>
+                      {featured.body ? (
+                        <p className="max-w-2xl text-base leading-relaxed text-accent-200 md:text-lg">
+                          {featured.body}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
 
-                {featured.ctaLabel && featured.ctaHref ? (
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      href={featured.ctaHref}
-                      className="inline-flex items-center gap-2 border border-primary-500 px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-primary-300 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
-                    >
-                      {featured.ctaLabel}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
+                  {featured.ctaLabel && featured.ctaHref ? (
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href={featured.ctaHref}
+                        className="inline-flex items-center gap-2 border border-primary-500 px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-primary-300 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
+                      >
+                        {featured.ctaLabel}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </article>
 
