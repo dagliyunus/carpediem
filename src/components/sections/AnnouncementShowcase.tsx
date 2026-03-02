@@ -82,8 +82,7 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
         </div>
 
         <div className={`grid gap-6 ${hasSecondary ? 'xl:grid-cols-[1.2fr_0.8fr]' : ''}`}>
-          <article className="group relative overflow-hidden rounded-[1.9rem] border border-primary-500/25 bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
-            <div className="pointer-events-none absolute inset-3 rounded-[1.45rem] border border-white/10" />
+          <article className="group relative overflow-hidden rounded-[1.9rem] bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
             <div className="grid h-full grid-cols-1 gap-0">
               {featured.media ? (
                 <div
@@ -98,15 +97,14 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                     className={isImageOnlyFeatured ? 'object-cover object-center' : 'object-contain object-center'}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/35" />
-                  <div className="pointer-events-none absolute inset-0 m-3 border border-white/20 md:m-4" />
                 </div>
               ) : null}
 
               {hasFeaturedText || !featured.media ? (
-                <div className="relative flex min-w-0 h-full flex-col justify-between space-y-6 border-t border-primary-500/20 p-7 md:p-10">
+                <div className="relative flex min-w-0 h-full flex-col items-center justify-between space-y-6 p-7 text-center md:p-10">
                   <div className="space-y-5">
                     {featured.label ? (
-                      <span className="inline-flex max-w-full self-start break-words border border-primary-400/40 bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
+                      <span className="inline-flex max-w-full self-center break-words bg-primary-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-300">
                         {featured.label}
                       </span>
                     ) : null}
@@ -115,7 +113,7 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                         {featured.title}
                       </h3>
                       {featured.body ? (
-                        <p className="max-w-2xl break-words text-base leading-relaxed text-accent-200 md:text-lg">
+                        <p className="mx-auto max-w-3xl break-words text-base leading-relaxed text-accent-200 md:text-lg">
                           {featured.body}
                         </p>
                       ) : null}
@@ -123,7 +121,7 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                   </div>
 
                   {featured.ctaLabel && featured.ctaHref ? (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex w-full flex-wrap justify-center gap-3">
                       <Link
                         href={featured.ctaHref}
                         className="inline-flex items-center gap-2 border border-primary-500 px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-primary-300 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
