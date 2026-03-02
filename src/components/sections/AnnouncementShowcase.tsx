@@ -97,7 +97,7 @@ export function AnnouncementShowcase({ page }: { page: HomePageData | null }) {
                     alt={featured.altText || featured.media.altText || featured.title || featured.media.filename}
                     fill
                     sizes={isImageOnlyFeatured ? '100vw' : '(max-width: 1024px) 100vw, 50vw'}
-                    className="object-contain object-center p-3 md:p-5"
+                    className={isImageOnlyFeatured ? 'object-cover object-center' : 'object-contain object-center p-3 md:p-5'}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/35" />
                   <div className="pointer-events-none absolute inset-0 m-5 border border-white/20" />
