@@ -21,7 +21,7 @@ import {
   type GalleryPageSections,
   type GallerySectionKey,
 } from '@/lib/cms/gallery-page';
-import { isHomePageSlug } from '@/lib/cms/page-slugs';
+import { isHomePageRecord } from '@/lib/cms/page-slugs';
 import {
   buildHomeAnnouncementMediaLinks,
   cloneHomePageSections,
@@ -119,17 +119,13 @@ const emptyForm: FormState = {
   mediaLinks: [],
 };
 
-const MANAGED_PAGE_SLUGS = ['home', 'startseite', 'galerie'] as const;
+const MANAGED_PAGE_SLUGS = ['galerie'] as const;
 
 const MANAGED_PAGE_ORDER: Record<(typeof MANAGED_PAGE_SLUGS)[number], number> = {
-  home: 0,
-  startseite: 0,
   galerie: 1,
 };
 
 const MANAGED_PAGE_LABELS: Record<(typeof MANAGED_PAGE_SLUGS)[number], string> = {
-  home: 'Startseite',
-  startseite: 'Startseite',
   galerie: 'Galerie',
 };
 
@@ -358,11 +354,13 @@ export function ContentManager() {
       const pageData = (await pageRes.json()) as { items: PageItem[] };
       const mediaData = (await mediaRes.json()) as { items: MediaItem[] };
       const managedPages = (pageData.items || [])
-        .filter((page) => MANAGED_PAGE_SLUGS.includes(page.slug as (typeof MANAGED_PAGE_SLUGS)[number]))
+        .filter((page) => isHomePageRecord(page) || MANAGED_PAGE_SLUGS.includes(page.slug as (typeof MANAGED_PAGE_SLUGS)[number]))
         .sort(
-          (a, b) =>
-            MANAGED_PAGE_ORDER[a.slug as (typeof MANAGED_PAGE_SLUGS)[number]] -
-            MANAGED_PAGE_ORDER[b.slug as (typeof MANAGED_PAGE_SLUGS)[number]]
+          (a, b) => {
+            const aOrder = isHomePageRecord(a) ? 0 : MANAGED_PAGE_ORDER[a.slug as (typeof MANAGED_PAGE_SLUGS)[number]] ?? 99;
+            const bOrder = isHomePageRecord(b) ? 0 : MANAGED_PAGE_ORDER[b.slug as (typeof MANAGED_PAGE_SLUGS)[number]] ?? 99;
+            return aOrder - bOrder;
+          }
         );
       setPages(managedPages);
       setSelectedId((prev) => {
@@ -434,7 +432,7 @@ export function ContentManager() {
     }
 
     const isGalleryPage = selectedPage.slug === 'galerie';
-    const isHomePage = isHomePageSlug(selectedPage.slug);
+    const isHomePage = isHomePageRecord(selectedPage);
     const normalizedGalleryContent = isGalleryPage
       ? normalizeGalleryPageSections(selectedPage.sections)
       : cloneGalleryPageSections();
@@ -485,7 +483,7 @@ export function ContentManager() {
     sections?: unknown;
   } = {}) {
     const isGalleryPage = selectedPage?.slug === 'galerie';
-    const isHomePage = isHomePageSlug(selectedPage?.slug);
+    const isHomePage = isHomePageRecord(selectedPage || {});
     const nextSections =
       next.sections !== undefined
         ? next.sections
@@ -1548,7 +1546,7 @@ export function ContentManager() {
   }
 
   const isGalleryPage = selectedPage?.slug === 'galerie';
-  const isHomePage = isHomePageSlug(selectedPage?.slug);
+  const isHomePage = isHomePageRecord(selectedPage || {});
 
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
@@ -1572,7 +1570,9 @@ export function ContentManager() {
                 }`}
               >
                 <p className="text-sm font-semibold">
-                  {MANAGED_PAGE_LABELS[page.slug as (typeof MANAGED_PAGE_SLUGS)[number]] || page.title}
+                  {isHomePageRecord(page)
+                    ? 'Startseite'
+                    : MANAGED_PAGE_LABELS[page.slug as (typeof MANAGED_PAGE_SLUGS)[number]] || page.title}
                 </p>
                 <p className="text-xs uppercase tracking-[0.14em] text-accent-300">{page.status}</p>
               </button>

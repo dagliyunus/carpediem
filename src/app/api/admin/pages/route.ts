@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
 import { slugify } from '@/lib/cms/content';
 import { revalidatePublicPageContent } from '@/lib/cms/revalidation';
-import { isHomePageSlug } from '@/lib/cms/page-slugs';
+import { isHomePageRecord } from '@/lib/cms/page-slugs';
 
 const pageSchema = z.object({
   slug: z.string().max(120).optional(),
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       payload: { slug: page.slug },
     });
 
-    revalidatePublicPageContent(isHomePageSlug(page.slug) ? '/' : `/${page.slug}`);
+    revalidatePublicPageContent(isHomePageRecord(page) ? '/' : `/${page.slug}`);
 
     return NextResponse.json({ item: page }, { status: 201 });
   } catch (error) {

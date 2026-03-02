@@ -363,6 +363,52 @@ const getCachedPageContent = unstable_cache(
   }
 );
 
+const getCachedHomeByTitle = unstable_cache(
+  async () =>
+    db.page.findFirst({
+      where: {
+        title: {
+          in: ['Startseite', 'startseite', 'Home', 'home', 'Homepage', 'homepage'],
+        },
+      },
+      include: {
+        heroImage: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            filename: true,
+          },
+        },
+        mediaLinks: {
+          select: {
+            fieldKey: true,
+            media: {
+              select: {
+                id: true,
+                key: true,
+                url: true,
+                altText: true,
+                filename: true,
+                mediaType: true,
+                width: true,
+                height: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    }),
+  ['public-page-home-fallback'],
+  {
+    revalidate: 3600,
+    tags: [PUBLIC_PAGE_CONTENT_TAG],
+  }
+);
+
 export async function getPageContent(slug: string) {
   return getCachedPageContent(slug);
 }
@@ -373,5 +419,5 @@ export async function getHomePageContent() {
     if (page) return page;
   }
 
-  return null;
+  return getCachedHomeByTitle();
 }
