@@ -4,8 +4,10 @@ const LEGACY_EXACT_PATHS = new Set([
   '/blog',
   '/hello-world',
   '/uncategorized',
+  '/uncategorized/hello-world',
   '/impressumdatenschutzerklarung',
   '/unsere_speisen.pdf',
+  '/wp-content/uploads/2025/03/unsere_speisen.pdf',
   '/wp-login.php',
   '/xmlrpc.php',
   '/feed',
@@ -16,6 +18,7 @@ const LEGACY_PREFIXES = [
   '/wp-admin',
   '/wp-content',
   '/wp-includes',
+  '/uncategorized/',
   '/category/',
   '/tag/',
   '/author/',
@@ -30,10 +33,11 @@ const INDEX_ALIAS_PATHS = new Set(['/index.html', '/index.php', '/index.htm']);
 
 function isLegacyPath(pathname: string) {
   const path = pathname.toLowerCase();
+  const normalizedPath = path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
 
-  if (LEGACY_EXACT_PATHS.has(path)) return true;
-  if (LEGACY_PREFIXES.some((prefix) => path.startsWith(prefix))) return true;
-  if (path.endsWith('.php')) return true;
+  if (LEGACY_EXACT_PATHS.has(normalizedPath)) return true;
+  if (LEGACY_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix))) return true;
+  if (normalizedPath.endsWith('.php')) return true;
 
   return false;
 }
