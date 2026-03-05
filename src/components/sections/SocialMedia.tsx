@@ -2,7 +2,6 @@ import React from 'react';
 import { Instagram, Music2, Pin, Facebook, Youtube, Linkedin, Share2 } from 'lucide-react';
 import { getPublicSiteRuntime } from '@/lib/cms/runtime';
 import { Logo } from '@/components/brand/Logo';
-import { siteConfig } from '@/config/siteConfig';
 
 type IconProps = {
   className?: string;
@@ -77,7 +76,6 @@ const gradientMap: Record<string, string> = {
 
 export const SocialMedia = async () => {
   const runtime = await getPublicSiteRuntime();
-  const contactEmail = runtime.site?.businessEmail || siteConfig.contact.email;
 
   const cards = runtime.social.map((item) => {
     const key = String(item.platform).toLowerCase();
@@ -190,17 +188,6 @@ export const SocialMedia = async () => {
           })}
         </div>
 
-        <div className="mt-20 text-center">
-          <p className="text-base font-light italic tracking-wide text-accent-300 md:text-lg">
-            Sie sind Content Creator oder möchten mit uns kooperieren?
-            <a
-              href={`mailto:${contactEmail}`}
-              className="ml-2 text-base font-bold text-primary-400 not-italic hover:underline md:text-lg"
-            >
-              Lassen Sie uns sprechen.
-            </a>
-          </p>
-        </div>
       </div>
     </section>
   );
