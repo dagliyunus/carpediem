@@ -6,23 +6,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: [
-          '/',
-          '/wp-content/uploads/2025/03/unsere_speisen.pdf',
-          '/uncategorized/hello-world',
-          '/uncategorized/hello-world/',
-        ],
+        // Keep legacy URLs crawlable so Google can confirm 410 and drop them.
+        allow: ['/'],
         disallow: [
           '/api/',
-          '/wp-admin/',
-          '/wp-content/',
-          '/wp-includes/',
-          '/category/',
-          '/tag/',
-          '/author/',
           '/admin/',
-          '/blog',
-          '/hello-world',
         ],
       },
     ],
