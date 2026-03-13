@@ -147,7 +147,7 @@ export default function ReservationPage() {
                 <div className="space-y-2">
                   <h3 className="font-bold text-white text-xl tracking-wide group-hover:text-primary-400 transition-colors">Telefonische Reservierung</h3>
                   <p className="text-sm text-accent-300 font-light leading-relaxed">
-                    Für kurzfristige Reservierungen oder Gruppen über 8 Personen rufen Sie uns bitte direkt an.
+                    Für kurzfristige Reservierungen, sehr große Gruppen oder Sonderwünsche rufen Sie uns bitte direkt an.
                   </p>
                 </div>
                 <a 

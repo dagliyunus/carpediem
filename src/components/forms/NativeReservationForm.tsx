@@ -1,38 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, Calendar, Users, Clock, Info } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
+import {
+  addDaysToIsoDate,
+  formatIsoDateForDisplay,
+  getTodayIsoDate,
+  isClosedDate,
+  parseRequestedGuestCount,
+} from '@/lib/reservations/capacity';
 
 type Step = 1 | 2 | 3;
 type ReservationStatus = 'idle' | 'sending' | 'error';
-
-const CLOSED_WEEKDAY_INDEXES = new Set([2, 3]); // Tuesday, Wednesday
-
-const getWeekdayFromIsoDate = (value: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const utcDate = new Date(Date.UTC(year, month - 1, day));
-
-  if (
-    utcDate.getUTCFullYear() !== year ||
-    utcDate.getUTCMonth() !== month - 1 ||
-    utcDate.getUTCDate() !== day
-  ) {
-    return null;
-  }
-
-  return utcDate.getUTCDay();
+type AvailabilityStatus = 'idle' | 'loading' | 'ready' | 'error';
+type ReservationAvailability = {
+  date: string;
+  totalSeats: number;
+  reservedSeats: number;
+  availableSeats: number;
+  isClosed: boolean;
 };
-
-const isClosedDate = (value: string) => {
-  const weekday = getWeekdayFromIsoDate(value);
-  if (weekday === null) return false;
-  return CLOSED_WEEKDAY_INDEXES.has(weekday);
+type AvailabilityPreview = ReservationAvailability & {
+  label: string;
 };
 
 const toMinutes = (value: string) => {
@@ -44,6 +34,10 @@ export const NativeReservationForm = () => {
   const [step, setStep] = useState<Step>(1);
   const [status, setStatus] = useState<ReservationStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [availabilityStatus, setAvailabilityStatus] = useState<AvailabilityStatus>('idle');
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [selectedAvailability, setSelectedAvailability] = useState<ReservationAvailability | null>(null);
+  const [availabilityPreview, setAvailabilityPreview] = useState<AvailabilityPreview[]>([]);
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -59,8 +53,109 @@ export const NativeReservationForm = () => {
   const timeSlots = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '17:00', '17:30', '18:00', '18:30', '19:00'].filter(
     (time) => toMinutes(time) <= toMinutes(siteConfig.reservations.lastReservationTime)
   );
+  const today = getTodayIsoDate();
+  const tomorrow = addDaysToIsoDate(today, 1);
+  const selectedGuestCount = parseRequestedGuestCount(formData.guests) ?? 0;
   const selectedDateIsClosed = isClosedDate(formData.date);
-  const canContinueStepOne = Boolean(formData.date) && Boolean(formData.time) && !selectedDateIsClosed;
+  const readyAvailability =
+    availabilityStatus === 'ready' && selectedAvailability ? selectedAvailability : null;
+  const hasAvailabilityForSelectedDate =
+    Boolean(formData.date) && readyAvailability
+      ? !readyAvailability.isClosed &&
+        readyAvailability.availableSeats > 0 &&
+        selectedGuestCount <= readyAvailability.availableSeats
+      : false;
+  const canContinueStepOne =
+    Boolean(formData.date) &&
+    Boolean(formData.time) &&
+    !selectedDateIsClosed &&
+    hasAvailabilityForSelectedDate;
+
+  useEffect(() => {
+    const previewDates = [
+      { date: today, label: 'Heute' },
+      { date: tomorrow, label: 'Morgen' },
+    ];
+    let isCancelled = false;
+
+    void Promise.all(
+      previewDates.map(async ({ date, label }) => {
+        const response = await fetch(`/api/reservations?date=${encodeURIComponent(date)}`, {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const payload = (await response.json()) as ReservationAvailability;
+        return { ...payload, label };
+      })
+    ).then((results) => {
+      if (isCancelled) return;
+      setAvailabilityPreview(results.filter((item): item is AvailabilityPreview => Boolean(item)));
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [today, tomorrow]);
+
+  useEffect(() => {
+    if (!formData.date || selectedDateIsClosed) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void fetch(`/api/reservations?date=${encodeURIComponent(formData.date)}`, {
+      cache: 'no-store',
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error || 'Verfügbarkeit konnte nicht geladen werden.');
+        }
+
+        return (await response.json()) as ReservationAvailability;
+      })
+      .then((payload) => {
+        if (isCancelled) return;
+
+        setSelectedAvailability(payload);
+        setAvailabilityStatus('ready');
+        setFormData((current) => {
+          const currentGuestCount = parseRequestedGuestCount(current.guests) ?? 1;
+
+          if (payload.availableSeats < 1) {
+            return { ...current, guests: '1' };
+          }
+
+          if (currentGuestCount <= payload.availableSeats) {
+            return current;
+          }
+
+          return { ...current, guests: String(payload.availableSeats) };
+        });
+      })
+      .catch((error: Error) => {
+        if (isCancelled) return;
+
+        setAvailabilityStatus('error');
+        setSelectedAvailability(null);
+        setAvailabilityError(error.message);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [formData.date, selectedDateIsClosed]);
+
+  const guestOptionsCount =
+    formData.date && selectedAvailability && !selectedAvailability.isClosed
+      ? Math.max(selectedAvailability.availableSeats, 1)
+      : 8;
+  const guestOptions = Array.from({ length: guestOptionsCount }, (_, index) => index + 1);
 
   const handleNext = () => {
     if (selectedDateIsClosed) {
@@ -68,6 +163,27 @@ export const NativeReservationForm = () => {
       setErrorMessage('Reservierungen sind am Dienstag und Mittwoch nicht möglich.');
       return;
     }
+
+    if (availabilityStatus === 'error') {
+      setStatus('error');
+      setErrorMessage(availabilityError || 'Verfügbarkeit konnte nicht geladen werden.');
+      return;
+    }
+
+    if (!selectedAvailability || selectedAvailability.availableSeats < 1) {
+      setStatus('error');
+      setErrorMessage('Für dieses Datum sind online keine Sitzplätze mehr verfügbar.');
+      return;
+    }
+
+    if (selectedGuestCount > selectedAvailability.availableSeats) {
+      setStatus('error');
+      setErrorMessage(
+        `Für dieses Datum sind nur noch ${selectedAvailability.availableSeats} Sitzplätze verfügbar.`
+      );
+      return;
+    }
+
     setErrorMessage('');
     setStatus('idle');
     setStep((s) => (s + 1) as Step);
@@ -173,18 +289,24 @@ export const NativeReservationForm = () => {
                   <input
                     type="date"
                     required
-                    min={new Date().toISOString().split('T')[0]}
+                    min={today}
                     className="w-full px-6 py-4 rounded-2xl border border-white/5 bg-white/[0.02] text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all outline-none group-hover:bg-white/[0.04] [color-scheme:dark]"
                     value={formData.date}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value && isClosedDate(value)) {
+                        setAvailabilityStatus('idle');
+                        setAvailabilityError('');
+                        setSelectedAvailability(null);
                         setFormData({ ...formData, date: '', time: '' });
                         setStatus('error');
                         setErrorMessage('Reservierungen sind am Dienstag und Mittwoch nicht möglich.');
                         return;
                       }
 
+                      setAvailabilityStatus(value ? 'loading' : 'idle');
+                      setAvailabilityError('');
+                      setSelectedAvailability(null);
                       setErrorMessage('');
                       setStatus('idle');
                       setFormData({ ...formData, date: value });
@@ -194,6 +316,19 @@ export const NativeReservationForm = () => {
                 <p className="text-[11px] text-accent-300/85 ml-1">
                   Ruhetage: Dienstag und Mittwoch
                 </p>
+                {formData.date && selectedAvailability && availabilityStatus === 'ready' ? (
+                  <p className="text-[11px] ml-1 text-primary-300">
+                    {selectedAvailability.availableSeats > 0
+                      ? `${selectedAvailability.availableSeats} von ${selectedAvailability.totalSeats} Sitzplätzen sind am ${formatIsoDateForDisplay(formData.date)} noch frei.`
+                      : `Am ${formatIsoDateForDisplay(formData.date)} sind online keine Sitzplätze mehr frei.`}
+                  </p>
+                ) : null}
+                {formData.date && availabilityStatus === 'loading' ? (
+                  <p className="text-[11px] ml-1 text-accent-300/85">Verfügbarkeit wird geladen…</p>
+                ) : null}
+                {formData.date && availabilityStatus === 'error' ? (
+                  <p className="text-[11px] ml-1 text-red-200">{availabilityError}</p>
+                ) : null}
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400 flex items-center gap-2 ml-1">
@@ -201,21 +336,43 @@ export const NativeReservationForm = () => {
                 </label>
                 <div className="relative group">
                   <select
+                    disabled={Boolean(formData.date) && (availabilityStatus === 'loading' || selectedAvailability?.availableSeats === 0)}
                     className="w-full px-6 py-4 rounded-2xl border border-white/5 bg-white/[0.02] text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all outline-none group-hover:bg-white/[0.04] appearance-none cursor-pointer"
                     value={formData.guests}
                     onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                    {guestOptions.map((n) => (
                       <option key={n} value={n} className="bg-[#1A1A1A]">{n} Personen</option>
                     ))}
-                    <option value="9+" className="bg-[#1A1A1A]">Mehr als 8 Personen</option>
                   </select>
                   <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 group-hover:text-white/40 transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
+                <p className="text-[11px] text-accent-300/85 ml-1">
+                  Die Auswahl passt sich automatisch an die verbleibenden Sitzplätze des gewählten Tages an.
+                </p>
               </div>
             </div>
+
+            {!formData.date && availabilityPreview.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {availabilityPreview.map((item) => (
+                  <div
+                    key={item.date}
+                    className="rounded-[1.5rem] border border-primary-500/15 bg-primary-950/30 px-5 py-4"
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary-400">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-white text-lg font-semibold">
+                      {item.isClosed ? 'Ruhetag' : `${item.availableSeats} freie Sitzplätze`}
+                    </p>
+                    <p className="mt-1 text-xs text-accent-300">{formatIsoDateForDisplay(item.date)}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
             <div className="space-y-6">
               <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-400 flex items-center gap-2 ml-1">

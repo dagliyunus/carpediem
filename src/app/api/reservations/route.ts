@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import nodemailer from 'nodemailer';
 import { db } from '@/lib/db';
 import { siteConfig } from '@/config/siteConfig';
+import {
+  getTodayIsoDate,
+  getWeekdayFromIsoDate,
+  isClosedDate,
+  parseRequestedGuestCount,
+} from '@/lib/reservations/capacity';
+import { getSeatAvailabilityForDate } from '@/lib/reservations/availability';
 
 type RateLimitState = {
   count: number;
@@ -10,6 +18,7 @@ type RateLimitState = {
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const SERIALIZABLE_RETRY_LIMIT = 3;
 const rateLimit = new Map<string, RateLimitState>();
 
 const normalize = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
@@ -21,31 +30,9 @@ const isValidEmail = (value: string) => {
 
 const isValidTime = (value: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 
-const isValidGuests = (value: string) => /^([1-8]|9\+)$/.test(value);
-
 const toMinutes = (value: string) => {
   const [hours, minutes] = value.split(':').map(Number);
   return hours * 60 + minutes;
-};
-
-const getWeekdayFromIsoDate = (value: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const utcDate = new Date(Date.UTC(year, month - 1, day));
-
-  if (
-    utcDate.getUTCFullYear() !== year ||
-    utcDate.getUTCMonth() !== month - 1 ||
-    utcDate.getUTCDate() !== day
-  ) {
-    return null;
-  }
-
-  return utcDate.getUTCDay();
 };
 
 const getClientIp = (req: Request) => {
@@ -82,6 +69,107 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 
+class ReservationCapacityError extends Error {
+  availableSeats: number;
+
+  constructor(availableSeats: number) {
+    super('Requested seats exceed the remaining daily capacity');
+    this.availableSeats = availableSeats;
+  }
+}
+
+const isSerializationConflict = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034';
+
+const reserveDailySeats = async (payload: {
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: string;
+  note: string;
+  ip: string;
+  requestedGuestCount: number;
+}) => {
+  for (let attempt = 0; attempt < SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
+    try {
+      return await db.$transaction(
+        async (tx) => {
+          const availability = await getSeatAvailabilityForDate(payload.date, tx);
+
+          if (payload.requestedGuestCount > availability.availableSeats) {
+            throw new ReservationCapacityError(availability.availableSeats);
+          }
+
+          return tx.reservationRequest.create({
+            data: {
+              name: payload.name,
+              email: payload.email,
+              phone: payload.phone,
+              date: payload.date,
+              time: payload.time,
+              guests: payload.guests,
+              note: payload.note || null,
+              ip: payload.ip,
+              status: 'RECEIVED',
+            },
+          });
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        }
+      );
+    } catch (error) {
+      if (error instanceof ReservationCapacityError) {
+        throw error;
+      }
+
+      if (isSerializationConflict(error) && attempt < SERIALIZABLE_RETRY_LIMIT - 1) {
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error('Reservation capacity check failed after retries');
+};
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const date = normalize(url.searchParams.get('date'));
+
+  if (!date) {
+    return NextResponse.json({ error: 'Missing date' }, { status: 400 });
+  }
+
+  const today = getTodayIsoDate();
+  const weekday = getWeekdayFromIsoDate(date);
+
+  if (weekday === null || date < today) {
+    return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
+  }
+
+  const availability = await getSeatAvailabilityForDate(date);
+
+  return NextResponse.json(
+    {
+      date,
+      isClosed: isClosedDate(date),
+      ...availability,
+    },
+    {
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    }
+  );
+}
+
 export async function POST(req: Request) {
   if (!isAllowedOrigin(req)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -115,7 +203,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayIsoDate();
   if (date < today) {
     return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
   }
@@ -138,7 +226,8 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  if (!isValidGuests(guests)) {
+  const requestedGuestCount = parseRequestedGuestCount(guests);
+  if (!requestedGuestCount) {
     return NextResponse.json({ error: 'Invalid number of guests' }, { status: 400 });
   }
   if (name.length < 2 || name.length > 80) {
@@ -171,6 +260,39 @@ export async function POST(req: Request) {
     normalize(process.env.RESERVATION_TO_EMAIL) || 'viktoriia@carpediem-badsaarow.de';
   const reservationFrom = normalize(process.env.RESERVATION_FROM_EMAIL) || smtpUser;
   const reservationFromName = normalize(process.env.RESERVATION_FROM_NAME) || 'Neu Tischreservierung';
+
+  let reservationId = '';
+
+  try {
+    const reservation = await reserveDailySeats({
+      name,
+      email,
+      phone,
+      date,
+      time,
+      guests,
+      note,
+      ip,
+      requestedGuestCount,
+    });
+
+    reservationId = reservation.id;
+  } catch (error) {
+    if (error instanceof ReservationCapacityError) {
+      return NextResponse.json(
+        {
+          error:
+            error.availableSeats > 0
+              ? `Für dieses Datum sind nur noch ${error.availableSeats} Sitzplätze verfügbar.`
+              : 'Für dieses Datum sind online keine Sitzplätze mehr verfügbar.',
+        },
+        { status: 409 }
+      );
+    }
+
+    console.error('Reservation capacity check failed', error);
+    return NextResponse.json({ error: 'Reservation could not be saved' }, { status: 500 });
+  }
 
   try {
     const transporter = nodemailer.createTransport({
@@ -225,22 +347,15 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Reservation email delivery failed', error);
-    return NextResponse.json({ error: 'Delivery failed' }, { status: 502 });
+    await db.reservationRequest
+      .update({
+        where: { id: reservationId },
+        data: { status: 'EMAIL_FAILED' },
+      })
+      .catch((updateError) => {
+        console.error('Reservation email failure status update failed', updateError);
+      });
   }
-
-  await db.reservationRequest.create({
-    data: {
-      name,
-      email,
-      phone,
-      date,
-      time,
-      guests,
-      note: note || null,
-      ip,
-      status: 'RECEIVED',
-    },
-  });
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
