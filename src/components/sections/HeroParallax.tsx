@@ -112,10 +112,11 @@ export function HeroParallax() {
                   bei Ben
                 </span>
               </h1>
-              <p className="text-xl md:text-3xl text-white/70 font-light max-w-3xl mx-auto leading-relaxed tracking-wide">
-                Ihr Refugium für mediterrane Lebensfreude <br className="hidden md:block" />
-                im Herzen von Bad Saarow.
-              </p>
+              <div className="mx-auto max-w-4xl">
+                <p className="font-serif text-2xl md:text-[2.85rem] text-white/90 font-medium leading-[1.35] tracking-[0.015em] italic">
+                  “Frisch, täglich bodenständig und herzlich – kein Schickimicki.”
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-8 pt-6 justify-center items-center">
