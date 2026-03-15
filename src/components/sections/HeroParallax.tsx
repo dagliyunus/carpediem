@@ -114,7 +114,9 @@ export function HeroParallax() {
               </h1>
               <div className="mx-auto max-w-4xl">
                 <p className="font-serif text-2xl md:text-[2.85rem] text-white/90 font-medium leading-[1.35] tracking-[0.015em] italic">
-                  “Frisch, täglich bodenständig und herzlich – kein Schickimicki.”
+                  &quot;Täglich frisch,bodenständig und herzlich.
+                  <br className="hidden md:block" />
+                  Kein schickimicki&quot;
                 </p>
               </div>
             </div>
