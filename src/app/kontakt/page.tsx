@@ -219,7 +219,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 md:p-12 backdrop-blur-xl shadow-2xl">
+          <div id="kontaktformular" className="scroll-mt-32 rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 md:scroll-mt-40 md:p-12 backdrop-blur-xl shadow-2xl">
             <div className="max-w-3xl mx-auto space-y-8">
               <div className="text-center space-y-4">
                 <h2 className="font-serif text-4xl md:text-5xl font-bold text-white">Kontaktformular</h2>

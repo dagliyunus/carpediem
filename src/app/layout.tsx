@@ -4,6 +4,7 @@ import "./globals.css";
 import { siteConfig } from "@/config/siteConfig";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CateringContactButton } from "@/components/layout/CateringContactButton";
 import { ConsentBanner } from "@/components/layout/ConsentBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
@@ -133,6 +134,7 @@ export default async function RootLayout({
           <JsonLd />
           <div className="flex min-h-screen flex-col">
             <Header />
+            <CateringContactButton />
             <main className="flex-grow">
               {children}
             </main>
