@@ -18,12 +18,12 @@ export function CateringContactButton() {
         aria-label="Direkt zum Kontaktformular für Catering"
         className="group block transition-transform duration-300 hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       >
-        <div className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32">
+        <div className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-40 lg:w-40 xl:h-48 xl:w-48 2xl:h-56 2xl:w-56">
           <Image
             src="/images/catering_logo.webp"
             alt="Catering Kontakt"
             fill
-            sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, (max-width: 1024px) 112px, 128px"
+            sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, (max-width: 1024px) 112px, (max-width: 1280px) 160px, (max-width: 1536px) 192px, 224px"
             className="object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]"
             priority
           />
