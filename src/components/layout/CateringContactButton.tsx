@@ -16,27 +16,17 @@ export function CateringContactButton() {
       <Link
         href="/kontakt#kontaktformular"
         aria-label="Direkt zum Kontaktformular für Catering"
-        className="group flex rounded-[1.25rem] border border-white/15 bg-black/70 p-2 shadow-[0_20px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] hover:border-primary-400/60 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+        className="group block transition-transform duration-300 hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       >
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="relative h-14 w-14 overflow-hidden rounded-[0.95rem] bg-white/95 ring-1 ring-white/70 sm:h-16 sm:w-16 md:h-20 md:w-20">
-            <Image
-              src="/images/catering_logo.webp"
-              alt="Catering Kontakt"
-              fill
-              sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, 80px"
-              className="object-contain p-1.5"
-              priority
-            />
-          </div>
-          <div className="hidden max-w-[132px] pr-1 sm:block md:max-w-[148px]">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary-300 md:text-[11px]">
-              Catering
-            </p>
-            <p className="mt-1 text-xs font-semibold leading-snug text-white md:text-sm">
-              Direkt zum Kontaktformular
-            </p>
-          </div>
+        <div className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32">
+          <Image
+            src="/images/catering_logo.webp"
+            alt="Catering Kontakt"
+            fill
+            sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, (max-width: 1024px) 112px, 128px"
+            className="object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]"
+            priority
+          />
         </div>
       </Link>
     </div>
