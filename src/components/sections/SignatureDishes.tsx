@@ -10,6 +10,12 @@ const dishes = [
       'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=85&w=1600',
     category: 'Dessert',
   },
+  {
+    name: 'Salat mit gegrillte Oktopus',
+    description: 'Mediterraner Salat mit gegrilltem Oktopus, frisch serviert und aromatisch abgestimmt.',
+    image: '/images/2026/02/fav2.webp',
+    category: 'Salat',
+  },
 ];
 
 export const SignatureDishes = () => {
