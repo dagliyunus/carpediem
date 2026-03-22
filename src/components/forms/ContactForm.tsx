@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
 
 type ContactFormStatus = 'idle' | 'sending' | 'success' | 'error';
@@ -187,6 +188,16 @@ export const ContactForm = ({ className }: ContactFormProps) => {
         >
           {isSending ? 'Senden…' : 'Nachricht senden'}
         </button>
+
+        <figure className="mx-auto mt-4 w-full max-w-sm rounded-[1.75rem] border border-white/10 bg-black/85 p-3 shadow-2xl">
+          <Image
+            src="/images/2026/02/wir-muessen-draussen-bleiben.webp"
+            alt="Hinweis für Gäste"
+            width={720}
+            height={960}
+            className="h-auto w-full rounded-[1.2rem] object-contain"
+          />
+        </figure>
       </div>
     </form>
   );
