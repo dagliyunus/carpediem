@@ -93,13 +93,13 @@ export function SignatureDishesCarousel({ dishes }: SignatureDishesCarouselProps
             data-card
             className="group w-[320px] shrink-0 snap-center space-y-8 md:w-[480px]"
           >
-            <div className="relative aspect-[16/10] overflow-hidden rounded-[2.5rem] shadow-2xl ring-1 ring-white/10">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-[2.5rem] bg-black shadow-2xl ring-1 ring-white/10">
               <Image
                 src={dish.image}
                 alt={dish.name}
                 fill
                 sizes="(min-width: 768px) 480px, 320px"
-                className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                className="object-contain p-4 transition-transform duration-[1.5s] ease-out group-hover:scale-105"
                 priority={idx < dishes.length}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-700" />
@@ -120,4 +120,3 @@ export function SignatureDishesCarousel({ dishes }: SignatureDishesCarouselProps
     </div>
   );
 }
-
