@@ -57,7 +57,7 @@ export default function ReservationPage() {
                 />
               </div>
               <div className="flex flex-col items-center gap-4 animate-fade-in">
-                <span className="text-[11px] font-bold uppercase tracking-[0.6em] text-primary-400">Your Experience</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.6em] text-primary-400">Ihr Erlebnis</span>
                 <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
               </div>
               <h1 className="font-serif text-6xl md:text-8xl font-bold text-white tracking-tighter">Reservierung</h1>
@@ -141,6 +141,16 @@ export default function ReservationPage() {
             ) : (
               <NativeReservationForm />
             )}
+
+            <div className="mx-auto w-full max-w-sm rounded-[1.75rem] border border-white/10 bg-black/85 p-3 shadow-2xl">
+              <Image
+                src="/images/2026/02/wir-muessen-draussen-bleiben.webp"
+                alt="Hinweis für Gäste"
+                width={720}
+                height={960}
+                className="h-auto w-full rounded-[1.2rem] object-contain"
+              />
+            </div>
 
             <div className="grid md:grid-cols-2 gap-8 pt-8">
               <div className="bg-white/[0.03] backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/5 space-y-6 group hover:bg-white/[0.05] transition-all duration-500">
