@@ -1,32 +1,26 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
 import { getMagazinCategories, getPaginatedMagazinPosts } from '@/lib/cms/queries';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
-import { CategoryIntroBlock } from '@/components/magazin/CategoryIntroBlock';
 import { MagazinPostCard } from '@/components/magazin/PostCard';
 import { MagazinPagination } from '@/components/magazin/Pagination';
-import { MAGAZIN_CATEGORY_DEFINITIONS } from '@/lib/magazin/shared';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
-export const metadata: Metadata = buildMetadata({
-  title: 'Magazin Bad Saarow',
-  description:
-    'Magazin des Carpe Diem Bad Saarow mit lokalen Restaurant- und Ausflugsthemen: Gerichte, Events, News und Bad Saarow Tipps.',
-  path: '/magazin',
-});
+type MagazinSearchParams = {
+  q?: string;
+  kategorie?: string;
+  seite?: string;
+};
 
-function buildMagazinHref(input: { page?: number; search?: string; categorySlug?: string }) {
+function buildMagazinHref(input: { page?: number; search?: string }) {
   const params = new URLSearchParams();
 
   if (input.search) {
     params.set('q', input.search);
-  }
-
-  if (input.categorySlug) {
-    params.set('kategorie', input.categorySlug);
   }
 
   if (input.page && input.page > 1) {
@@ -37,29 +31,65 @@ function buildMagazinHref(input: { page?: number; search?: string; categorySlug?
   return query ? `/magazin?${query}` : '/magazin';
 }
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<MagazinSearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const search = params.q?.trim() || '';
+  const page = Math.max(1, Number(params.seite || '1') || 1);
+  const hasQueryVariant = Boolean(search || params.kategorie?.trim() || page > 1);
+
+  return buildMetadata({
+    title: search ? `Magazin Suche: ${search}` : 'Magazin Bad Saarow',
+    description: search
+      ? `Suchergebnisse im Carpe Diem Magazin für "${search}" mit Beiträgen zu Bad Saarow, Restaurant, Gerichten und Events.`
+      : 'Magazin des Carpe Diem Bad Saarow mit lokalen Restaurant- und Ausflugsthemen: Gerichte, Events, News und Bad Saarow Tipps.',
+    path: '/magazin',
+    index: !hasQueryVariant,
+    follow: true,
+  });
+}
+
 export default async function MagazinPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; kategorie?: string; seite?: string }>;
+  searchParams: Promise<MagazinSearchParams>;
 }) {
   const params = await searchParams;
   const search = params.q?.trim() || '';
   const requestedCategorySlug = params.kategorie?.trim() || '';
   const page = Math.max(1, Number(params.seite || '1') || 1);
-  const defaultCategorySlug = MAGAZIN_CATEGORY_DEFINITIONS[0].slug;
-  const categorySlug = requestedCategorySlug || (!search ? defaultCategorySlug : '');
+
+  if (requestedCategorySlug) {
+    const redirectParams = new URLSearchParams();
+
+    if (search) {
+      redirectParams.set('q', search);
+    }
+
+    if (page > 1) {
+      redirectParams.set('seite', String(page));
+    }
+
+    const redirectQuery = redirectParams.toString();
+    redirect(`/magazin/kategorie/${requestedCategorySlug}${redirectQuery ? `?${redirectQuery}` : ''}`);
+  }
 
   const [categories, posts] = await Promise.all([
     getMagazinCategories(),
     getPaginatedMagazinPosts({
       search,
-      categorySlug,
       page,
     }),
   ]);
 
-  const activeCategory = categories.find((category) => category.slug === categorySlug) || null;
-  const isDefaultListing = !search && !categorySlug && page === 1;
+  if (page > 1 && posts.items.length === 0) {
+    notFound();
+  }
+
+  const isDefaultListing = !search && page === 1;
   const featuredPost = isDefaultListing ? posts.items[0] || null : null;
   const regularPosts = featuredPost ? posts.items.slice(1) : posts.items;
 
@@ -76,9 +106,9 @@ export default async function MagazinPage({
           </header>
 
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur">
-            <form action="/magazin" className="grid gap-4 lg:grid-cols-[1fr_260px_auto]">
+            <form action="/magazin" className="grid gap-4 lg:grid-cols-[1fr_auto]">
               <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Suche</span>
+                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Suche im Magazin</span>
                 <input
                   type="search"
                   name="q"
@@ -88,30 +118,14 @@ export default async function MagazinPage({
                 />
               </label>
 
-              <label className="block space-y-1">
-                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Kategorie</span>
-                <select
-                  name="kategorie"
-                  defaultValue={categorySlug}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white"
-                >
-                  <option value="">Alle Kategorien</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
               <div className="flex items-end gap-3">
                 <button
                   type="submit"
                   className="w-full rounded-full bg-primary-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white"
                 >
-                  Filtern
+                  Suchen
                 </button>
-                {(search || categorySlug) ? (
+                {search ? (
                   <Link
                     href="/magazin"
                     className="rounded-full border border-white/15 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
@@ -126,15 +140,8 @@ export default async function MagazinPage({
               {categories.map((category) => (
                 <Link
                   key={category.id}
-                  href={buildMagazinHref({
-                    categorySlug: category.slug === categorySlug ? undefined : category.slug,
-                    search,
-                  })}
-                  className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] ${
-                    category.slug === categorySlug
-                      ? 'border-primary-400/50 bg-primary-500/15 text-primary-100'
-                      : 'border-white/15 text-white/85 hover:border-primary-400/40'
-                  }`}
+                  href={`/magazin/kategorie/${category.slug}`}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/85 hover:border-primary-400/40"
                 >
                   {category.name}
                 </Link>
@@ -142,16 +149,12 @@ export default async function MagazinPage({
             </div>
           </section>
 
-          {activeCategory?.introIsEnabled ? (
-            <CategoryIntroBlock
-              headline={activeCategory.introHeadline}
-              content={activeCategory.introContent}
-              media={activeCategory.introMedia}
-              primaryLabel={activeCategory.introPrimaryCtaLabel}
-              primaryHref={activeCategory.introPrimaryCtaHref}
-              secondaryLabel={activeCategory.introSecondaryCtaLabel}
-              secondaryHref={activeCategory.introSecondaryCtaHref}
-            />
+          {search ? (
+            <div className="rounded-[2rem] border border-primary-500/20 bg-primary-500/8 px-5 py-4 text-sm text-primary-100">
+              {posts.total > 0
+                ? `${posts.total} Beiträge gefunden für „${search}“.`
+                : `Keine Beiträge gefunden für „${search}“.`}
+            </div>
           ) : null}
 
           {posts.total > 0 ? (
@@ -225,12 +228,18 @@ export default async function MagazinPage({
                   buildMagazinHref({
                     page: targetPage,
                     search,
-                    categorySlug,
                   })
                 }
               />
             </div>
-          ) : null}
+          ) : (
+            <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur">
+              <h2 className="font-blog text-2xl font-semibold text-white">Keine passenden Beiträge gefunden</h2>
+              <p className="mt-3 text-accent-200">
+                Versuchen Sie einen allgemeineren Suchbegriff oder wechseln Sie direkt in eine der Magazin-Kategorien.
+              </p>
+            </section>
+          )}
         </div>
       </div>
     </div>

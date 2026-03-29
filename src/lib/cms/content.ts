@@ -12,6 +12,7 @@ import {
 const WORDS_PER_MINUTE = 220;
 const TAG_LIMIT = 8;
 const PUBLISHED_EXCERPT_MIN = 80;
+const PUBLISHED_CONTENT_MIN = 900;
 
 const STOP_WORDS = new Set([
   'a',
@@ -393,6 +394,10 @@ export async function upsertArticle(input: UpsertArticleInput) {
     if (input.status === ContentStatus.PUBLISHED) {
       if (!safeExcerpt || safeExcerpt.length < PUBLISHED_EXCERPT_MIN) {
         throw new Error(`Published posts require an excerpt with at least ${PUBLISHED_EXCERPT_MIN} characters.`);
+      }
+
+      if (safeContent.length < PUBLISHED_CONTENT_MIN) {
+        throw new Error(`Published posts require at least ${PUBLISHED_CONTENT_MIN} characters of body copy.`);
       }
 
       if (!input.coverImageId) {

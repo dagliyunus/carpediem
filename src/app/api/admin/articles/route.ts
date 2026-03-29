@@ -4,7 +4,9 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { ensureArticleSeoDefaults } from '@/lib/cms/article-seo';
 import { upsertArticle } from '@/lib/cms/content';
+import { revalidatePublicMagazin } from '@/lib/cms/revalidation';
 
 const createSchema = z.object({
   title: z.string().min(2).max(160),
@@ -134,6 +136,8 @@ export async function POST(req: NextRequest) {
       authorId: admin.id,
     });
 
+    await ensureArticleSeoDefaults(article.id);
+
     await recordAuditLog({
       actorId: admin.id,
       action: 'article.created',
@@ -144,6 +148,8 @@ export async function POST(req: NextRequest) {
         status: article.status,
       },
     });
+
+    revalidatePublicMagazin([`/magazin/${article.slug}`]);
 
     return NextResponse.json({ item: article }, { status: 201 });
   } catch (error) {

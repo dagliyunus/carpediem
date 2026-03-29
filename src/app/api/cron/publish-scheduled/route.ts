@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ensureArticleSeoDefaults } from '@/lib/cms/article-seo';
+import { revalidatePublicMagazin } from '@/lib/cms/revalidation';
 import { publishDueScheduledArticles } from '@/lib/cms/scheduler';
 
 export const runtime = 'nodejs';
@@ -20,6 +22,12 @@ async function handleCron(req: NextRequest) {
   }
 
   const result = await publishDueScheduledArticles();
+
+  if (result.publishedCount > 0) {
+    await Promise.all(result.publishedIds.map((id) => ensureArticleSeoDefaults(id)));
+    revalidatePublicMagazin();
+  }
+
   return NextResponse.json(result);
 }
 

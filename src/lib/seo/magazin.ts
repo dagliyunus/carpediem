@@ -13,9 +13,15 @@ type TagMap = {
   };
 };
 
+type AuthorLike = {
+  name: string;
+};
+
 type SeoWithImage = SeoMeta & {
   ogImage?: Pick<MediaAsset, 'id' | 'url' | 'altText'> | null;
 };
+
+type DateInput = Date | string | null | undefined;
 
 type PostLike = {
   id: string;
@@ -24,17 +30,119 @@ type PostLike = {
   excerpt: string | null;
   content: string;
   locationFocus: string | null;
-  eventStartAt: Date | null;
-  eventEndAt: Date | null;
+  eventStartAt: Date | string | null;
+  eventEndAt: Date | string | null;
   eventVenue: string | null;
   eventUrl: string | null;
-  publishedAt: Date | null;
-  updatedAt: Date;
+  publishedAt: Date | string | null;
+  updatedAt: Date | string;
   coverImage?: Pick<MediaAsset, 'id' | 'url' | 'altText'> | null;
   categories: CategoryMap[];
   tags: TagMap[];
+  author?: AuthorLike | null;
   seo?: SeoWithImage | null;
 };
+
+function parseDate(input: DateInput) {
+  if (!input) return null;
+
+  const date = input instanceof Date ? input : new Date(input);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function clampText(input: string, maxLength: number) {
+  const normalized = input.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) return normalized;
+
+  const slice = normalized.slice(0, maxLength);
+  const boundary = slice.lastIndexOf(' ');
+
+  return `${(boundary > maxLength * 0.6 ? slice.slice(0, boundary) : slice).trimEnd()}...`;
+}
+
+function formatPublishedDate(date: DateInput) {
+  const parsedDate = parseDate(date);
+
+  if (!parsedDate) return null;
+
+  return new Intl.DateTimeFormat('de-DE', {
+    dateStyle: 'long',
+    timeZone: 'Europe/Berlin',
+  }).format(parsedDate);
+}
+
+function buildDefaultMagazinTitle(post: PostLike, primaryCategory: ReturnType<typeof getPrimaryCategory>) {
+  if (primaryCategory?.slug === 'bad-saarow-tipps' && post.locationFocus) {
+    return `${post.title} | ${post.locationFocus} in Bad Saarow`;
+  }
+
+  if (primaryCategory?.slug === 'events-live-musik') {
+    return `${post.title} | Live-Musik in Bad Saarow`;
+  }
+
+  if (primaryCategory?.slug === 'gerichte-zutaten') {
+    return `${post.title} | Mediterrane Küche in Bad Saarow`;
+  }
+
+  return `${post.title} | Carpe Diem Bad Saarow`;
+}
+
+function buildDefaultMagazinDescription(post: PostLike, primaryCategory: ReturnType<typeof getPrimaryCategory>) {
+  const excerpt = createMagazinExcerpt(post.content, post.excerpt, 150);
+  const publishedDate = formatPublishedDate(post.publishedAt);
+
+  if (primaryCategory?.slug === 'bad-saarow-tipps') {
+    const locationLine = post.locationFocus
+      ? `Fokus: ${post.locationFocus} in Bad Saarow.`
+      : 'Lokal eingeordnet für einen entspannten Aufenthalt in Bad Saarow.';
+    return clampText([excerpt, locationLine].filter(Boolean).join(' '), 180);
+  }
+
+  if (primaryCategory?.slug === 'events-live-musik') {
+    return clampText(
+      [excerpt, publishedDate ? `Veröffentlicht am ${publishedDate}.` : null, 'Mehr über Atmosphäre, Live-Musik und Abende im Carpe Diem Bad Saarow.']
+        .filter(Boolean)
+        .join(' '),
+      180
+    );
+  }
+
+  if (primaryCategory?.slug === 'gerichte-zutaten') {
+    return clampText(
+      [excerpt, 'Einblick in mediterrane Küche, saisonale Zutaten und den Restaurantalltag im Carpe Diem Bad Saarow.']
+        .filter(Boolean)
+        .join(' '),
+      180
+    );
+  }
+
+  return clampText(
+    [excerpt, publishedDate ? `Veröffentlicht am ${publishedDate}.` : null, 'Magazinbeitrag aus dem Carpe Diem Bad Saarow mit lokalem Restaurantbezug.']
+      .filter(Boolean)
+      .join(' '),
+    180
+  );
+}
+
+export function buildGeneratedMagazinPostSeo(post: PostLike) {
+  const primaryCategory = getPrimaryCategory(post);
+  const canonical = `${siteConfig.seo.domain}/magazin/${post.slug}`;
+  const ogImage =
+    (post.coverImage ? `${siteConfig.seo.domain}${getPublicMediaUrl(post.coverImage.id, post.coverImage.url)}` : null) ||
+    `${siteConfig.seo.domain}/images/outside_night.webp`;
+  const title = buildDefaultMagazinTitle(post, primaryCategory);
+  const description = buildDefaultMagazinDescription(post, primaryCategory);
+
+  return {
+    title,
+    description,
+    canonical,
+    ogTitle: title,
+    ogDescription: description,
+    ogImage,
+    ogImageAlt: post.coverImage?.altText || post.title,
+  };
+}
 
 export function stripRichText(input: string) {
   return input
@@ -58,32 +166,18 @@ export function getPrimaryCategory(post: Pick<PostLike, 'categories'>) {
 }
 
 export function buildMagazinPostSeo(post: PostLike) {
-  const primaryCategory = getPrimaryCategory(post);
-  const defaultTitle =
-    primaryCategory?.slug === 'bad-saarow-tipps' && post.locationFocus
-      ? `${post.title} - ${post.locationFocus} | Carpe Diem Bad Saarow`
-      : `${post.title} | Carpe Diem Bad Saarow`;
-  const defaultDescription =
-    primaryCategory?.slug === 'bad-saarow-tipps' && post.locationFocus
-      ? `${post.title} mit Fokus auf ${post.locationFocus} in Bad Saarow: Tipps für Essen, Trinken und lokale Erlebnisse vor oder nach Ihrem Besuch im Carpe Diem.`
-      : createMagazinExcerpt(post.content, post.excerpt) ||
-        'Magazinbeitrag aus dem Carpe Diem Bad Saarow mit lokalem Restaurantbezug.';
-  const canonical = post.seo?.canonicalUrl?.trim() || `${siteConfig.seo.domain}/magazin/${post.slug}`;
-  const ogImage =
-    post.seo?.ogImage?.url ||
-    (post.coverImage ? `${siteConfig.seo.domain}${getPublicMediaUrl(post.coverImage.id, post.coverImage.url)}` : null) ||
-    `${siteConfig.seo.domain}/images/outside_night.webp`;
-  const title = post.seo?.title?.trim() || defaultTitle;
-  const description = post.seo?.description?.trim() || defaultDescription;
+  const generated = buildGeneratedMagazinPostSeo(post);
+  const title = post.seo?.title?.trim() || generated.title;
+  const description = post.seo?.description?.trim() || generated.description;
 
   return {
     title,
     description,
-    canonical,
+    canonical: post.seo?.canonicalUrl?.trim() || generated.canonical,
     ogTitle: post.seo?.openGraphTitle?.trim() || title,
     ogDescription: post.seo?.openGraphDescription?.trim() || description,
-    ogImage,
-    ogImageAlt: post.seo?.ogImage?.altText || post.coverImage?.altText || post.title,
+    ogImage: post.seo?.ogImage?.url || generated.ogImage,
+    ogImageAlt: post.seo?.ogImage?.altText || generated.ogImageAlt,
   };
 }
 
@@ -103,6 +197,7 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
 export function buildArticleSchema(post: PostLike) {
   const seo = buildMagazinPostSeo(post);
   const primaryCategory = getPrimaryCategory(post);
+  const publishedDate = formatPublishedDate(post.publishedAt);
   const keywords = Array.from(
     new Set([
       ...(post.tags || []).map((tag) => tag.tag.name),
@@ -118,12 +213,21 @@ export function buildArticleSchema(post: PostLike) {
     '@type': 'BlogPosting',
     headline: post.title,
     description: seo.description,
-    datePublished: post.publishedAt?.toISOString(),
-    dateModified: post.updatedAt.toISOString(),
+    inLanguage: 'de-DE',
+    datePublished: parseDate(post.publishedAt)?.toISOString(),
+    dateModified: parseDate(post.updatedAt)?.toISOString(),
     mainEntityOfPage: seo.canonical,
     image: [seo.ogImage],
     articleSection: primaryCategory?.name || 'Magazin',
     keywords,
+    wordCount: stripRichText(post.content).split(/\s+/).filter(Boolean).length,
+    isAccessibleForFree: true,
+    author: post.author
+      ? {
+          '@type': 'Person',
+          name: post.author.name,
+        }
+      : undefined,
     about: post.locationFocus
       ? [
           {
@@ -142,7 +246,12 @@ export function buildArticleSchema(post: PostLike) {
       '@type': 'Restaurant',
       name: siteConfig.name,
       url: siteConfig.seo.domain,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteConfig.seo.domain}/images/icons/favicon-logo.png`,
+      },
     },
+    alternativeHeadline: publishedDate ? `Veröffentlicht am ${publishedDate}` : undefined,
   };
 }
 
@@ -159,8 +268,8 @@ export function buildEventSchema(post: PostLike) {
     '@type': 'Event',
     name: post.title,
     description: seo.description,
-    startDate: post.eventStartAt.toISOString(),
-    endDate: post.eventEndAt?.toISOString(),
+    startDate: parseDate(post.eventStartAt)?.toISOString(),
+    endDate: parseDate(post.eventEndAt)?.toISOString(),
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: 'https://schema.org/EventScheduled',
     image: [seo.ogImage],

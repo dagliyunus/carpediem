@@ -5,7 +5,7 @@ import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-gua
 import { db } from '@/lib/db';
 import { upsertSeoMeta } from '@/lib/cms/content';
 import { recordAuditLog } from '@/lib/admin/audit';
-import { revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
+import { revalidatePublicMagazin, revalidatePublicSiteRuntime } from '@/lib/cms/revalidation';
 
 const seoSchema = z.object({
   targetType: z.nativeEnum(SeoTargetType),
@@ -104,7 +104,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    revalidatePublicSiteRuntime();
+    if (item.targetType === SeoTargetType.ARTICLE) {
+      const article = await db.article.findUnique({
+        where: { id: item.targetId },
+        select: { slug: true },
+      });
+
+      revalidatePublicMagazin(article?.slug ? [`/magazin/${article.slug}`] : []);
+    } else {
+      revalidatePublicSiteRuntime();
+    }
 
     return NextResponse.json({ item });
   } catch (error) {

@@ -13,7 +13,12 @@ type Params = {
   slug: string;
 };
 
-export const dynamic = 'force-dynamic';
+type CategorySearchParams = {
+  q?: string;
+  seite?: string;
+};
+
+export const revalidate = 3600;
 
 function createDescription(input?: string | null) {
   if (!input) {
@@ -23,12 +28,19 @@ function createDescription(input?: string | null) {
   return input.replace(/\s+/g, ' ').trim().slice(0, 180);
 }
 
-function buildCategoryHref(slug: string, page: number) {
-  if (page <= 1) {
-    return `/magazin/kategorie/${slug}`;
+function buildCategoryHref(slug: string, input?: { page?: number; search?: string }) {
+  const params = new URLSearchParams();
+
+  if (input?.search) {
+    params.set('q', input.search);
   }
 
-  return `/magazin/kategorie/${slug}?seite=${page}`;
+  if (input?.page && input.page > 1) {
+    params.set('seite', String(input.page));
+  }
+
+  const query = params.toString();
+  return query ? `/magazin/kategorie/${slug}?${query}` : `/magazin/kategorie/${slug}`;
 }
 
 export async function generateStaticParams() {
@@ -40,9 +52,17 @@ export async function generateStaticParams() {
   ];
 }
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<CategorySearchParams>;
+}): Promise<Metadata> {
+  const [{ slug }, searchInput] = await Promise.all([params, searchParams]);
   const category = await getMagazinCategoryBySlug(slug);
+  const search = searchInput.q?.trim() || '';
+  const page = Math.max(1, Number(searchInput.seite || '1') || 1);
 
   if (!category) {
     return {
@@ -54,15 +74,22 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     };
   }
 
-  const title = `${category.name} | Magazin | Carpe Diem Bad Saarow`;
+  const title = search
+    ? `${category.name}: Suche nach ${search}`
+    : `${category.name} | Magazin | Carpe Diem Bad Saarow`;
   const description = createDescription(category.introContent);
   const canonical = `${siteConfig.seo.domain}/magazin/kategorie/${category.slug}`;
+  const shouldIndex = !search && page === 1;
 
   return {
     title,
     description,
     alternates: {
       canonical,
+    },
+    robots: {
+      index: shouldIndex,
+      follow: true,
     },
     openGraph: {
       type: 'website',
@@ -83,11 +110,11 @@ export default async function MagazinCategoryPage({
   searchParams,
 }: {
   params: Promise<Params>;
-  searchParams: Promise<{ seite?: string }>;
+  searchParams: Promise<CategorySearchParams>;
 }) {
-  const { slug } = await params;
-  const { seite } = await searchParams;
-  const page = Math.max(1, Number(seite || '1') || 1);
+  const [{ slug }, queryInput] = await Promise.all([params, searchParams]);
+  const search = queryInput.q?.trim() || '';
+  const page = Math.max(1, Number(queryInput.seite || '1') || 1);
   const category = await getMagazinCategoryBySlug(slug);
 
   if (!category) {
@@ -96,8 +123,13 @@ export default async function MagazinCategoryPage({
 
   const posts = await getPaginatedMagazinPosts({
     categorySlug: category.slug,
+    search,
     page,
   });
+
+  if (page > 1 && posts.items.length === 0) {
+    notFound();
+  }
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: 'Startseite', url: siteConfig.seo.domain },
@@ -122,7 +154,47 @@ export default async function MagazinCategoryPage({
             <h1 className="font-serif text-5xl font-bold tracking-tight text-white md:text-7xl">{category.name}</h1>
           </header>
 
-          {category.introIsEnabled ? (
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur">
+            <form action={`/magazin/kategorie/${category.slug}`} className="grid gap-4 lg:grid-cols-[1fr_auto]">
+              <label className="block space-y-1">
+                <span className="text-xs uppercase tracking-[0.16em] text-accent-300">Suche in dieser Kategorie</span>
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={search}
+                  placeholder={`z. B. ${category.name}`}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white"
+                />
+              </label>
+
+              <div className="flex items-end gap-3">
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-primary-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white"
+                >
+                  Suchen
+                </button>
+                {search ? (
+                  <Link
+                    href={`/magazin/kategorie/${category.slug}`}
+                    className="rounded-full border border-white/15 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white/90"
+                  >
+                    Reset
+                  </Link>
+                ) : null}
+              </div>
+            </form>
+          </section>
+
+          {search ? (
+            <div className="rounded-[2rem] border border-primary-500/20 bg-primary-500/8 px-5 py-4 text-sm text-primary-100">
+              {posts.total > 0
+                ? `${posts.total} Beiträge gefunden in „${category.name}“ für „${search}“.`
+                : `Keine Beiträge gefunden in „${category.name}“ für „${search}“.`}
+            </div>
+          ) : null}
+
+          {!search && category.introIsEnabled ? (
             <CategoryIntroBlock
               headline={category.introHeadline}
               content={category.introContent}
@@ -145,10 +217,22 @@ export default async function MagazinCategoryPage({
               <MagazinPagination
                 page={posts.page}
                 pageCount={posts.pageCount}
-                buildHref={(targetPage) => buildCategoryHref(category.slug, targetPage)}
+                buildHref={(targetPage) =>
+                  buildCategoryHref(category.slug, {
+                    page: targetPage,
+                    search,
+                  })
+                }
               />
             </div>
-          ) : null}
+          ) : (
+            <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur">
+              <h2 className="font-blog text-2xl font-semibold text-white">Keine passenden Beiträge gefunden</h2>
+              <p className="mt-3 text-accent-200">
+                Nutzen Sie einen allgemeineren Suchbegriff oder wechseln Sie zurück zur kompletten Magazin-Übersicht.
+              </p>
+            </section>
+          )}
         </div>
       </div>
     </div>

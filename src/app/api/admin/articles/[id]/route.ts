@@ -4,7 +4,9 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { ensureArticleSeoDefaults } from '@/lib/cms/article-seo';
 import { upsertArticle } from '@/lib/cms/content';
+import { revalidatePublicMagazin } from '@/lib/cms/revalidation';
 
 const updateSchema = z.object({
   title: z.string().min(2).max(160),
@@ -102,6 +104,10 @@ export async function PATCH(
   if (!admin) return unauthorizedResponse();
 
   const { id } = await params;
+  const previousArticle = await db.article.findUnique({
+    where: { id },
+    select: { slug: true },
+  });
   const payload = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(payload);
 
@@ -116,6 +122,8 @@ export async function PATCH(
       authorId: admin.id,
     });
 
+    await ensureArticleSeoDefaults(article.id);
+
     await recordAuditLog({
       actorId: admin.id,
       action: 'article.updated',
@@ -126,6 +134,12 @@ export async function PATCH(
         status: article.status,
       },
     });
+
+    revalidatePublicMagazin(
+      [previousArticle?.slug, article.slug]
+        .filter(Boolean)
+        .map((slug) => `/magazin/${slug}`)
+    );
 
     return NextResponse.json({ item: article });
   } catch (error) {
@@ -152,6 +166,12 @@ export async function DELETE(
     return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   }
 
+  await db.seoMeta.deleteMany({
+    where: {
+      targetType: SeoTargetType.ARTICLE,
+      targetId: article.id,
+    },
+  });
   await db.article.delete({ where: { id } });
 
   await recordAuditLog({
@@ -161,6 +181,8 @@ export async function DELETE(
     entityId: id,
     payload: { slug: article.slug },
   });
+
+  revalidatePublicMagazin([`/magazin/${article.slug}`]);
 
   return NextResponse.json({ ok: true });
 }

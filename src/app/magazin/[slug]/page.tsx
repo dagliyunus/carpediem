@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ContentStatus } from '@prisma/client';
-import { getMagazinPostBySlug, getRelatedMagazinPosts } from '@/lib/cms/queries';
+import { getMagazinPostBySlug, getPublishedMagazinPostSlugs, getRelatedMagazinPosts } from '@/lib/cms/queries';
 import { siteConfig } from '@/config/siteConfig';
 import { getPublicMediaUrl } from '@/lib/cms/public-media';
 import { StructuredDataScript } from '@/components/seo/StructuredDataScript';
@@ -15,7 +15,30 @@ type Params = {
   slug: string;
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+function parseDate(input?: Date | string | null) {
+  if (!input) return null;
+
+  const date = input instanceof Date ? input : new Date(input);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatPublishedDate(date?: Date | string | null) {
+  const parsedDate = parseDate(date);
+
+  if (!parsedDate) return 'Entwurf';
+
+  return new Intl.DateTimeFormat('de-DE', {
+    dateStyle: 'long',
+    timeZone: 'Europe/Berlin',
+  }).format(parsedDate);
+}
+
+export async function generateStaticParams() {
+  const posts = await getPublishedMagazinPostSlugs();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
@@ -32,6 +55,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   const seo = buildMagazinPostSeo(post);
+  const publishedDateTime = parseDate(post.publishedAt)?.toISOString();
+  const modifiedDateTime = parseDate(post.updatedAt)?.toISOString();
 
   return {
     title: seo.title,
@@ -48,6 +73,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       title: seo.ogTitle,
       description: seo.ogDescription,
       url: seo.canonical,
+      publishedTime: publishedDateTime,
+      modifiedTime: modifiedDateTime,
+      authors: post.author?.name ? [post.author.name] : undefined,
       images: [
         {
           url: seo.ogImage,
@@ -79,7 +107,7 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
     categorySlug: primaryCategory?.slug,
     take: 3,
   });
-  const formattedDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('de-DE') : '-';
+  const publishedDate = formatPublishedDate(post.publishedAt);
   const galleryMedia = post.mediaLinks.filter((item) => item.fieldKey === 'gallery');
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: 'Startseite', url: siteConfig.seo.domain },
@@ -96,6 +124,7 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
   ]);
   const articleSchema = buildArticleSchema(post);
   const eventSchema = buildEventSchema(post);
+  const publishedDateTime = parseDate(post.publishedAt)?.toISOString();
 
   return (
     <div className="pb-24 pt-32">
@@ -123,14 +152,14 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
                 <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
                   <div className="font-blog mb-4 flex flex-wrap items-center gap-3 text-sm font-medium text-primary-200">
                     {primaryCategory ? (
-                      <>
-                        <Link href={`/magazin/kategorie/${primaryCategory.slug}`} className="text-primary-200">
-                          {primaryCategory.name}
-                        </Link>
-                        <span>•</span>
-                      </>
+                      <Link href={`/magazin/kategorie/${primaryCategory.slug}`} className="text-primary-200">
+                        {primaryCategory.name}
+                      </Link>
                     ) : null}
-                    <span>{formattedDate}</span>
+                    <span>•</span>
+                    <time dateTime={publishedDateTime} aria-label={`Veröffentlicht am ${publishedDate}`}>
+                      Veröffentlicht am {publishedDate}
+                    </time>
                     <span>•</span>
                     <span>{post.readTimeMinutes || 1} Min. Lesezeit</span>
                     {post.author ? (
@@ -152,9 +181,18 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
                     {primaryCategory.name}
                   </Link>
                 ) : null}
-                <span>{formattedDate}</span>
+                <span>•</span>
+                <time dateTime={publishedDateTime} aria-label={`Veröffentlicht am ${publishedDate}`}>
+                  Veröffentlicht am {publishedDate}
+                </time>
                 <span>•</span>
                 <span>{post.readTimeMinutes || 1} Min. Lesezeit</span>
+                {post.author ? (
+                  <>
+                    <span>•</span>
+                    <span>{post.author.name}</span>
+                  </>
+                ) : null}
               </div>
               <h1 className="font-blog text-5xl font-semibold leading-[1.02] text-white md:text-7xl">{post.title}</h1>
             </div>
@@ -279,21 +317,21 @@ export default async function MagazinDetailPage({ params }: { params: Promise<Pa
           </div>
 
           {relatedPosts.length > 0 ? (
-            <section className="space-y-6">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary-400">Mehr aus derselben Kategorie</p>
-                  <h2 className="font-blog text-3xl font-semibold text-white">Verwandte Beitraege</h2>
-                </div>
+            <section className="space-y-5">
+              <div className="flex items-center justify-between">
+                <h2 className="font-blog text-3xl font-semibold text-white">Mehr aus dieser Kategorie</h2>
                 {primaryCategory ? (
-                  <Link href={`/magazin/kategorie/${primaryCategory.slug}`} className="text-sm font-semibold text-primary-300">
-                    Alle anzeigen
+                  <Link
+                    href={`/magazin/kategorie/${primaryCategory.slug}`}
+                    className="text-sm font-medium text-primary-300"
+                  >
+                    Alle Beiträge ansehen
                   </Link>
                 ) : null}
               </div>
               <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-                {relatedPosts.map((item) => (
-                  <MagazinPostCard key={item.id} post={item} />
+                {relatedPosts.map((relatedPost) => (
+                  <MagazinPostCard key={relatedPost.id} post={relatedPost} />
                 ))}
               </div>
             </section>

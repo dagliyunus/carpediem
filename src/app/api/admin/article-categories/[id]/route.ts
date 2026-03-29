@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAdminRequest, unauthorizedResponse } from '@/lib/admin/route-guard';
 import { db } from '@/lib/db';
 import { recordAuditLog } from '@/lib/admin/audit';
+import { revalidatePublicMagazin } from '@/lib/cms/revalidation';
 
 const patchSchema = z.object({
   introHeadline: z.string().max(220).nullable().optional(),
@@ -78,6 +79,8 @@ export async function PATCH(
         slug: category.slug,
       },
     });
+
+    revalidatePublicMagazin([`/magazin/kategorie/${category.slug}`]);
 
     return NextResponse.json({ item: category });
   } catch (error) {

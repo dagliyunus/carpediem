@@ -3,9 +3,10 @@ import { unstable_cache, unstable_noStore as noStore } from 'next/cache';
 import { db } from '@/lib/db';
 import { getOrCreateSiteSetting } from '@/lib/cms/content';
 import { ensureMagazinCategories, MAGAZIN_CATEGORY_DEFINITIONS, MAGAZIN_POSTS_PER_PAGE, sortMagazinCategories } from '@/lib/cms/magazin';
-import { PUBLIC_PAGE_CONTENT_TAG } from '@/lib/cms/revalidation';
-import { publishDueScheduledArticles } from '@/lib/cms/scheduler';
+import { PUBLIC_MAGAZIN_CONTENT_TAG, PUBLIC_PAGE_CONTENT_TAG } from '@/lib/cms/revalidation';
 import { HOME_PAGE_SLUGS } from '@/lib/cms/page-slugs';
+
+const MAGAZIN_CACHE_REVALIDATE_SECONDS = 3600;
 
 const articleCardInclude = {
   coverImage: {
@@ -51,14 +52,6 @@ const articleCardInclude = {
     },
   },
 } as const;
-
-async function publishDueScheduledArticlesSafe() {
-  try {
-    await publishDueScheduledArticles();
-  } catch {
-    // Keep content queries resilient even if scheduler check fails.
-  }
-}
 
 function buildPublishedArticleWhere(input?: { search?: string; categorySlug?: string }) {
   const search = input?.search?.trim();
@@ -112,14 +105,19 @@ function buildPublishedArticleWhere(input?: { search?: string; categorySlug?: st
 }
 
 export async function getPublishedMagazinPosts() {
-  noStore();
-  await publishDueScheduledArticlesSafe();
-
-  return db.article.findMany({
-    where: buildPublishedArticleWhere(),
-    include: articleCardInclude,
-    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-  });
+  return unstable_cache(
+    async () =>
+      db.article.findMany({
+        where: buildPublishedArticleWhere(),
+        include: articleCardInclude,
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      }),
+    ['magazin-published-posts'],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getPaginatedMagazinPosts(input?: {
@@ -128,136 +126,168 @@ export async function getPaginatedMagazinPosts(input?: {
   page?: number;
   pageSize?: number;
 }) {
-  noStore();
-  await publishDueScheduledArticlesSafe();
   await ensureMagazinCategories();
 
+  const search = input?.search?.trim() || '';
+  const categorySlug = input?.categorySlug?.trim() || '';
   const pageSize = input?.pageSize || MAGAZIN_POSTS_PER_PAGE;
   const page = Math.max(1, input?.page || 1);
-  const where = buildPublishedArticleWhere({
-    search: input?.search,
-    categorySlug: input?.categorySlug,
-  });
 
-  const [total, items] = await Promise.all([
-    db.article.count({ where }),
-    db.article.findMany({
-      where,
-      include: articleCardInclude,
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-  ]);
+  return unstable_cache(
+    async () => {
+      const where = buildPublishedArticleWhere({
+        search,
+        categorySlug,
+      });
 
-  return {
-    items,
-    total,
-    page,
-    pageSize,
-    pageCount: Math.max(1, Math.ceil(total / pageSize)),
-  };
+      const [total, items] = await Promise.all([
+        db.article.count({ where }),
+        db.article.findMany({
+          where,
+          include: articleCardInclude,
+          orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+      ]);
+
+      return {
+        items,
+        total,
+        page,
+        pageSize,
+        pageCount: Math.max(1, Math.ceil(total / pageSize)),
+      };
+    },
+    ['magazin-paginated-posts', search || '_', categorySlug || '_', String(page), String(pageSize)],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getMagazinCategories() {
-  noStore();
   await ensureMagazinCategories();
 
-  const categories = await db.articleCategory.findMany({
-    where: {
-      slug: {
-        in: MAGAZIN_CATEGORY_DEFINITIONS.map((item) => item.slug),
-      },
-    },
-    include: {
-      introMedia: {
-        select: {
-          id: true,
-          url: true,
-          altText: true,
-          filename: true,
-          mediaType: true,
-        },
-      },
-      articles: {
+  return unstable_cache(
+    async () => {
+      const categories = await db.articleCategory.findMany({
         where: {
-          article: {
-            status: ContentStatus.PUBLISHED,
-            publishedAt: {
-              lte: new Date(),
+          slug: {
+            in: MAGAZIN_CATEGORY_DEFINITIONS.map((item) => item.slug),
+          },
+        },
+        include: {
+          introMedia: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+              filename: true,
+              mediaType: true,
+            },
+          },
+          articles: {
+            where: {
+              article: {
+                status: ContentStatus.PUBLISHED,
+                publishedAt: {
+                  lte: new Date(),
+                },
+              },
+            },
+            select: {
+              id: true,
             },
           },
         },
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+      });
 
-  return sortMagazinCategories(categories);
+      return sortMagazinCategories(categories);
+    },
+    ['magazin-categories'],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getMagazinCategoryBySlug(slug: string) {
-  noStore();
   await ensureMagazinCategories();
 
-  const category = await db.articleCategory.findUnique({
-    where: { slug },
-    include: {
-      introMedia: {
-        select: {
-          id: true,
-          url: true,
-          altText: true,
-          filename: true,
-          mediaType: true,
+  return unstable_cache(
+    async () => {
+      const category = await db.articleCategory.findUnique({
+        where: { slug },
+        include: {
+          introMedia: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+              filename: true,
+              mediaType: true,
+            },
+          },
         },
-      },
+      });
+
+      if (!category) return null;
+      if (!MAGAZIN_CATEGORY_DEFINITIONS.some((item) => item.slug === category.slug)) return null;
+
+      return category;
     },
-  });
-
-  if (!category) return null;
-  if (!MAGAZIN_CATEGORY_DEFINITIONS.some((item) => item.slug === category.slug)) return null;
-
-  return category;
+    ['magazin-category', slug],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getMagazinPostBySlug(slug: string) {
-  noStore();
-  await publishDueScheduledArticlesSafe();
+  return unstable_cache(
+    async () => {
+      const post = await db.article.findUnique({
+        where: { slug },
+        include: articleCardInclude,
+      });
 
-  const post = await db.article.findUnique({
-    where: { slug },
-    include: articleCardInclude,
-  });
+      if (!post) {
+        return null;
+      }
 
-  if (!post) {
-    return null;
-  }
-
-  const seo = await db.seoMeta.findUnique({
-    where: {
-      targetType_targetId: {
-        targetType: SeoTargetType.ARTICLE,
-        targetId: post.id,
-      },
-    },
-    include: {
-      ogImage: {
-        select: {
-          id: true,
-          url: true,
-          altText: true,
+      const seo = await db.seoMeta.findUnique({
+        where: {
+          targetType_targetId: {
+            targetType: SeoTargetType.ARTICLE,
+            targetId: post.id,
+          },
         },
-      },
-    },
-  });
+        include: {
+          ogImage: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+            },
+          },
+        },
+      });
 
-  return {
-    ...post,
-    seo,
-  };
+      return {
+        ...post,
+        seo,
+      };
+    },
+    ['magazin-post', slug],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getRelatedMagazinPosts(input: {
@@ -265,26 +295,51 @@ export async function getRelatedMagazinPosts(input: {
   categorySlug?: string | null;
   take?: number;
 }) {
-  noStore();
-  await publishDueScheduledArticlesSafe();
-
   if (!input.categorySlug) {
     return [];
   }
 
-  return db.article.findMany({
-    where: {
-      ...buildPublishedArticleWhere({
-        categorySlug: input.categorySlug,
+  const take = input.take || 3;
+
+  return unstable_cache(
+    async () =>
+      db.article.findMany({
+        where: {
+          ...buildPublishedArticleWhere({
+            categorySlug: input.categorySlug || undefined,
+          }),
+          NOT: {
+            id: input.articleId,
+          },
+        },
+        include: articleCardInclude,
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+        take,
       }),
-      NOT: {
-        id: input.articleId,
-      },
-    },
-    include: articleCardInclude,
-    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-    take: input.take || 3,
-  });
+    ['magazin-related-posts', input.articleId, input.categorySlug, String(take)],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
+}
+
+export async function getPublishedMagazinPostSlugs() {
+  return unstable_cache(
+    async () =>
+      db.article.findMany({
+        where: buildPublishedArticleWhere(),
+        select: {
+          slug: true,
+        },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      }),
+    ['magazin-published-slugs'],
+    {
+      revalidate: MAGAZIN_CACHE_REVALIDATE_SECONDS,
+      tags: [PUBLIC_MAGAZIN_CONTENT_TAG],
+    }
+  )();
 }
 
 export async function getSiteCmsData() {
