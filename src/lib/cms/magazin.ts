@@ -33,6 +33,13 @@ export async function ensureMagazinCategories(client: Prisma.TransactionClient |
         where: { slug: category.slug },
         update: {
           name: category.name,
+          introHeadline: category.introHeadline,
+          introContent: category.introContent,
+          introPrimaryCtaLabel: category.introPrimaryCtaLabel,
+          introPrimaryCtaHref: category.introPrimaryCtaHref,
+          introSecondaryCtaLabel: category.introSecondaryCtaLabel,
+          introSecondaryCtaHref: category.introSecondaryCtaHref,
+          introIsEnabled: category.introIsEnabled,
         },
         create: {
           name: category.name,

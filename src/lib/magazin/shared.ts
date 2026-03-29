@@ -6,7 +6,7 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
     slug: 'gerichte-zutaten',
     introHeadline: 'Gerichte und Zutaten aus dem Carpe Diem in Bad Saarow',
     introContent:
-      'Hier zeigen wir mediterrane Teller, saisonale Zutaten und kulinarische Ideen aus unserer Küche in Bad Saarow. Wer nach Restaurant-Inspiration, frischem Fisch, Grillgerichten oder besonderen Aromen sucht, findet hier regelmäßig neue Einblicke.',
+      'In dieser Kategorie zeigen wir Gerichte, Zutaten und kleine Einblicke aus unserer Küche. Wer wissen möchte, was bei uns auf den Teller kommt und was uns geschmacklich wichtig ist, findet hier aktuelle Beiträge aus dem Carpe Diem in Bad Saarow.',
     introPrimaryCtaLabel: 'Jetzt reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Speisekarte ansehen',
@@ -19,7 +19,7 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
     slug: 'events-live-musik',
     introHeadline: 'Events und Live-Musik in Bad Saarow',
     introContent:
-      'Diese Kategorie sammelt Hinweise zu Live-Musik, Eventabenden und besonderen Restaurant-Momenten im Carpe Diem Bad Saarow. Ideal für alle, die Essen, Drinks und lokale Abendstimmung am Kurpark verbinden möchten.',
+      'Hier finden Sie Hinweise zu Live-Musik, besonderen Abenden und Veranstaltungen im Carpe Diem. Die Beiträge geben einen Überblick, was geplant ist und welche Atmosphäre Gäste bei uns erwarten können.',
     introPrimaryCtaLabel: 'Tisch reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Kontakt aufnehmen',
@@ -32,7 +32,7 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
     slug: 'news',
     introHeadline: 'News aus dem Carpe Diem und aus Bad Saarow',
     introContent:
-      'Hier erscheinen Neuigkeiten aus dem Restaurant sowie relevante Meldungen aus dem direkten Umfeld von Bad Saarow. Der Fokus bleibt lokal: Oeffnungszeiten, Aktionen, Kooperationen und Entwicklungen rund um unser Haus und die Umgebung.',
+      'Hier teilen wir Neuigkeiten aus dem Restaurant und aus dem direkten Umfeld in Bad Saarow. Dazu gehören Öffnungszeiten, Aktionen, Hinweise für Gäste und aktuelle Entwicklungen rund um unser Haus.',
     introPrimaryCtaLabel: 'Kontakt',
     introPrimaryCtaHref: '/kontakt',
     introSecondaryCtaLabel: 'Reservieren',
@@ -43,9 +43,9 @@ export const MAGAZIN_CATEGORY_DEFINITIONS = [
   {
     name: 'Bad Saarow Tipps',
     slug: 'bad-saarow-tipps',
-    introHeadline: 'Bad Saarow Tipps für Genuss, Ausflug und lokale Entdeckungen',
+    introHeadline: 'Bad Saarow Tipps für einen entspannten Aufenthalt',
     introContent:
-      'Diese SEO-Landingpage verbindet lokale Tipps in Bad Saarow mit Restaurant-Intent. Ob Saarow Therme, Kurpark, Scharmützelsee oder Tagesausflug: Hier finden Gäste Ideen, was sich vor oder nach dem Essen im Carpe Diem entdecken lässt.',
+      'Hier sammeln wir Tipps für einen schönen Aufenthalt in Bad Saarow. Ob Kurpark, Therme, Scharmützelsee oder ein ruhiger Spaziergang: Die Beiträge sollen Gästen ganz praktisch dabei helfen, den Tag rund um ihren Besuch im Carpe Diem zu planen.',
     introPrimaryCtaLabel: 'Jetzt reservieren',
     introPrimaryCtaHref: '/reservieren',
     introSecondaryCtaLabel: 'Kontakt aufnehmen',
