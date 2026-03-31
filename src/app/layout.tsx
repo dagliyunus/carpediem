@@ -9,6 +9,7 @@ import { ConsentBanner } from "@/components/layout/ConsentBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { VercelAnalytics } from "@/components/analytics/VercelAnalytics";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TranslationProvider } from "@/components/translation/TranslationProvider";
 import { getPublicSiteRuntime } from "@/lib/cms/runtime";
 
@@ -142,6 +143,7 @@ export default async function RootLayout({
           </div>
           <ConsentBanner />
           <VercelAnalytics />
+          <SpeedInsights />
         </TranslationProvider>
       </body>
     </html>
